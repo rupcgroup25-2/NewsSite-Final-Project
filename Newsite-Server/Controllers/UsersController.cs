@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newsite_Server.BL;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
 {
@@ -7,6 +9,54 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        ///
+        // GET: api/<UsersController>
+        [HttpGet]
+        public IEnumerable<User> Get()
+        {
+            User user = new User();
+            return user.GetAllUsers();
+        }
+
+        // GET api/<UsersController>/5
+        [HttpGet("{id}")]
+        public string Get(int id)
+        {
+            return "value";
+        }
+
+        [HttpPost("Login")]
+        public IActionResult Login([FromBody] User user)
+        {
+            User NewUser = user.LoginUser();
+            if (NewUser != null)
+            {
+                return Ok(new { NewUser.Name, NewUser.Id });
+            }
+            return (Unauthorized("Invalid email or password"));
+        }
+
+        // POST api/<UsersController>
+        [HttpPost("Register")]
+        public IActionResult Post([FromBody] User user)
+        {
+            if (user.Register() == 0)
+            {
+                return BadRequest("Invalid input - name or password does not meet the requirements.");
+            }
+
+            return Ok(new { message = "Success" });
+        }
+
+        // PUT api/<UsersController>/5
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] string value)
+        {
+        }
+
+        // DELETE api/<UsersController>/5
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
+        }
     }
 }

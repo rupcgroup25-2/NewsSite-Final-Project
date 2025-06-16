@@ -1,0 +1,9 @@
+CREATE TABLE UsersTableFinal (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(255) NOT NULL UNIQUE, 
+    Password NVARCHAR(255) NOT NULL,
+    Active BIT NOT NULL DEFAULT 1,
+    BlockSharing BIT NOT NULL DEFAULT 0,
+    DeletedAt DATE NULL
+);

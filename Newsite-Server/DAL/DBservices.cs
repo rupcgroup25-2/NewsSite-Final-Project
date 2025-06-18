@@ -193,6 +193,143 @@ namespace Newsite_Server.DAL
             }
         }
 
+        //--------------------------------------------------------------------------------------------------
+        // This method create a new tag 
+        //--------------------------------------------------------------------------------------------------
+        public int InsertTag(String name)
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@Name", name);
+
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_InsertTagFinal", con, paramDic);         // create the command
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // execute the command
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method to select all tags
+        //--------------------------------------------------------------------------------------------------
+        public List<Tag> SelectAllTags()
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_SelectTagsFinal", con, null);         // create the command
+            List<Tag> tags = new List<Tag>();
+
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                while (dataReader.Read())
+                {
+                    Tag t = new Tag();
+                    t.Id = Convert.ToInt32(dataReader["Id"]);
+                    t.Name = dataReader["Name"].ToString();
+                    tags.Add(t);
+                }
+                return tags;
+            }
+
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method assign tag to an article 
+        //--------------------------------------------------------------------------------------------------
+        public int AssignTagToArticle(int articleId, int tagId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת החיבור
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+            paramDic.Add("@TagId", tagId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_AssignTagToArticle", con, paramDic); // יצירת הפקודה
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // הרצת הפרוסידר
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close(); // סגירת החיבור
+                }
+            }
+        }
         private SqlCommand CreateCommandWithStoredProcedureGeneral(String spName, SqlConnection con, Dictionary<string, object> paramDic)
         {
 

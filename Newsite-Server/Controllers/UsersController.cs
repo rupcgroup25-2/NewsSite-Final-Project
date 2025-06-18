@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
-
+using Newsite_Server.Services;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
@@ -30,7 +30,11 @@ namespace Newsite_Server.Controllers
             User NewUser = user.LoginUser();
             if (NewUser != null)
             {
-                return Ok(new { NewUser.Name, NewUser.Id });
+                string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@gmail.com" ? "Admin" : "User"); //Create Token
+
+                return Ok(new
+                {
+                    token, NewUser.Name, NewUser.Id });
             }
             return (Unauthorized("Invalid email or password"));
         }

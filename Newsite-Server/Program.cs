@@ -19,7 +19,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false, // אפשר להפעיל לפי צורך
+        ValidateIssuer = false, 
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,

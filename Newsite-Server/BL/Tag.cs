@@ -33,5 +33,9 @@ namespace Newsite_Server.BL
             DBservices dbs = new DBservices();
             return dbs.AssignTagToArticle(articleId, tagId);
         }
+        public int DeleteTag(int tagId)
+        {
+            return dbs.DeleteTag(tagId);
+        }
     }
 }

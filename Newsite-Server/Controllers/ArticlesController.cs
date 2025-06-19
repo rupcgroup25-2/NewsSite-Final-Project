@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -8,37 +7,34 @@ namespace Newsite_Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TagsController : ControllerBase
+    public class ArticlesController : ControllerBase
     {
-        // GET: api/<TagsController>
+        // GET: api/<ArticlesController>
         [HttpGet]
-        public IEnumerable<Tag> Get()
+        public IEnumerable<string> Get()
         {
-            Tag tag = new Tag();
-            return tag.GetAllTags();
+            return new string[] { "value1", "value2" };
         }
 
-        // GET api/<TagsController>/5
+        // GET api/<ArticlesController>/5
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST api/<TagsController>
+        // POST api/<ArticlesController>
         [HttpPost]
-        public IActionResult CreateTag([FromBody] Tag tag)
+        public IActionResult AddArticle([FromBody] Article article)
         {
+            int result = article.InsertArticleIfNotExists();
 
-            int result = tag.CreateTag();
             if (result > 0)
-                return Ok("Tag created");
+                return Ok("Article Inserted successfully");
             else
-            {
-                return BadRequest("Tag already exists or error occurred");
-            }
-
+                return Ok("Article already exists");
         }
+
         [HttpPost("AssignTagToArticle")]
         public IActionResult AssignTagToArticle(int articleId, int tagId)
         {
@@ -55,25 +51,16 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        // PUT api/<TagsController>/5
+        // PUT api/<ArticlesController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
         }
 
-        // DELETE api/<TagsController>/5
-        [Authorize(Roles = "Admin")]
+        // DELETE api/<ArticlesController>/5
         [HttpDelete("{id}")]
-        public IActionResult DeleteTag(int id)
+        public void Delete(int id)
         {
-            Tag t = new Tag();
-            int result = t.DeleteTag(id);
-
-            if (result == 1)
-                return Ok(new { message = "Tag deleted successfully" });
-            else
-                return NotFound("Tag not found or could not be deleted");
         }
     }
 }
- 

@@ -31,6 +31,9 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // This method selects all Users from the UsersTable 
         //--------------------------------------------------------------------------------------------------
+
+        //===============User===============================================================================
+
         public List<User> SelectUsers()
         {
             SqlConnection con;
@@ -196,6 +199,9 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // This method create a new tag 
         //--------------------------------------------------------------------------------------------------
+
+        //===============Tag===============================================================================
+
         public int InsertTag(String name)
         {
 
@@ -330,6 +336,155 @@ namespace Newsite_Server.DAL
                 }
             }
         }
+        //--------------------------------------------------------------------------------------------------
+        // This method Delete entire tag from all the tags
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteTag(int tagId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת חיבור למסד
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@TagId", tagId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteTagsFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // ביצוע הפקודה
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close(); // סגירת חיבור
+                }
+            }
+        }
+
+        //===============Article===============================================================================
+
+
+
+        //--------------------------------------------------------------------------------------------------
+        // This method add new article 
+        //--------------------------------------------------------------------------------------------------
+        public int InsertArticle(Article article)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@Title", article.Title);
+            paramDic.Add("@Description", article.Description);
+            paramDic.Add("@Url", article.Url);
+            paramDic.Add("@UrlToImage", article.UrlToImage);
+            paramDic.Add("@PublishedAt", article.PublishedAt);
+            paramDic.Add("@SourceName", article.SourceName);
+            paramDic.Add("@Author", article.Author);
+
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_InsertArticleFinal", con, paramDic);         // create the command
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // execute the command
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method check if this article is already exists
+        //--------------------------------------------------------------------------------------------------
+        public Article GetArticleByUrl(string url)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return null;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@Url", url);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetArticleByUrl", con, paramDic);
+
+            try
+            {
+                SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+                if (dr.Read())
+                {
+                    Article a = new Article();
+                    a.Id = Convert.ToInt32(dr["Id"]);
+                    a.Title = dr["Title"].ToString();
+                    a.Description = dr["Description"].ToString();
+                    a.Url = dr["Url"].ToString();
+                    a.UrlToImage = dr["UrlToImage"].ToString();
+                    a.PublishedAt = Convert.ToDateTime(dr["PublishedAt"]);
+                    a.SourceName = dr["SourceName"].ToString();
+                    a.Author = dr["Author"].ToString();
+                    return a;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Error: " + ex.Message);
+                return null;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
         private SqlCommand CreateCommandWithStoredProcedureGeneral(String spName, SqlConnection con, Dictionary<string, object> paramDic)
         {
 

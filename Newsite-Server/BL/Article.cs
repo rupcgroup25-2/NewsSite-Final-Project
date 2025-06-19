@@ -1,0 +1,60 @@
+﻿using Newsite_Server.DAL;
+
+namespace Newsite_Server.BL
+{
+    public class Article
+    {
+        int id;
+        string title;
+        string description;
+        string url;
+        string urlToImage;
+        DateTime publishedAt;
+        string sourceName;
+        string author;
+
+        public Article() { }
+
+        public Article(int id, string title, string description, string url, string urlToImage, DateTime publishedAt, string sourceName, string author)
+        {
+            this.Id = id;
+            this.Title = title;
+            this.Description = description;
+            this.Url = url;
+            this.UrlToImage = urlToImage;
+            this.PublishedAt = publishedAt;
+            this.SourceName = sourceName;
+            this.Author = author;
+        }
+
+        public int Id { get => id; set => id = value; }
+        public string Title { get => title; set => title = value; }
+        public string Description { get => description; set => description = value; }
+        public string Url { get => url; set => url = value; }
+        public string UrlToImage { get => urlToImage; set => urlToImage = value; }
+        public DateTime PublishedAt { get => publishedAt; set => publishedAt = value; }
+        public string SourceName { get => sourceName; set => sourceName = value; }
+        public string Author { get => author; set => author = value; }
+
+        DBservices dbs = new DBservices();
+
+        public int InsertArticleIfNotExists()
+        {
+            Article existing = dbs.GetArticleByUrl(this.Url);
+            if (existing != null)
+            {
+                this.Id = existing.Id;
+                return 0; // exists
+            }
+
+            return dbs.InsertArticle(this);
+        }
+
+        public int AssignArticleTag(int articleId, int tagId) //Assign tag to article
+        {
+            DBservices dbs = new DBservices();
+            return dbs.AssignTagToArticle(articleId, tagId);
+        }
+
+    }
+}

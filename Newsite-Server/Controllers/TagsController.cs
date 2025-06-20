@@ -39,21 +39,6 @@ namespace Newsite_Server.Controllers
             }
 
         }
-        [HttpPost("AssignTagToArticle")]
-        public IActionResult AssignTagToArticle(int articleId, int tagId)
-        {
-            if (articleId <= 0 || tagId <= 0)
-                return BadRequest("Invalid IDs");
-
-            Tag tag = new Tag();
-            int result = tag.AssignArticleTag(articleId, tagId);
-            if (result > 0)
-                return Ok("Tag assigned to the article");
-            else
-            {
-                return BadRequest("Couldn't assign tag to the article");
-            }
-        }
 
         // PUT api/<TagsController>/5
         [HttpPut("{id}")]

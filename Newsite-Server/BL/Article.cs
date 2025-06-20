@@ -56,5 +56,13 @@ namespace Newsite_Server.BL
             return dbs.AssignTagToArticle(articleId, tagId);
         }
 
+        public int SaveArticleForUser(int userId, int articleId)
+        {
+            return dbs.SaveArticleForUser(userId, articleId); 
+        }
+        public int ShareArticleWithComment(int userId, int articleId, string comment)
+        {
+           return dbs.ShareArticleForUser(userId, articleId, comment);
+        }
     }
 }

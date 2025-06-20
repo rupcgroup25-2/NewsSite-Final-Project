@@ -41,14 +41,40 @@ namespace Newsite_Server.Controllers
             if (articleId <= 0 || tagId <= 0)
                 return BadRequest("Invalid IDs");
 
-            Tag tag = new Tag();
-            int result = tag.AssignArticleTag(articleId, tagId);
+            Article article = new Article();
+            int result = article.AssignArticleTag(articleId, tagId);
             if (result > 0)
                 return Ok("Tag assigned to the article");
             else
             {
                 return BadRequest("Couldn't assign tag to the article");
             }
+        }
+
+        [HttpPost("SaveArticle")]
+        public IActionResult SaveArticle(int userId, int articleId)
+        {
+            Article article = new Article();
+
+            int result = article.SaveArticleForUser(userId, articleId);
+
+            if (result > 0)
+                return Ok("Article saved successfully");
+            else
+                return Ok("Article already saved");
+        }
+
+        [HttpPost("ShareArticle")]
+        public IActionResult ShareArticle(int userId, int articleId,string comment)
+        {
+            Article article = new Article();
+
+            int result = article.ShareArticleWithComment(userId, articleId,comment);
+
+            if (result > 0)
+                return Ok("Article shared successfully");
+            else
+                return Ok("Article already shared");
         }
 
         // PUT api/<ArticlesController>/5

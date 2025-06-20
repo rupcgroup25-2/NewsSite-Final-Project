@@ -28,11 +28,7 @@ namespace Newsite_Server.BL
             DBservices dbs = new DBservices();
             return dbs.SelectAllTags();
         }
-        public int AssignArticleTag(int articleId, int tagId) //Assign tag to article
-        {
-            DBservices dbs = new DBservices();
-            return dbs.AssignTagToArticle(articleId, tagId);
-        }
+
         public int DeleteTag(int tagId)
         {
             return dbs.DeleteTag(tagId);

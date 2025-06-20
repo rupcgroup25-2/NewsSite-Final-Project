@@ -485,6 +485,87 @@ namespace Newsite_Server.DAL
             }
         }
 
+        //--------------------------------------------------------------------------------------------------
+        // This method save an article for user in the SavedArticlesTable
+        //--------------------------------------------------------------------------------------------------
+        public int SaveArticleForUser(int userId, int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@ArticleId", articleId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_SaveArticleForUserFinal", con, paramDic);
+
+            try
+            {
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method share an article with a comment to SharedArticlesTable
+        //--------------------------------------------------------------------------------------------------
+        public int ShareArticleForUser(int userId, int articleId, string comment)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@ArticleId", articleId);
+            paramDic.Add("@Comment", comment);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_ShareArticleFinal", con, paramDic);
+
+            try
+            {
+                return cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Error: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
         private SqlCommand CreateCommandWithStoredProcedureGeneral(String spName, SqlConnection con, Dictionary<string, object> paramDic)
         {
 

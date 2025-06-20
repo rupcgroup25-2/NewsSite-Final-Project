@@ -23,6 +23,28 @@ namespace Newsite_Server.Controllers
             return "value";
         }
 
+        [HttpGet("saved/{userId}")]
+        public IActionResult GetSavedArticles(int userId)
+        {
+            List<Article> articles = new Article().GetSavedArticlesForUser(userId);
+
+            if (articles.Count == 0)
+                return NotFound("No saved articles found for this user");
+
+            return Ok(articles);
+        }
+
+        [HttpGet("shared/{userId}")]
+        public IActionResult GetSharedArticles(int userId)
+        {
+            List<Article> articles = new Article().GetSharedArticlesForUser(userId);
+
+            if (articles.Count == 0)
+                return NotFound("No shared articles found for this user");
+
+            return Ok(articles);
+        }
+
         // POST api/<ArticlesController>
         [HttpPost]
         public IActionResult AddArticle([FromBody] Article article)
@@ -81,6 +103,33 @@ namespace Newsite_Server.Controllers
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
+        }
+
+        [HttpDelete("unsave")]
+        public IActionResult DeleteSaved(int userId, int articleId)
+        {
+            Article article = new Article();
+            article.Id = articleId;
+
+            int result = article.DeleteSavedForUser(userId);
+            return result > 0 ? Ok("Removed from saved") : NotFound("Not found");
+        }
+
+        [HttpDelete("unshare")]
+        public IActionResult DeleteShared(int userId, int articleId)
+        {
+            Article article = new Article();
+            article.Id = articleId;
+
+            int result = article.DeleteSharedForUser(userId);
+            return result > 0 ? Ok("Removed from shared") : NotFound("Not found");
+        }
+
+        [HttpDelete("remove-tag-from-article")]
+        public IActionResult RemoveTagFromArticle(int articleId, int tagId)
+        {
+            int result = new Article().RemoveTag(articleId, tagId);
+            return result > 0 ? Ok("Tag removed from article") : NotFound("Tag not found on article");
         }
 
         // DELETE api/<ArticlesController>/5

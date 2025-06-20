@@ -12,6 +12,7 @@ namespace Newsite_Server.BL
         DateTime publishedAt;
         string sourceName;
         string author;
+        string comment;
 
         public Article() { }
 
@@ -26,6 +27,8 @@ namespace Newsite_Server.BL
             this.SourceName = sourceName;
             this.Author = author;
         }
+
+        public string Comment { get => comment; set => comment = value; }
 
         public int Id { get => id; set => id = value; }
         public string Title { get => title; set => title = value; }
@@ -60,9 +63,35 @@ namespace Newsite_Server.BL
         {
             return dbs.SaveArticleForUser(userId, articleId); 
         }
+
         public int ShareArticleWithComment(int userId, int articleId, string comment)
         {
            return dbs.ShareArticleForUser(userId, articleId, comment);
+        }
+
+        public List<Article> GetSavedArticlesForUser(int userId)
+        {
+            return dbs.GetSavedArticlesForUser(userId);
+        }
+
+        public List<Article> GetSharedArticlesForUser(int userId)
+        {
+            return dbs.GetSharedArticlesForUser(userId);
+        }
+
+        public int DeleteSavedForUser(int userId)
+        {
+            return dbs.DeleteSavedArticle(userId, this.Id);
+        }
+
+        public int DeleteSharedForUser(int userId)
+        {
+            return dbs.DeleteSharedArticle(userId, this.Id);
+        }
+
+        public int RemoveTag(int articleId, int tagId)
+        {
+            return dbs.RemoveTagFromArticle(articleId, tagId);
         }
     }
 }

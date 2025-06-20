@@ -381,7 +381,6 @@ namespace Newsite_Server.DAL
         //===============Article===============================================================================
 
 
-
         //--------------------------------------------------------------------------------------------------
         // This method add new article 
         //--------------------------------------------------------------------------------------------------
@@ -565,7 +564,185 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
+        //--------------------------------------------------------------------------------------------------
+        // This method select all saved articles for a user
+        //--------------------------------------------------------------------------------------------------
+        public List<Article> GetSavedArticlesForUser(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
 
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSavedArticlesForUserFinal", con, paramDic);
+
+            List<Article> articles = new List<Article>();
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                while (reader.Read())
+                {
+                    Article a = new Article();
+                    a.Id = Convert.ToInt32(reader["Id"]);
+                    a.Title = reader["Title"].ToString();
+                    a.Description = reader["Description"].ToString();
+                    a.Url = reader["Url"].ToString();
+                    a.UrlToImage = reader["UrlToImage"].ToString();
+                    a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                    a.SourceName = reader["SourceName"].ToString();
+                    a.Author = reader["Author"].ToString();
+                    articles.Add(a);
+                }
+                return articles;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method select all shared articles for a user with his comments
+        //--------------------------------------------------------------------------------------------------
+        public List<Article> GetSharedArticlesForUser(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticlesForUser", con, paramDic);
+
+            List<Article> articles = new List<Article>();
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                while (reader.Read())
+                {
+                    Article a = new Article();
+                    a.Id = Convert.ToInt32(reader["Id"]);
+                    a.Title = reader["Title"].ToString();
+                    a.Description = reader["Description"].ToString();
+                    a.Url = reader["Url"].ToString();
+                    a.UrlToImage = reader["UrlToImage"].ToString();
+                    a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                    a.SourceName = reader["SourceName"].ToString();
+                    a.Author = reader["Author"].ToString();
+                    a.Comment = reader["Comment"].ToString(); // מהשיתוף
+                    articles.Add(a);
+                }
+                return articles;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method delete saved articles for user
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteSavedArticle(int userId, int articleId)
+        {
+            SqlConnection con = connect("myProjDB");
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+    {
+        { "@UserId", userId },
+        { "@ArticleId", articleId }
+    };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteSavedArticleFinal", con, paramDic);
+
+            try
+            {
+                return cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return 0;
+            }
+            finally { con.Close(); }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method delete shared articles for user
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteSharedArticle(int userId, int articleId)
+        {
+            SqlConnection con = connect("myProjDB");
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+    {
+        { "@UserId", userId },
+        { "@ArticleId", articleId }
+    };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteSharedArticleFinal", con, paramDic);
+
+            try
+            {
+                return cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return 0;
+            }
+            finally { con.Close(); }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method remove tags from article 
+        //--------------------------------------------------------------------------------------------------
+        public int RemoveTagFromArticle(int articleId, int tagId)
+        {
+            SqlConnection con = connect("myProjDB");
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+            {
+                { "@ArticleId", articleId },
+                { "@TagId", tagId }
+            };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteTagFromArticleFinal", con, paramDic);
+
+            try
+            {
+                return cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return 0;
+            }
+            finally { con.Close(); }
+        }
         private SqlCommand CreateCommandWithStoredProcedureGeneral(String spName, SqlConnection con, Dictionary<string, object> paramDic)
         {
 

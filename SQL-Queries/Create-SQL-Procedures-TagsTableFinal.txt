@@ -1,0 +1,87 @@
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_InsertTag]    Script Date: 18/06/2025 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <18.06.25>
+-- Description:	<Insert new tag into Tags table>
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_InsertTagFinal]
+	@Name NVARCHAR(100)
+AS
+BEGIN
+	INSERT INTO TagsTableFinal ([Name])
+	VALUES (@Name);
+END
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetAllTags]    Script Date: 18/06/2025 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <18.06.25>
+-- Description:	<Select all tags from Tags table>
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_SelectTagsFinal]
+AS
+BEGIN
+	SELECT * FROM TagsTableFinal
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetAllTags]    Script Date: 18/06/2025 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <18.06.25>
+-- Description:	<Select all tags from Tags table>
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_AssignTagToArticle]
+    @ArticleId INT,
+    @TagId INT
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM ArticleTagsTableFinal
+        WHERE ArticleId = @ArticleId AND TagId = @TagId
+    )
+    BEGIN
+        INSERT INTO ArticleTagsTableFinal (ArticleId, TagId)
+        VALUES (@ArticleId, @TagId)
+    END
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SelectTagsFinal]    Script Date: 19/06/2025 22:37:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <18.06.25>
+-- Description:	<Select all tags from Tags table>
+-- =============================================
+Create PROCEDURE [dbo].[sp_DeleteTagsFinal]
+    @TagId INT
+AS
+BEGIN
+    DELETE FROM ArticleTagsTableFinal
+    WHERE TagId = @TagId;
+
+    DELETE FROM TagsTableFinal
+    WHERE Id = @TagId;
+END

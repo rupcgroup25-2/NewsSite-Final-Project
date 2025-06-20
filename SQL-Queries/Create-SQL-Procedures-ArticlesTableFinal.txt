@@ -1,0 +1,205 @@
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SelectTagsFinal]    Script Date: 19/06/2025 22:37:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <19.06.25>
+-- Description:	<Insert an article to the ArticlesTableFinal Table >
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_InsertArticleFinal]
+    @Title NVARCHAR(255),
+    @Description NVARCHAR(MAX),
+    @Url NVARCHAR(500),
+    @UrlToImage NVARCHAR(500),
+    @PublishedAt DATETIME,
+    @SourceName NVARCHAR(100),
+    @Author NVARCHAR(100)
+AS
+BEGIN
+    INSERT INTO ArticlesTableFinal (Title, Description, Url, UrlToImage, PublishedAt, SourceName, Author)
+    VALUES (@Title, @Description, @Url, @UrlToImage, @PublishedAt, @SourceName, @Author)
+END
+----------------------------------------------------------------------------------------
+
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SelectTagsFinal]    Script Date: 19/06/2025 22:37:52 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <19.06.25>
+-- Description:	<Get article by api url>
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_GetArticleByUrlFinal]
+    @Url NVARCHAR(500)
+AS
+BEGIN
+    SELECT * FROM ArticlesTableFinal WHERE Url = @Url
+END
+---------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Get article by api url>
+-- =============================================
+ALTER PROCEDURE sp_SaveArticleForUserFinal
+    @UserId INT,
+    @ArticleId INT
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM SavedArticlesTable
+        WHERE UserId = @UserId AND ArticleId = @ArticleId
+    )
+    BEGIN
+        INSERT INTO SavedArticlesTable (UserId, ArticleId)
+        VALUES (@UserId, @ArticleId)
+    END
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Share article with a comment>
+-- =============================================
+CREATE PROCEDURE sp_ShareArticleFinal
+    @UserId INT,
+    @ArticleId INT,
+    @Comment NVARCHAR(MAX)
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM SharedArticlesTable
+        WHERE UserId = @UserId AND ArticleId = @ArticleId
+    )
+    BEGIN
+        INSERT INTO SharedArticlesTable (UserId, ArticleId, Comment)
+        VALUES (@UserId, @ArticleId, @Comment)
+    END
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Get all saved articles>
+-- =============================================
+CREATE PROCEDURE sp_GetSavedArticlesForUserFinal
+    @UserId INT
+AS
+BEGIN
+    SELECT A.*
+    FROM SavedArticlesTable S
+    JOIN ArticlesTableFinal A ON S.ArticleId = A.Id
+    WHERE S.UserId = @UserId
+END
+----------------------------------------------------------------------------------------------USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Get all Shared articles>
+-- =============================================
+CREATE PROCEDURE sp_GetSharedArticlesForUser
+    @UserId INT
+AS
+BEGIN
+    SELECT A.*, S.Comment
+    FROM SharedArticlesTable S
+    JOIN ArticlesTableFinal A ON S.ArticleId = A.Id
+    WHERE S.UserId = @UserId
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Delete saved articles>
+-- =============================================
+CREATE PROCEDURE sp_DeleteSavedArticleFinal
+    @UserId INT,
+    @ArticleId INT
+AS
+BEGIN
+    DELETE FROM SavedArticlesTable
+    WHERE UserId = @UserId AND ArticleId = @ArticleId
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Delete shared articles>
+-- =============================================
+CREATE PROCEDURE sp_DeleteSharedArticleFinal
+    @UserId INT,
+    @ArticleId INT
+AS
+BEGIN
+    DELETE FROM SharedArticlesTable
+    WHERE UserId = @UserId AND ArticleId = @ArticleId
+END
+----------------------------------------------------------------------------------------------
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <20.06.25>
+-- Description:	<Delete tags from articles>
+-- =============================================
+CREATE PROCEDURE sp_DeleteTagFromArticleFinal
+    @ArticleId INT,
+    @TagId INT
+AS
+BEGIN
+    DELETE FROM ArticleTagsTableFinal
+    WHERE ArticleId = @ArticleId AND TagId = @TagId
+END

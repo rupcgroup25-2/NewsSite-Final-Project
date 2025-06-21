@@ -86,5 +86,9 @@ namespace Newsite_Server.BL
         {
             return dbs.ToggleBlockSharing(this.Id);
         }
+        public int Deactivate()
+        {
+            return dbs.ToggleDeactivateUser(this.Id);
+        }
     }
 }

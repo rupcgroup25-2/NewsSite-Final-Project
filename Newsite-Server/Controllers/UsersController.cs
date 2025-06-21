@@ -65,6 +65,20 @@ namespace Newsite_Server.Controllers
             else
                 return NotFound("User not found");
         }
+
+        //[Authorize(Roles = "Admin")]
+        [HttpPut("admin/users/{id}/deactivate")]
+        public IActionResult DeactivateUser(int id)
+        {
+            User u = new User();
+            u.Id = id;
+            int result = u.Deactivate();
+
+            if (result > 0)
+                return Ok("User deactivated successfully");
+            else
+                return NotFound("User not found or already deactivated");
+        }
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)

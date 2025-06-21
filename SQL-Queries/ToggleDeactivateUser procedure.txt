@@ -1,0 +1,28 @@
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SaveArticleForUserFinal]    Script Date: 21/06/2025 15:45:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <21.06.25>
+-- Description:	<Activate or deactivate user>
+-- =============================================
+CREATE PROCEDURE sp_ToggleDeactivateUserFinal
+    @UserId INT
+AS
+BEGIN
+    UPDATE UsersTableFinal
+    SET 
+        Active = CASE 
+                    WHEN Active = 1 THEN 0 
+                    ELSE 1 
+                END,
+        DeletedAt = CASE 
+                      WHEN Active = 1 THEN GETDATE() 
+                      ELSE NULL 
+                    END
+    WHERE Id = @UserId
+END

@@ -237,6 +237,45 @@ namespace Newsite_Server.DAL
                 }
             }
         }
+        public int ToggleDeactivateUser(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת החיבור
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_ToggleDeactivateUserFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
 
         //===============Tag===============================================================================
         //--------------------------------------------------------------------------------------------------

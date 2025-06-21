@@ -6,6 +6,7 @@ CREATE TABLE UsersTableFinal (
     Active BIT NOT NULL DEFAULT 1,
     BlockSharing BIT NOT NULL DEFAULT 0,
     DeletedAt DATE NULL
+    BlockedAt DATE NULL;
 );
 
 CREATE TABLE TagsTableFinal (

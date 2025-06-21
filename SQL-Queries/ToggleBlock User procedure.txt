@@ -1,0 +1,28 @@
+USE [igroup102_test2]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SaveArticleForUserFinal]    Script Date: 21/06/2025 15:45:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<moty>
+-- Create date: <21.06.25>
+-- Description:	<Block or unblock user>
+-- =============================================
+ALTER PROCEDURE sp_ToggleBlockSharingFinal
+    @UserId INT
+AS
+BEGIN
+    UPDATE UsersTableFinal
+    SET 
+        BlockSharing = CASE 
+                         WHEN BlockSharing = 1 THEN 0 
+                         ELSE 1 
+                       END,
+        BlockedAt = CASE 
+                      WHEN BlockSharing = 0 THEN GETDATE() 
+                      ELSE NULL 
+                    END
+    WHERE Id = @UserId
+END

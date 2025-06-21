@@ -82,5 +82,9 @@ namespace Newsite_Server.BL
 
             return true;
         }
+        public int ToggleBlockSharing()
+        {
+            return dbs.ToggleBlockSharing(this.Id);
+        }
     }
 }

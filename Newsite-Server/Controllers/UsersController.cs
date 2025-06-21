@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 using Newsite_Server.Services;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -52,6 +53,18 @@ namespace Newsite_Server.Controllers
             return Ok(new { message = "Success" });
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("admin/users/{id}/block")]
+        public IActionResult ToggleBlockSharing(int id)
+        {
+            User u = new User();
+            u.Id = id;
+            int result = u.ToggleBlockSharing();
+            if (result > 0)
+                return Ok("Block status updated");
+            else
+                return NotFound("User not found");
+        }
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)

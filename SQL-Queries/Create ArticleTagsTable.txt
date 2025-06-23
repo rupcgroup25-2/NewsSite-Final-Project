@@ -1,0 +1,7 @@
+CREATE TABLE ArticleTagsTableFinal (
+    ArticleId INT NOT NULL,
+    TagId INT NOT NULL,
+    PRIMARY KEY (ArticleId, TagId),
+    FOREIGN KEY (ArticleId) REFERENCES ArticlesTableFinal(Id),
+    FOREIGN KEY (TagId) REFERENCES TagsTableFinal(Id)
+);

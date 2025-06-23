@@ -1,0 +1,9 @@
+CREATE TABLE SharedArticlesTable (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    UserId INT,
+    ArticleId INT,
+    Comment NVARCHAR(MAX), -- התגובה של המשתמש בשיתוף
+    SharedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES UsersTableFinal(Id),
+    FOREIGN KEY (ArticleId) REFERENCES ArticlesTableFinal(Id)
+);

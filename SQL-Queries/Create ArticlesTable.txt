@@ -1,0 +1,10 @@
+Create TABLE ArticlesTableFinal (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Title NVARCHAR(255),
+    Description NVARCHAR(MAX),
+    Url NVARCHAR(500),
+    UrlToImage NVARCHAR(500),
+    PublishedAt DATETIME,
+    SourceName NVARCHAR(100),
+    Author NVARCHAR(100)
+);

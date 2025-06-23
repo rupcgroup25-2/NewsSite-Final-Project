@@ -237,6 +237,9 @@ namespace Newsite_Server.DAL
                 }
             }
         }
+        //--------------------------------------------------------------------------------------------------
+        // This method deactivate the user by admin
+        //--------------------------------------------------------------------------------------------------
         public int ToggleDeactivateUser(int userId)
         {
             SqlConnection con = null;
@@ -278,6 +281,7 @@ namespace Newsite_Server.DAL
         }
 
         //===============Tag===============================================================================
+
         //--------------------------------------------------------------------------------------------------
         // This method create a new tag 
         //--------------------------------------------------------------------------------------------------\
@@ -800,6 +804,51 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // This method remove tags from article 
         //--------------------------------------------------------------------------------------------------
+
+        //===============Report===========================================================================
+
+        //--------------------------------------------------------------------------------------------------
+        // This method to insert new report on shared article or regular article
+        //--------------------------------------------------------------------------------------------------
+        public int ReportArticles(int reporterId, int? articleId, int? sharedArticleId, string comment)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ReporterId", reporterId);
+            paramDic.Add("@ArticleId", (object?)articleId ?? DBNull.Value);
+            paramDic.Add("@SharedArticleId", (object?)sharedArticleId ?? DBNull.Value);
+            paramDic.Add("@Comment", comment);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_ReportArticleFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
         public int RemoveTagFromArticle(int articleId, int tagId)
         {
             SqlConnection con = connect("myProjDB");

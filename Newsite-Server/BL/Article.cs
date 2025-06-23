@@ -55,7 +55,6 @@ namespace Newsite_Server.BL
 
         public int AssignArticleTag(int articleId, int tagId) //Assign tag to article
         {
-            DBservices dbs = new DBservices();
             return dbs.AssignTagToArticle(articleId, tagId);
         }
 

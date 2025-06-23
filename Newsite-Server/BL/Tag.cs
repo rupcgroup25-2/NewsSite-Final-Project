@@ -25,7 +25,6 @@ namespace Newsite_Server.BL
         }
         public List<Tag> GetAllTags() //Get all users from db
         {
-            DBservices dbs = new DBservices();
             return dbs.SelectAllTags();
         }
 

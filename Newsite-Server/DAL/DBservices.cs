@@ -400,7 +400,7 @@ namespace Newsite_Server.DAL
             paramDic.Add("@ArticleId", articleId);
             paramDic.Add("@TagId", tagId);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_AssignTagToArticle", con, paramDic); // יצירת הפקודה
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_AssignTagToArticle", con, paramDic); 
 
             try
             {

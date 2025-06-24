@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NewsSite - Admin Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../css/custom.css" rel="stylesheet">
+  <style>
+    body { background: #f4f6fa; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="card shadow p-4" style="max-width: 400px; width: 100%; border-radius: 1.25rem;">
+      <div class="text-center mb-4">
+        <img src="../assets/logo.png" alt="Logo" style="width: 60px;">
+        <h2 class="mt-2 mb-0 fw-bold">NewsSite Admin</h2>
+        <small class="text-muted">Sign in to your account</small>
+      </div>
+      <form id="adminLoginForm">
+        <div class="mb-3">
+          <label for="adminEmail" class="form-label">Email</label>
+          <input type="email" class="form-control rounded-pill" id="adminEmail" required>
+        </div>
+        <div class="mb-3">
+          <label for="adminPassword" class="form-label">Password</label>
+          <input type="password" class="form-control rounded-pill" id="adminPassword" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Login</button>
+      </form>
+    </div>
+  </div>
+  <script type="module" src="../js/admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -18,12 +18,12 @@ $('#loginForm').submit(function (e) {
     const password = $('#loginPassword').val();
 
     const requestData = {
-        Id: 0,
-        Name: "string",
-        Email: username,
-        Password: password,
-        Active: "true",
-        BlockSharing: "true"
+        "id": 0,
+        "name": "string",
+        "email": username,
+        "password": password,
+        "active": true,
+        "blockSharing": true
     };
 
     // Call the AJAX wrapper
@@ -35,8 +35,8 @@ $('#loginForm').submit(function (e) {
             console.log("Login successful!", response);
             // Redirect or update UI here
         },
-        function error(error) {
-            console.error("Login failed:", error);
+        function error(xhr, status, error) {
+            console.error("Login failed:", xhr.responseText || error);
             alert("Login failed. Please try again.");
         }
     );

@@ -9,20 +9,6 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class ArticlesController : ControllerBase
     {
-        // GET: api/<ArticlesController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<ArticlesController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         [HttpGet("saved/{userId}")]
         public IActionResult GetSavedArticles(int userId)
         {
@@ -99,12 +85,6 @@ namespace Newsite_Server.Controllers
                 return Ok("Article already shared");
         }
 
-        // PUT api/<ArticlesController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
         [HttpDelete("unsave")]
         public IActionResult DeleteSaved(int userId, int articleId)
         {
@@ -125,17 +105,11 @@ namespace Newsite_Server.Controllers
             return result > 0 ? Ok("Removed from shared") : NotFound("Not found");
         }
 
-        [HttpDelete("remove-tag-from-article")]
+        [HttpDelete("RemoveTagFromArticle")]
         public IActionResult RemoveTagFromArticle(int articleId, int tagId)
         {
             int result = new Article().RemoveTag(articleId, tagId);
             return result > 0 ? Ok("Tag removed from article") : NotFound("Tag not found on article");
-        }
-
-        // DELETE api/<ArticlesController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

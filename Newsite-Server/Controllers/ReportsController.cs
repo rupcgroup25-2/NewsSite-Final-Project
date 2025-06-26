@@ -9,19 +9,12 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class ReportsController : ControllerBase
     {
-        // GET: api/<ReportsController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<ReportsController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        //// GET: api/<ReportsController>
+        //[HttpGet]
+        //public IEnumerable<string> Get()
+        //{
+        //    return new string[] { "value1", "value2" };
+        //}
 
         // POST api/<ReportsController>
         [HttpPost]
@@ -32,19 +25,6 @@ namespace Newsite_Server.Controllers
                 return Ok("Report submitted successfully.");
             else
                 return BadRequest("Report submission failed.");
-        }
-
-
-        // PUT api/<ReportsController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<ReportsController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

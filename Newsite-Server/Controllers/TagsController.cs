@@ -18,13 +18,6 @@ namespace Newsite_Server.Controllers
             return tag.GetAllTags();
         }
 
-        // GET api/<TagsController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         // POST api/<TagsController>
         [HttpPost]
         public IActionResult CreateTag([FromBody] Tag tag)
@@ -37,13 +30,6 @@ namespace Newsite_Server.Controllers
             {
                 return BadRequest("Tag already exists or error occurred");
             }
-
-        }
-
-        // PUT api/<TagsController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
         }
 
         // DELETE api/<TagsController>/5

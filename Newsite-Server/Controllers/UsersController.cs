@@ -16,15 +16,7 @@ namespace Newsite_Server.Controllers
         {
             User user = new User();
             return user.GetAllUsers();
-        }
-
-        // GET api/<UsersController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-        
+        }   
 
         [HttpPost("Login")]
         public IActionResult Login([FromBody] User user)
@@ -43,7 +35,7 @@ namespace Newsite_Server.Controllers
 
         // POST api/<UsersController>
         [HttpPost("Register")]
-        public IActionResult Post([FromBody] User user)
+        public IActionResult Register([FromBody] User user)
         {
             if (user.Register() == 0)
             {
@@ -78,17 +70,6 @@ namespace Newsite_Server.Controllers
                 return Ok("User deactivated successfully");
             else
                 return NotFound("User not found or already deactivated");
-        }
-        // PUT api/<UsersController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<UsersController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

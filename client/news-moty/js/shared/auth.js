@@ -1,5 +1,4 @@
-﻿
-function renderUserActions() {
+﻿function renderUserActions() {
     const $actions = $("#user-actions");
     $actions.empty();
     if (currentUser) {
@@ -11,9 +10,8 @@ function renderUserActions() {
 }
 
 $('#loginForm').submit(function (e) {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
-    // Collect form data
     const username = $('#loginEmail').val();
     const password = $('#loginPassword').val();
 
@@ -26,13 +24,16 @@ $('#loginForm').submit(function (e) {
         "blockSharing": true
     };
 
-    // Call the AJAX wrapper
     ajaxCall(
         "POST",
-        "https://localhost:7065/api/Users/Login", // Replace with your actual API
+        serverUrl + "Users/Login", 
         JSON.stringify(requestData),
         function success(response) {
             console.log("Login successful!", response);
+            currentUser = response;
+            localStorage.setItem('user', JSON.stringify(currentUser));
+            renderUserActions();
+            $('#loginModal').modal('hide');
             // Redirect or update UI here
         },
         function error(xhr, status, error) {

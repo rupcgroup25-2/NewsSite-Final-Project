@@ -46,7 +46,7 @@ const sampleArticles = [
     }
 ];
 const availableTags = ['Sports', 'Business'];
-let currentUser = null;
+let currentUser = JSON.parse(localStorage.getItem('user'));
 let savedArticles = [];
 let sharedArticles = [];
 let userTags = [];

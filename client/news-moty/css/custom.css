@@ -1,0 +1,201 @@
+/* ===== Custom News Site Styles ===== */
+
+:root {
+  --news-glass-bg: rgba(255,255,255,0.85);
+  --news-glass-bg-dark: rgba(30,34,40,0.85);
+  --news-glass-blur: 12px;
+  --news-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  --news-card-radius: 1.25rem;
+  --news-card-hover: 0 8px 32px 0 rgba(0,0,0,0.16);
+}
+[data-bs-theme="dark"] {
+  --news-glass-bg: var(--news-glass-bg-dark);
+}
+
+/* Glassmorphic Navbar */
+#main-navbar {
+  background: var(--news-glass-bg) !important;
+  backdrop-filter: blur(var(--news-glass-blur));
+  box-shadow: var(--news-shadow);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+[data-bs-theme="dark"] #main-navbar {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Glassy Footer */
+footer.bg-body {
+  background: var(--news-glass-bg) !important;
+  backdrop-filter: blur(var(--news-glass-blur));
+  box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+[data-bs-theme="dark"] footer.bg-body {
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Category Pills/Tabs */
+#category-pills {
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  padding-bottom: 0.25rem;
+}
+#category-pills .nav-link {
+  border-radius: 2rem;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+#category-pills .nav-link.active, #category-pills .nav-link:focus {
+  background: linear-gradient(90deg, #0d6efd 60%, #6610f2 100%);
+  color: #fff !important;
+  box-shadow: 0 2px 8px 0 rgba(13,110,253,0.12);
+  transform: translateY(-2px) scale(1.04);
+}
+#category-pills .nav-link:hover:not(.active) {
+  background: #f0f4fa;
+  color: #0d6efd !important;
+  transform: scale(1.03);
+}
+[data-bs-theme="dark"] #category-pills .nav-link:hover:not(.active) {
+  background: #23272b;
+  color: #fff !important;
+}
+
+/* Article Card Grid */
+.article-card {
+  border-radius: var(--news-card-radius) !important;
+  box-shadow: var(--news-shadow);
+  transition: box-shadow 0.2s, transform 0.2s;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.article-card:hover {
+  box-shadow: var(--news-card-hover);
+  transform: translateY(-4px) scale(1.015);
+  z-index: 2;
+}
+.article-card .card-img-top {
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-top-left-radius: var(--news-card-radius);
+  border-top-right-radius: var(--news-card-radius);
+  min-height: 180px;
+  max-height: 220px;
+}
+.article-card .card-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.article-card .card-text {
+  font-size: 1rem;
+  color: var(--bs-secondary-color);
+}
+
+/* Hero/Featured Article */
+#hero-article .card {
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.12);
+  background: var(--news-glass-bg);
+  backdrop-filter: blur(var(--news-glass-blur));
+  overflow: hidden;
+  position: relative;
+}
+#hero-article .card-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+#hero-article .featured-badge {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 10;
+  background: linear-gradient(90deg, #ffc107 60%, #fd7e14 100%);
+  color: #222;
+  font-weight: 700;
+  border-radius: 1rem;
+  padding: 0.4em 1.2em;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+}
+
+/* Modals */
+.modal-content {
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.16);
+  background: var(--news-glass-bg);
+  backdrop-filter: blur(var(--news-glass-blur));
+  border: none;
+}
+.modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Button Tweaks */
+.btn {
+  border-radius: 2rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* RTL Support */
+[dir="rtl"] body, [dir="rtl"] .container, [dir="rtl"] .row, [dir="rtl"] .navbar, [dir="rtl"] .modal-content {
+  direction: rtl;
+}
+[dir="rtl"] .navbar .navbar-brand {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+[dir="rtl"] .navbar-nav {
+  margin-left: 0;
+  margin-right: auto;
+}
+[dir="rtl"] .nav-pills {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .card-title, [dir="rtl"] .card-text, [dir="rtl"] .modal-title {
+  text-align: right;
+}
+
+/* Dark Mode Tweaks */
+[data-bs-theme="dark"] .article-card {
+  background: #23272b;
+  color: #f8f9fa;
+}
+[data-bs-theme="dark"] #hero-article .card {
+  background: var(--news-glass-bg-dark);
+}
+[data-bs-theme="dark"] .modal-content {
+  background: var(--news-glass-bg-dark);
+}
+
+/* Hide scrollbars for pills on mobile */
+#category-pills::-webkit-scrollbar {
+  display: none;
+}
+#category-pills {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 575.98px) {
+  #hero-article .card-title {
+    font-size: 1.3rem;
+  }
+  .article-card .card-title {
+    font-size: 1rem;
+  }
+}
+
+/* ===== End Custom News Site Styles ===== */ 

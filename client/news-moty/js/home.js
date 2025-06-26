@@ -61,18 +61,80 @@ function renderTabs() {
 }
 
 function renderHomeTab() {
-    $("#home").html(`<div class="mb-4">
-    <h2 class="h4">Welcome to News Hub</h2>
-    <p class="text-muted">Stay updated with the latest news tailored to your interests.</p>
-  </div>
-  <div class="mb-3">
-    <div class="btn-group" role="group" aria-label="Category filter">
-      <button class="btn btn-secondary btn-sm" data-category="all">All</button>
-      ${availableTags.map(tag => `<button class="btn btn-secondary btn-sm" data-category="${tag.id}">${tag.name}</button>`).join("")}
-    </div>
-  </div>
-  <div class="row" id="articles-list"></div>`);
-    renderArticles("all");
+    // Render the hero section placeholder
+    $("#home").html(`
+        <div id="hero-article"></div>
+        <div class="mb-4">
+            <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-category="all" type="button" role="tab">All</button>
+                </li>
+                ${availableTags.map(tag => `
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
+                    </li>
+                `).join("")}
+            </ul>
+        </div>
+        <div class="row" id="articles-list"></div>`);
+    // Fetch and render hero + articles
+    renderArticlesWithHero("all");
+}
+
+function renderArticlesWithHero(category) {
+    // Try cache first
+    let articles = getCachedArticles();
+    if (articles) {
+        renderHeroAndArticles(filterArticlesByCategory(articles, category));
+        return;
+    }
+    fetchAllArticlesOncePerDay().then(allArticles => {
+        renderHeroAndArticles(filterArticlesByCategory(allArticles, category));
+    }).catch(() => {
+        showError("Failed to fetch articles. Please try again later.");
+    });
+}
+
+function renderHeroAndArticles(articles) {
+    if (!articles || articles.length === 0) {
+        $("#hero-article").html("");
+        renderExternalArticles([]);
+        return;
+    }
+    // Show the first article as hero
+    renderHeroArticle(articles[0]);
+    // Render the rest as cards
+    renderExternalArticles(articles.slice(1));
+}
+
+function renderHeroArticle(article) {
+    if (!article) {
+        $("#hero-article").html("");
+        return;
+    }
+    const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
+    $("#hero-article").html(`
+        <div class="card mb-4 shadow-lg border-0 overflow-hidden">
+            <div class="row g-0 align-items-stretch flex-md-row flex-column-reverse">
+                <div class="col-md-7 d-flex flex-column justify-content-center p-4">
+                    <div class="mb-2">
+                        <span class="badge bg-${tag.color} me-2">${tag.name}</span>
+                        <span class="text-muted small">${formatDate(article.publishedAt)}</span>
+                    </div>
+                    <h2 class="card-title display-6 fw-bold mb-3">${article.title}</h2>
+                    <p class="card-text lead mb-4">${article.preview}</p>
+                    <div>
+                        <a href="${article.url}" target="_blank" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Read Full Article
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-5 bg-dark d-flex align-items-center justify-content-center" style="min-height:260px;">
+                    <img src="${article.imageUrl}" class="img-fluid w-100 h-100 object-fit-cover" alt="${article.title}" style="max-height:340px; object-fit:cover;">
+                </div>
+            </div>
+        </div>
+    `);
 }
 
 function renderArticles(category) {
@@ -504,19 +566,19 @@ function fetchArticlesByCategory(category) {
     const $list = $("#articles-list");
     $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
     currentCategory = category;
-    // Update category button styles
-    $('[data-category]').removeClass('btn-secondary').addClass('btn-outline-secondary');
-    $(`[data-category="${category}"]`).removeClass('btn-outline-secondary').addClass('btn-secondary');
+    // Update category pills highlighting
+    $('#category-pills .nav-link').removeClass('active');
+    $(`#category-pills .nav-link[data-category="${category}"]`).addClass('active');
 
     // Try cache first
     let articles = getCachedArticles();
     if (articles) {
-        renderExternalArticles(filterArticlesByCategory(articles, category));
+        renderHeroAndArticles(filterArticlesByCategory(articles, category));
         return;
     }
     // If not cached, fetch and then render
     fetchAllArticlesOncePerDay().then(allArticles => {
-        renderExternalArticles(filterArticlesByCategory(allArticles, category));
+        renderHeroAndArticles(filterArticlesByCategory(allArticles, category));
     }).catch(() => {
         showError("Failed to fetch articles. Please try again later.");
     });
@@ -541,30 +603,30 @@ function renderExternalArticles(articles) {
         const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
 
         $list.append(`
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 article-card">
-                    <img src="${article.imageUrl}" class="card-img-top" alt="${article.title}" onerror="this.src='public/placeholder.svg';">
-                    <div class="card-body">
-                        <h5 class="card-title article-title">${article.title}</h5>
-                        <p class="card-text article-preview">${article.preview}</p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-${tag.color}">${tag.name}</span>
-                            <small class="text-muted">${formatDate(article.publishedAt)}</small>
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm rounded-4 h-100 border-0 overflow-hidden">
+                    <div class="position-relative">
+                        <img src="${article.imageUrl}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
+                        <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
+                            <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
+                            <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted">Source: ${article.source}</small>
-                        </div>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <a href="${article.url}" target="_blank" class="btn btn-primary btn-sm">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-2">${article.title}</h5>
+                        <p class="card-text text-muted flex-grow-1">${article.preview}</p>
+                        <div class="mb-2 text-end small text-secondary">Source: ${article.source}</div>
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            <a href="${article.url}" target="_blank" class="btn btn-primary btn-sm flex-fill">
                                 <i class="fas fa-external-link-alt me-1"></i>Read More
                             </a>
-                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn" data-id="${article.id}">
+                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
                             </button>
-                            <button class="btn btn-outline-info btn-sm share-article-btn" data-id="${article.id}">
+                            <button class="btn btn-outline-info btn-sm share-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-share me-1"></i>Share
                             </button>
-                            <button class="btn btn-outline-danger btn-sm report-article-btn" data-id="${article.id}">
+                            <button class="btn btn-outline-danger btn-sm report-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-flag me-1"></i>Report
                             </button>
                         </div>

@@ -41,6 +41,11 @@ $('#loginForm').submit(function (e) {
         serverUrl + "Users/Login",
         JSON.stringify(requestData),
         function success(response) {
+            // Only log in if response is a valid user
+            if (!response || !response.id || response.id === 0) {
+                showMessage('#loginMessage', 'Login failed. Please check your credentials.', 'danger');
+                return;
+            }
             console.log("Login successful!", response);
             currentUser = response;
             localStorage.setItem('user', JSON.stringify(currentUser));

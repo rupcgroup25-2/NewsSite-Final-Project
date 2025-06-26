@@ -1,5 +1,5 @@
 ﻿
-
+// Renders the Home tab: welcome message, category filter buttons, and the articles container
 function renderHomeTab() {
     $("#home").html(`
     <div class="mb-4">
@@ -18,9 +18,11 @@ function renderHomeTab() {
     <div class="row" id="articles-list"></div>
   `);
 
+    // Render all articles by default
     renderArticles("all");
 }
 
+// Renders the articles list filtered by a specific category
 function renderArticles(category) {
     let filtered = sampleArticles;
     if (category !== "all") {

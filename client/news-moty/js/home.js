@@ -17,8 +17,6 @@ const categoryMapping = {
     environment: "science", // NewsAPI does not have 'environment', use 'science' as closest
 };
 
-
-
 function formatDate(date) {
     return new Date(date).toLocaleDateString("en-US", {
         year: "numeric",

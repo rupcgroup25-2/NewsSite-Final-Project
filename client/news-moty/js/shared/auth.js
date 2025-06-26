@@ -1,4 +1,5 @@
-﻿function renderUserActions() {
+﻿// Render user-related actions (Login/Register buttons or greeting and Logout button)
+function renderUserActions() {
     const $actions = $("#user-actions");
     $actions.empty();
     if (currentUser) {
@@ -21,6 +22,7 @@ function hideMessage(selector) {
     $(selector).addClass('d-none').text('').removeClass('alert alert-success alert-danger');
 }
 
+// Handle Login form submission - AJAX
 $('#loginForm').submit(function (e) {
     e.preventDefault();
 
@@ -62,6 +64,8 @@ $('#loginForm').submit(function (e) {
         }
     );
 });
+
+// Handle Register form submission - AJAX
 
 $('#registerForm').submit(function (e) {
     e.preventDefault();

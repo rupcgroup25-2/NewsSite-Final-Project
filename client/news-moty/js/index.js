@@ -60,8 +60,263 @@ function renderArticles(category) {
     });
 }
 
-// Setup category filter click events
-$(document).on("click", "[data-category]", function () {
-    const category = $(this).data("category");
-    renderArticles(category);
+// Event handlers
+$(document).ready(function () {
+    renderUserActions();
+    renderHomeTab();
+}) 
+
+// Category filter
+$(document).on('click', '[data-category]', function () {
+    const cat = $(this).data('category');
+    renderArticles(cat);
 });
+
+availableTags = [
+    { id: "technology", name: "Technology", color: "primary" },
+    { id: "health", name: "Health", color: "success" },
+    { id: "sports", name: "Sports", color: "warning" },
+    { id: "business", name: "Business", color: "info" },
+    { id: "entertainment", name: "Entertainment", color: "danger" },
+    { id: "environment", name: "Environment", color: "secondary" },
+];
+
+let fetchedArticles = [];
+let currentCategory = "all";
+
+const NEWS_API_KEY = "7c45000aa11241f2bed13189e946fb47";
+const NEWS_CACHE_KEY = "newsApiCacheV2";
+const NEWS_CATEGORIES = ["technology", "health", "sports", "business", "entertainment", "environment"];
+
+function renderHomeTab() {
+    // Render the hero section placeholder
+    $("#home").html(`
+        <div id="hero-article"></div>
+        <div class="mb-4">
+            <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-category="all" type="button" role="tab">All</button>
+                </li>
+                ${availableTags.map(tag => `
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
+                    </li>
+                `).join("")}
+            </ul>
+        </div>
+        <div class="row" id="articles-list"></div>`);
+    // Fetch and render hero + articles
+    renderArticlesWithHero("all");
+}
+
+function renderArticlesWithHero(category) {
+    // Try cache first
+    let articles = getCachedArticles();
+    if (articles) {
+        renderHeroAndArticles(filterArticlesByCategory(articles, category));
+        return;
+    }
+    fetchAllArticlesOncePerDay().then(allArticles => {
+        renderHeroAndArticles(filterArticlesByCategory(allArticles, category));
+    }).catch(() => {
+        showError("Failed to fetch articles. Please try again later.");
+    });
+}
+
+function renderHeroAndArticles(articles) {
+    if (!articles || articles.length === 0) {
+        $("#hero-article").html("");
+        renderExternalArticles([]);
+        return;
+    }
+    // Show the first article as hero
+    renderHeroArticle(articles[0]);
+    // Render the rest as cards
+    renderExternalArticles(articles.slice(1));
+}
+
+function renderHeroArticle(article) {
+    if (!article) {
+        $("#hero-article").html("");
+        return;
+    }
+    const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
+    $("#hero-article").html(`
+        <div class="card mb-4 shadow-lg border-0 overflow-hidden">
+            <div class="row g-0 align-items-stretch flex-md-row flex-column-reverse">
+                <div class="col-md-7 d-flex flex-column justify-content-center p-4">
+                    <div class="mb-2">
+                        <span class="badge bg-${tag.color} me-2">${tag.name}</span>
+                        <span class="text-muted small">${formatDate(article.publishedAt)}</span>
+                    </div>
+                    <h2 class="card-title display-6 fw-bold mb-3">${article.title}</h2>
+                    <p class="card-text lead mb-4">${article.preview}</p>
+                    <div>
+                        <a href="${article.url}" target="_blank" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Read Full Article
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-5 bg-dark d-flex align-items-center justify-content-center" style="min-height:260px;">
+                    <img src="${article.imageUrl}" class="img-fluid w-100 h-100 object-fit-cover" alt="${article.title}" style="max-height:340px; object-fit:cover;">
+                </div>
+            </div>
+        </div>
+    `);
+}
+
+function renderArticles(category) {
+    fetchArticlesByCategory(category);
+}
+
+function getCachedArticles() {
+    const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
+    if (cacheRaw) {
+        try {
+            const cache = JSON.parse(cacheRaw);
+            if (cache.articles && isToday(cache.date)) {
+                return cache.articles;
+            }
+        } catch (e) { /* ignore */ }
+    }
+    return null;
+}
+
+async function fetchAllArticlesOncePerDay() {
+    // Check cache
+    const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
+    if (cacheRaw) {
+        try {
+            const cache = JSON.parse(cacheRaw);
+            if (cache.articles && isToday(cache.date)) {
+                return cache.articles;
+            }
+        } catch (e) { /* ignore */ }
+    }
+    // Fetch all categories
+    let allArticles = [];
+    for (const cat of NEWS_CATEGORIES) {
+        let url = `https://newsapi.org/v2/top-headlines?apiKey=${NEWS_API_KEY}&pageSize=12&language=en&country=us`;
+        const apiCategory = categoryMapping[cat];
+        if (apiCategory) url += `&category=${apiCategory}`;
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            const response = await $.ajax({ url, method: "GET" });
+            if (response.status === "ok" && response.articles) {
+                const articles = response.articles
+                    .filter(article => article.title && article.description && article.urlToImage)
+                    .map((article, index) => ({
+                        id: `api_${cat}_${Date.now()}_${index}`,
+                        title: article.title,
+                        content: article.content || article.description,
+                        preview: article.description,
+                        category: cat,
+                        publishedAt: article.publishedAt,
+                        imageUrl: article.urlToImage,
+                        url: article.url,
+                        source: article.source.name
+                    }));
+                allArticles = allArticles.concat(articles);
+            }
+        } catch (e) {
+            // Optionally handle per-category error
+        }
+    }
+    // Save to cache
+    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({ date: new Date().toISOString(), articles: allArticles }));
+    return allArticles;
+}
+
+// Replace fetchArticlesByCategory to use cache
+function fetchArticlesByCategory(category) {
+    const $list = $("#articles-list");
+    $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+    currentCategory = category;
+    // Update category pills highlighting
+    $('#category-pills .nav-link').removeClass('active');
+    $(`#category-pills .nav-link[data-category="${category}"]`).addClass('active');
+
+    // Try cache first
+    let articles = getCachedArticles();
+    if (articles) {
+        renderHeroAndArticles(filterArticlesByCategory(articles, category));
+        return;
+    }
+    // If not cached, fetch and then render
+    fetchAllArticlesOncePerDay().then(allArticles => {
+        renderHeroAndArticles(filterArticlesByCategory(allArticles, category));
+    }).catch(() => {
+        showError("Failed to fetch articles. Please try again later.");
+    });
+}
+
+function filterArticlesByCategory(articles, category) {
+    if (category === "all") return articles;
+    return articles.filter(a => a.category === category);
+}
+
+function renderExternalArticles(articles) {
+    const $list = $("#articles-list");
+    $list.empty();
+
+    if (!articles || articles.length === 0) {
+        $list.html('<div class="col-12"><div class="alert alert-warning text-center">No articles found for this category.</div></div>');
+        return;
+    }
+
+    articles.forEach(article => {
+        const isSaved = savedArticles.includes(article.id);
+        const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
+
+        $list.append(`
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm rounded-4 h-100 border-0 overflow-hidden">
+                    <div class="position-relative">
+                        <img src="${article.imageUrl}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
+                        <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
+                            <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
+                            <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
+                        </div>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-2">${article.title}</h5>
+                        <p class="card-text text-muted flex-grow-1">${article.preview}</p>
+                        <div class="mb-2 text-end small text-secondary">Source: ${article.source}</div>
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            <a href="${article.url}" target="_blank" class="btn btn-primary btn-sm flex-fill">
+                                <i class="fas fa-external-link-alt me-1"></i>Read More
+                            </a>
+                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn flex-fill" data-id="${article.id}">
+                                <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
+                            </button>
+                            <button class="btn btn-outline-info btn-sm share-article-btn flex-fill" data-id="${article.id}">
+                                <i class="fas fa-share me-1"></i>Share
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm report-article-btn flex-fill" data-id="${article.id}">
+                                <i class="fas fa-flag me-1"></i>Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
+}
+
+function isToday(dateString) {
+    const today = new Date();
+    const date = new Date(dateString);
+    return today.toDateString() === date.toDateString();
+}
+
+function showError(message) {
+    const $list = $("#articles-list");
+    $list.html(`
+        <div class="col-12">
+            <div class="alert alert-danger text-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${message}
+            </div>
+        </div>
+    `);
+}

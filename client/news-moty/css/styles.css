@@ -329,3 +329,10 @@ body {
   min-width: 300px;
   margin-bottom: 10px;
 }
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+  background-color: transparent !important;
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: none !important;
+}

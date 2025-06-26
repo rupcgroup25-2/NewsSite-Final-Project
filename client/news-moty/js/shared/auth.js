@@ -33,7 +33,7 @@ $('#loginForm').submit(function (e) {
         email: username,
         password: password,
         active: true,
-        blockSharing: true
+        blockSharing: false
     };
 
     ajaxCall(
@@ -60,6 +60,7 @@ $('#loginForm').submit(function (e) {
 
 $('#registerForm').submit(function (e) {
     e.preventDefault();
+    if (!checkValidation()) return;
 
     const name = $('#registerName').val();
     const email = $('#registerEmail').val();
@@ -94,4 +95,46 @@ $('#registerForm').submit(function (e) {
         }
     );
 });
+
+function checkValidation() {
+    const nameInput = $("#registerName");
+    const emailInput = $("#registerEmail");
+    const passInput = $("#registerPassword");
+
+    const name = nameInput.val().trim();
+    const email = emailInput.val().trim();
+    const password = passInput.val();
+
+    let valid = true;
+
+    // Validate name
+    if (name.length < 2 || !/^[A-Za-z]+$/.test(name)) {
+        nameInput[0].setCustomValidity("Name must be at least 2 characters and contain only English letters.");
+        nameInput[0].reportValidity();
+        valid = false;
+    } else {
+        nameInput[0].setCustomValidity(""); // clear
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        emailInput[0].setCustomValidity("Please enter a valid email address.");
+        emailInput[0].reportValidity();
+        valid = false;
+    } else {
+        emailInput[0].setCustomValidity("");
+    }
+
+    // Validate password
+    if (password.length < 8 || !/\d/.test(password) || !/[A-Z]/.test(password)) {
+        passInput[0].setCustomValidity("Password must be at least 8 characters long, with at least one number and one uppercase letter.");
+        passInput[0].reportValidity();
+        valid = false;
+    } else {
+        passInput[0].setCustomValidity("");
+    }
+
+    return valid;
+}
 

@@ -1,29 +1,4 @@
-const sampleArticles = [
-    {
-        id: "1",
-        title: "Revolutionary AI Technology Transforms Healthcare",
-        content:
-            "Artificial Intelligence is making unprecedented advances in healthcare, with new diagnostic tools showing remarkable accuracy in detecting diseases early. This breakthrough technology promises to revolutionize patient care and medical outcomes worldwide.",
-        preview: "AI technology is revolutionizing healthcare with new diagnostic tools showing remarkable accuracy...",
-        category: "technology",
-        publishedAt: "2024-01-15",
-        imageUrl: "public/placeholder.svg",
-    },
-    {
-        id: "2",
-        title: "Global Climate Summit Reaches Historic Agreement",
-        content:
-            "World leaders have reached a groundbreaking agreement on climate action, committing to ambitious targets for carbon reduction and renewable energy adoption. The summit marks a turning point in global environmental policy.",
-        preview:
-            "World leaders reach groundbreaking agreement on climate action with ambitious carbon reduction targets...",
-        category: "environment",
-        publishedAt: "2024-01-14",
-        imageUrl: "public/placeholder.svg",
-    },
-    // ... more articles as needed
-];
-
-const availableTags = [
+availableTags = [
     { id: "technology", name: "Technology", color: "primary" },
     { id: "health", name: "Health", color: "success" },
     { id: "sports", name: "Sports", color: "warning" },
@@ -42,19 +17,7 @@ const categoryMapping = {
     environment: "science", // NewsAPI does not have 'environment', use 'science' as closest
 };
 
-currentUser = [];
-let savedArticles = [];
-let sharedArticles = [];
-let userTags = [];
-let users = [
-    { id: "1", name: "John Doe", email: "john@example.com", isBlocked: false, canShare: true },
-    { id: "2", name: "Jane Smith", email: "jane@example.com", isBlocked: true, canShare: false },
-    { id: "3", name: "Bob Johnson", email: "bob@example.com", isBlocked: false, canShare: true },
-];
 
-// --- Feature State ---
-let articleComments = {}; // { articleId: [ {user, text, date} ] }
-let articleReports = []; // { articleId, reason, comment, reporter, date }
 
 function formatDate(date) {
     return new Date(date).toLocaleDateString("en-US", {
@@ -463,69 +426,105 @@ $(document).ready(function () {
     // TODO: Add login/register modal logic and other tab logic
 });
 
-// Bootstrap modals for login/register (to be included in index.html)
+// fetch articles to home page
 
 let fetchedArticles = [];
 let currentCategory = "all";
 
 const NEWS_API_KEY = "7c45000aa11241f2bed13189e946fb47";
+const NEWS_CACHE_KEY = "newsApiCacheV2";
+const NEWS_CATEGORIES = ["technology", "health", "sports", "business", "entertainment", "environment"];
 
-function fetchArticlesByCategory(category) {
-    // Show loading spinner
-    const $list = $("#articles-list");
-    $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+function isToday(dateString) {
+    const today = new Date();
+    const date = new Date(dateString);
+    return today.toDateString() === date.toDateString();
+}
 
-    currentCategory = category;
-
-    // Update category button styles
-    $('[data-category]').removeClass('btn-secondary').addClass('btn-outline-secondary');
-    $(`[data-category="${category}"]`).removeClass('btn-outline-secondary').addClass('btn-secondary');
-
-    let url = `https://newsapi.org/v2/top-headlines?apiKey=${NEWS_API_KEY}&pageSize=12&language=en&country=us`;
-
-    // If not "all", add category param
-    if (category && category !== "all") {
-        const apiCategory = categoryMapping[category];
-        if (apiCategory) {
-            url += `&category=${apiCategory}`;
-        }
+async function fetchAllArticlesOncePerDay() {
+    // Check cache
+    const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
+    if (cacheRaw) {
+        try {
+            const cache = JSON.parse(cacheRaw);
+            if (cache.articles && isToday(cache.date)) {
+                return cache.articles;
+            }
+        } catch (e) { /* ignore */ }
     }
-
-    $.ajax({
-        url: url,
-        method: "GET",
-        success: function (response) {
+    // Fetch all categories
+    let allArticles = [];
+    for (const cat of NEWS_CATEGORIES) {
+        let url = `https://newsapi.org/v2/top-headlines?apiKey=${NEWS_API_KEY}&pageSize=12&language=en&country=us`;
+        const apiCategory = categoryMapping[cat];
+        if (apiCategory) url += `&category=${apiCategory}`;
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            const response = await $.ajax({ url, method: "GET" });
             if (response.status === "ok" && response.articles) {
-                fetchedArticles = response.articles
+                const articles = response.articles
                     .filter(article => article.title && article.description && article.urlToImage)
                     .map((article, index) => ({
-                        id: `api_${Date.now()}_${index}`,
+                        id: `api_${cat}_${Date.now()}_${index}`,
                         title: article.title,
                         content: article.content || article.description,
                         preview: article.description,
-                        category: category === "all" ? "general" : category,
+                        category: cat,
                         publishedAt: article.publishedAt,
                         imageUrl: article.urlToImage,
                         url: article.url,
                         source: article.source.name
                     }));
-
-                renderExternalArticles(fetchedArticles);
-            } else {
-                showError("No articles found for this category.");
+                allArticles = allArticles.concat(articles);
             }
-        },
-        error: function (xhr, status, error) {
-            console.error("News API error:", error);
-            if (xhr.status === 429) {
-                showError("API rate limit exceeded. Please try again later.");
-            } else if (xhr.status === 401) {
-                showError("API key is invalid. Please check your API key.");
-            } else {
-                showError("Failed to fetch articles. Please try again later.");
-            }
+        } catch (e) {
+            // Optionally handle per-category error
         }
+    }
+    // Save to cache
+    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({ date: new Date().toISOString(), articles: allArticles }));
+    return allArticles;
+}
+
+function getCachedArticles() {
+    const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
+    if (cacheRaw) {
+        try {
+            const cache = JSON.parse(cacheRaw);
+            if (cache.articles && isToday(cache.date)) {
+                return cache.articles;
+            }
+        } catch (e) { /* ignore */ }
+    }
+    return null;
+}
+
+// Replace fetchArticlesByCategory to use cache
+function fetchArticlesByCategory(category) {
+    const $list = $("#articles-list");
+    $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+    currentCategory = category;
+    // Update category button styles
+    $('[data-category]').removeClass('btn-secondary').addClass('btn-outline-secondary');
+    $(`[data-category="${category}"]`).removeClass('btn-outline-secondary').addClass('btn-secondary');
+
+    // Try cache first
+    let articles = getCachedArticles();
+    if (articles) {
+        renderExternalArticles(filterArticlesByCategory(articles, category));
+        return;
+    }
+    // If not cached, fetch and then render
+    fetchAllArticlesOncePerDay().then(allArticles => {
+        renderExternalArticles(filterArticlesByCategory(allArticles, category));
+    }).catch(() => {
+        showError("Failed to fetch articles. Please try again later.");
     });
+}
+
+function filterArticlesByCategory(articles, category) {
+    if (category === "all") return articles;
+    return articles.filter(a => a.category === category);
 }
 
 function renderExternalArticles(articles) {

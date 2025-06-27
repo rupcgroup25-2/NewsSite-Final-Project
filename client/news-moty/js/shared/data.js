@@ -46,6 +46,15 @@ const sampleArticles = [
     }
 ];
 
+availableTags = [
+    { id: "technology", name: "Technology", color: "primary" },
+    { id: "health", name: "Health", color: "success" },
+    { id: "sports", name: "Sports", color: "warning" },
+    { id: "business", name: "Business", color: "info" },
+    { id: "entertainment", name: "Entertainment", color: "danger" },
+    { id: "environment", name: "Environment", color: "secondary" },
+];
+
 let currentUser = JSON.parse(localStorage.getItem('user'));
 let savedArticles = [];
 let sharedArticles = [];

@@ -64,22 +64,13 @@ function renderArticles(category) {
 $(document).ready(function () {
     renderUserActions();
     renderHomeTab();
-}) 
+})
 
 // Category filter
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
     renderArticles(cat);
 });
-
-availableTags = [
-    { id: "technology", name: "Technology", color: "primary" },
-    { id: "health", name: "Health", color: "success" },
-    { id: "sports", name: "Sports", color: "warning" },
-    { id: "business", name: "Business", color: "info" },
-    { id: "entertainment", name: "Entertainment", color: "danger" },
-    { id: "environment", name: "Environment", color: "secondary" },
-];
 
 // Add NewsAPI category mapping
 const categoryMapping = {
@@ -298,7 +289,7 @@ function renderExternalArticles(articles) {
                         <div class="mb-2 text-end small text-secondary">Source: ${article.source}</div>
                         <div class="d-flex flex-wrap gap-2 mt-auto">
                             <a href="${article.url}" target="_blank" class="btn btn-primary btn-sm flex-fill">
-                                <i class="fas fa-external-link-alt me-1"></i>Read More
+                                <i class="fas fa-external-link-alt me-1"></i>View source
                             </a>
                             <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}

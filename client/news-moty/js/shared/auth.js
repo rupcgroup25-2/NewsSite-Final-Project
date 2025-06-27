@@ -105,7 +105,6 @@ $(document).on('submit', '#loginForm', function (e) {
         blockSharing: false
     };
 
-    console.log(requestData);
 
     ajaxCall(
         "POST",

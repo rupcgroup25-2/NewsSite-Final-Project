@@ -198,16 +198,13 @@ async function fetchAllArticlesOncePerDay() {
     // Fetch all categories
     let allArticles = [];
     for (const cat of NEWS_CATEGORIES) {
-        console.log("hiii");
         let url = `https://newsapi.org/v2/top-headlines?apiKey=${NEWS_API_KEY}&pageSize=12&language=en&country=us`;
         const apiCategory = categoryMapping[cat];
-        console.log(apiCategory);
         if (apiCategory) url += `&category=${apiCategory}`;
         try {
             // eslint-disable-next-line no-await-in-loop
             const response = await $.ajax({ url, method: "GET" });
             if (response.status === "ok" && response.articles) {
-                console.log("hiii");
                 const articles = response.articles
                     .filter(article => article.title && article.description && article.urlToImage)
                     .map((article, index) => ({

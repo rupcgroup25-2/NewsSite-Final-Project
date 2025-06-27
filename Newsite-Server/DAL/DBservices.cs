@@ -497,8 +497,8 @@ namespace Newsite_Server.DAL
 
             try
             {
-                int numEffected = cmd.ExecuteNonQuery(); // execute the command
-                return numEffected;
+                int newId = Convert.ToInt32(cmd.ExecuteScalar());
+                return newId; ;
             }
             catch (Exception ex)
             {
@@ -537,7 +537,7 @@ namespace Newsite_Server.DAL
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@Url", url);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetArticleByUrl", con, paramDic);
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetArticleByUrlFinal", con, paramDic);
 
             try
             {

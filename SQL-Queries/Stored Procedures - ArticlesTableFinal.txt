@@ -22,6 +22,8 @@ AS
 BEGIN
     INSERT INTO ArticlesTableFinal (Title, Description, Url, UrlToImage, PublishedAt, SourceName, Author)
     VALUES (@Title, @Description, @Url, @UrlToImage, @PublishedAt, @SourceName, @Author)
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS NewArticleId
+
 END
 ----------------------------------------------------------------------------------------
 
@@ -45,7 +47,6 @@ END
 ---------------------------------------------------------------------------------------------
 USE [igroup102_test2]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -72,7 +73,6 @@ END
 ----------------------------------------------------------------------------------------------
 USE [igroup102_test2]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -100,7 +100,6 @@ END
 ----------------------------------------------------------------------------------------------
 USE [igroup102_test2]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_GetArticleByUrlFinal]    Script Date: 20/06/2025 16:11:15 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

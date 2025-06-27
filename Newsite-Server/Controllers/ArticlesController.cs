@@ -60,11 +60,10 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("SaveArticle")]
-        public IActionResult SaveArticle(int userId, int articleId)
+        public IActionResult SaveArticle(int userId, [FromBody] Article article)
         {
-            Article article = new Article();
 
-            int result = article.SaveArticleForUser(userId, articleId);
+            int result = article.SaveArticleForUser(userId, article.Id);
 
             if (result > 0)
                 return Ok("Article saved successfully");
@@ -73,11 +72,10 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("ShareArticle")]
-        public IActionResult ShareArticle(int userId, int articleId,string comment)
+        public IActionResult ShareArticle(int userId, [FromBody] Article article, string comment)
         {
-            Article article = new Article();
 
-            int result = article.ShareArticleWithComment(userId, articleId,comment);
+            int result = article.ShareArticleWithComment(userId, article.Id,comment);
 
             if (result > 0)
                 return Ok("Article shared successfully");

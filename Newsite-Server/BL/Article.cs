@@ -50,7 +50,11 @@ namespace Newsite_Server.BL
                 return 0; // exists
             }
 
-            return dbs.InsertArticle(this);
+            int newId = dbs.InsertArticle(this);
+            if (newId > 0)
+                this.Id = newId; // new Id return from the db
+
+            return newId;
         }
 
         public int AssignArticleTag(int articleId, int tagId) //Assign tag to article
@@ -60,12 +64,18 @@ namespace Newsite_Server.BL
 
         public int SaveArticleForUser(int userId, int articleId)
         {
-            return dbs.SaveArticleForUser(userId, articleId); 
+            // check if already exist or just inserted and got an id
+            int insertResult = InsertArticleIfNotExists();
+
+            return dbs.SaveArticleForUser(userId, this.Id);
         }
 
         public int ShareArticleWithComment(int userId, int articleId, string comment)
         {
-           return dbs.ShareArticleForUser(userId, articleId, comment);
+            int insertResult = InsertArticleIfNotExists();
+
+            //  SharedArticles insert to the table
+            return dbs.ShareArticleForUser(userId, this.Id, comment);
         }
 
         public List<Article> GetSavedArticlesForUser(int userId)

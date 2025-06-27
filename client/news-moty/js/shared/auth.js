@@ -1,4 +1,71 @@
-﻿// Render user-related actions (Login/Register buttons or greeting and Logout button)
+﻿//create register and login modals
+function createModals() {
+    const modalsHtml = `
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="loginModalLabel">Login to News Hub</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                    <div id="loginMessage" class="alert mt-3 d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="registerModalLabel">Create Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label for="registerName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="registerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="registerEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="registerPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                    </form>
+                    <div id="registerError" class="alert alert-danger mt-3 d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    $('body').append(modalsHtml);
+}
+
+$(document).ready(function () {
+    createModals();
+});
+
+// Render user-related actions (Login/Register buttons or greeting and Logout button)
 function renderUserActions() {
     const $actions = $("#user-actions");
     $actions.empty();
@@ -23,7 +90,7 @@ function hideMessage(selector) {
 }
 
 // Handle Login form submission - AJAX
-$('#loginForm').submit(function (e) {
+$(document).on('submit', '#loginForm', function (e) {
     e.preventDefault();
 
     const username = $('#loginEmail').val();
@@ -37,6 +104,8 @@ $('#loginForm').submit(function (e) {
         active: true,
         blockSharing: false
     };
+
+    console.log(requestData);
 
     ajaxCall(
         "POST",
@@ -67,7 +136,7 @@ $('#loginForm').submit(function (e) {
 
 // Handle Register form submission - AJAX
 
-$('#registerForm').submit(function (e) {
+$(document).on('submit', '#registerForm', function (e) {
     e.preventDefault();
     if (!checkValidation()) return;
 
@@ -146,4 +215,13 @@ function checkValidation() {
 
     return valid;
 }
+
+// Logout
+$(document).on('click', '#logout-btn', function () {
+    console.log("Logout clicked");
+    currentUser = null;
+    localStorage.removeItem('user');
+    renderUserActions();
+    renderTabs();
+});
 

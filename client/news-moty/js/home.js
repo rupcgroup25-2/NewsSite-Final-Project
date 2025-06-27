@@ -1,13 +1,3 @@
-// Add NewsAPI category mapping
-const categoryMapping = {
-    technology: "technology",
-    health: "health",
-    sports: "sports",
-    business: "business",
-    entertainment: "entertainment",
-    environment: "science", // NewsAPI does not have 'environment', use 'science' as closest
-};
-
 function formatDate(date) {
     return new Date(date).toLocaleDateString("en-US", {
         year: "numeric",
@@ -24,7 +14,6 @@ function renderTabs() {
     renderInterestsTab();
     renderAdminTab();
 }
-
 function renderSavedTab() {
     const $tab = $('#saved');
     if (!currentUser) {
@@ -138,54 +127,6 @@ function renderAdminTab() {
     $tab.html(html);
 }
 
-// Login/Register logic
-$(document).on('submit', '#loginForm', function (e) {
-    e.preventDefault();
-    const email = $('#loginEmail').val();
-    const password = $('#loginPassword').val();
-    if (email && password) {
-        // Simple mock login
-        let user = users.find(u => u.email === email);
-        if (!user) {
-            user = { id: String(users.length + 1), name: email.split('@')[0], email, isBlocked: false, canShare: true };
-            users.push(user);
-        }
-        currentUser = user;
-        $('#loginModal').modal('hide');
-        renderUserActions();
-        renderTabs();
-        $('#loginError').addClass('d-none');
-    } else {
-        $('#loginError').removeClass('d-none').text('Please enter email and password.');
-    }
-});
-
-$(document).on('submit', '#registerForm', function (e) {
-    e.preventDefault();
-    const name = $('#registerName').val();
-    const email = $('#registerEmail').val();
-    const password = $('#registerPassword').val();
-    const confirm = $('#registerConfirmPassword').val();
-    if (password !== confirm) {
-        $('#registerError').removeClass('d-none').text('Passwords do not match.');
-        return;
-    }
-    if (name && email && password) {
-        let user = users.find(u => u.email === email);
-        if (!user) {
-            user = { id: String(users.length + 1), name, email, isBlocked: false, canShare: true };
-            users.push(user);
-        }
-        currentUser = user;
-        $('#registerModal').modal('hide');
-        renderUserActions();
-        renderTabs();
-        $('#registerError').addClass('d-none');
-    } else {
-        $('#registerError').removeClass('d-none').text('Please fill all fields.');
-    }
-});
-
 // Save/Unsave articles
 $(document).on('click', '.unsave-btn', function () {
     const id = $(this).data('id');
@@ -228,15 +169,6 @@ $(document).ready(function () {
     $(document).on('click', '[data-category]', function () {
         const cat = $(this).data('category');
         renderArticles(cat);
-    });
-
-    // Logout
-    $(document).on('click', '#logout-btn', function () {
-        console.log("Logout clicked");
-        currentUser = null;
-        localStorage.removeItem('user');
-        renderUserActions();
-        renderTabs();
     });
 
     // --- Save/Unsave Article ---

@@ -25,7 +25,7 @@ namespace Newsite_Server.BL
         }
         public int GetReportsCount()
         {
-            return dbs.GetReportsCount();
+            return dbs.GetCountReports();
         }
     }
 }

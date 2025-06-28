@@ -195,91 +195,7 @@ namespace Newsite_Server.DAL
                 }
             }
         }
-        //--------------------------------------------------------------------------------------------------
-        // This method block the user by admin
-        //--------------------------------------------------------------------------------------------------
-        public int ToggleBlockSharing(int userId)
-        {
-            SqlConnection con = null;
-            SqlCommand cmd;
-
-            try
-            {
-                con = connect("myProjDB"); // יצירת החיבור
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                return 0;
-            }
-
-            Dictionary<string, object> paramDic = new Dictionary<string, object>();
-            paramDic.Add("@UserId", userId);
-
-
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_ToggleBlockSharingFinal", con, paramDic); 
-
-            try
-            {
-                int numEffected = cmd.ExecuteNonQuery(); 
-                return numEffected;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close(); 
-                }
-            }
-        }
-        //--------------------------------------------------------------------------------------------------
-        // This method deactivate the user by admin
-        //--------------------------------------------------------------------------------------------------
-        public int ToggleDeactivateUser(int userId)
-        {
-            SqlConnection con = null;
-            SqlCommand cmd;
-
-            try
-            {
-                con = connect("myProjDB"); // יצירת החיבור
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                return 0;
-            }
-
-            Dictionary<string, object> paramDic = new Dictionary<string, object>();
-            paramDic.Add("@UserId", userId);
-
-
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_ToggleDeactivateUserFinal", con, paramDic);
-
-            try
-            {
-                int numEffected = cmd.ExecuteNonQuery();
-                return numEffected;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
-            }
-        }
-
+   
         //===============Tag===============================================================================
 
         //--------------------------------------------------------------------------------------------------
@@ -778,6 +694,7 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // This method delete shared articles for user
         //--------------------------------------------------------------------------------------------------
+
         public int DeleteSharedArticle(int userId, int articleId)
         {
             SqlConnection con = connect("myProjDB");
@@ -801,9 +718,7 @@ namespace Newsite_Server.DAL
             }
             finally { con.Close(); }
         }
-        //--------------------------------------------------------------------------------------------------
-        // This method remove tags from article 
-        //--------------------------------------------------------------------------------------------------
+        
 
         //===============Report===========================================================================
 
@@ -848,7 +763,9 @@ namespace Newsite_Server.DAL
                 con.Close();
             }
         }
-
+        //--------------------------------------------------------------------------------------------------
+        // This method remove tags from article 
+        //--------------------------------------------------------------------------------------------------
         public int RemoveTagFromArticle(int articleId, int tagId)
         {
             SqlConnection con = connect("myProjDB");
@@ -871,6 +788,287 @@ namespace Newsite_Server.DAL
                 return 0;
             }
             finally { con.Close(); }
+        }
+
+        //===============Admin===========================================================================
+
+        //--------------------------------------------------------------------------------------------------
+        // This method block the user by admin
+        //--------------------------------------------------------------------------------------------------
+        public int ToggleBlockSharing(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת החיבור
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_ToggleBlockSharingFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method deactivate the user by admin
+        //--------------------------------------------------------------------------------------------------
+        public int ToggleDeactivateUser(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת החיבור
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_ToggleDeactivateUserFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method get total number of active users the 
+        //--------------------------------------------------------------------------------------------------
+        public int GetCountOfActiveUsers()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetActiveUsersCountFinal", con, paramDic);
+            int count = 0;
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (reader.Read())
+                {
+                    count = Convert.ToInt32(reader["CountActiveUsers"]);
+                }
+                return count;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method get total number of saved articles 
+        //--------------------------------------------------------------------------------------------------
+        public int GetSavedArticlesCount()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSavedArticlesCountFinal", con, null);
+            int count = 0;
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (reader.Read())
+                {
+                    count = Convert.ToInt32(reader["Count"]);
+                }
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Error: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method get total number of shared articles 
+        //--------------------------------------------------------------------------------------------------
+        public int GetSharedArticlesCount()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticlesCount", con, null);
+            int count = 0;
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (reader.Read())
+                {
+                    count = Convert.ToInt32(reader["Count"]);
+                }
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Error: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method get total number of blocked users 
+        //--------------------------------------------------------------------------------------------------
+        public int GetCountBlockedUsers()
+        {
+            SqlConnection con = connect("myProjDB");
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_CountBlockedUsersFinal", con, null);
+            int count = 0;
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (reader.Read())
+                {
+                    count = Convert.ToInt32(reader["Count"]);
+                }
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("CountBlockedUsers error: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method get total number of blocked users 
+        //--------------------------------------------------------------------------------------------------
+        public int GetCountReports()
+        {
+            SqlConnection con = connect("myProjDB");
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_GetReportsCountFinal", con, null);
+            int count = 0;
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (reader.Read())
+                {
+                    count = Convert.ToInt32(reader["CountReports"]);
+                }
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("CountBlockedUsers error: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
         }
         private SqlCommand CreateCommandWithStoredProcedureGeneral(String spName, SqlConnection con, Dictionary<string, object> paramDic)
         {

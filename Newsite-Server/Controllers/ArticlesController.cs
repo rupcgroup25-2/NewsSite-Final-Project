@@ -72,10 +72,9 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("ShareArticle")]
-        public IActionResult ShareArticle(int userId, [FromBody] Article article, string comment)
+        public IActionResult ShareArticle(int userId, [FromBody] Article article)
         {
-
-            int result = article.ShareArticleWithComment(userId, article.Id,comment);
+            int result = article.ShareArticleWithComment(userId, article.Id, article.Comment);
 
             if (result > 0)
                 return Ok("Article shared successfully");

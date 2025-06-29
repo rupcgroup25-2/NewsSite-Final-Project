@@ -325,6 +325,7 @@ function showError(message) {
     `);
 }
 
+//Saving the clicked article to the user
 $(document).on('click', '.save-article-btn', function () {
     console.log("enter");
     if (!currentUser) {
@@ -336,15 +337,15 @@ $(document).on('click', '.save-article-btn', function () {
     console.log("Clicked save for article ID:", articleId);
     const article = getArticleById(articleId);
     const articleToSend = {
-        comment: "" ,                            // אם צריך לשלוח, תן ריק או משהו מתאים
-        id: 0,                           // כנראה מספר, אם לא יש להמיר
+        comment: "",
+        id: 0,
         title: article.title || "",
-        description: article.preview || "",      // אולי preview תואם ל־description?
+        description: article.preview || "",
         url: article.url || "",
         urlToImage: article.imageUrl || "",
         publishedAt: article.publishedAt || new Date().toISOString(),
         sourceName: article.source || "",
-        author: article.author || ""     // אם אין לך author - תן מחרוזת ריקה
+        author: article.author || ""
     };
     console.log("Article found:", articleToSend);
     if (!articleToSend) {
@@ -357,7 +358,7 @@ $(document).on('click', '.save-article-btn', function () {
         serverUrl + `Articles/SaveArticle?userId=${currentUser.id}`,
         JSON.stringify(articleToSend),
         function (responseText) {
-            alert(responseText); // יציג "Article saved successfully" או "Article already saved"
+            alert(responseText);
             savedArticles.push(article.id);
             renderArticles(currentCategory);
         },
@@ -370,3 +371,54 @@ $(document).on('click', '.save-article-btn', function () {
 function getArticleById(id) {
     return fetchedArticles.find(a => a.id === id);
 }
+
+//to save the article id on the other share button
+$(document).on('click', '.share-article-btn', function () {
+    const articleId = $(this).data("id");
+    $('#btnShareArticle').data("id", articleId);
+    $('#shareModal').modal('show');
+});
+
+//Sharing the clicked article to the user
+
+$(document).on('click', '#btnShareArticle', function () {
+    if (!currentUser) {
+        alert("Please login to share articles.");
+        return;
+    }
+
+    const articleId = $(this).data("id");
+    const comment = $("#shareComment").val()?.trim() || ""; 
+    const article = getArticleById(articleId);
+
+    if (!article) {
+        alert("Article not found.");
+        return;
+    }
+
+    const articleToSend = {
+        comment: comment,
+        id: 0, 
+        title: article.title || "",
+        description: article.preview || "",
+        url: article.url || "",
+        urlToImage: article.imageUrl || "",
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sourceName: article.source || "",
+        author: article.author || ""
+    };
+
+    ajaxCall(
+        "POST",
+        serverUrl + `Articles/ShareArticle?userId=${currentUser.id}`,
+        JSON.stringify(articleToSend),
+        function success(responseText) {
+            alert(responseText);
+            sharedArticles.push(article.id);
+            renderArticles(currentCategory);
+        },
+        function error(xhr) {
+            alert(xhr.responseText || "Failed to share article.");
+        }
+    );
+});

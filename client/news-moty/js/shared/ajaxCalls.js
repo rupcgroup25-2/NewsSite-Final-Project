@@ -5,7 +5,7 @@
         data: data,
         cache: false,
         contentType: "application/json",
-        dataType: "json",
+        //dataType: "json",
         success: successCB,
         error: errorCB
     });

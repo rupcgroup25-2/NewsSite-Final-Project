@@ -1,5 +1,4 @@
-﻿
-function renderSavedTab() {
+﻿function renderSavedTab() {
     const $tab = $('#saved');
 
     if (!currentUser) {
@@ -12,40 +11,47 @@ function renderSavedTab() {
         return;
     }
 
-    let html = '<div class="row">';
+    let html = '<div class="container px-2 px-md-4">';
     savedArticles.forEach(article => {
-        // למצוא תגית למאמר לפי קטגוריה (אם יש)
         const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
 
         html += `
-        <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
-          <div class="card shadow-sm rounded-4 h-100 border-0 overflow-hidden">
-            <div class="position-relative">
-              <img src="${article.urlToImage}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
-              <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
-                <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
-                <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
-              </div>
+        <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-secondary-subtle">
+            <div class="row g-0">
+                <div class="col-md-5">
+                    <div style="aspect-ratio: 16 / 9; overflow: hidden;">
+                        <img src="${article.urlToImage}" alt="${article.title}" class="img-fluid w-100 h-100 object-fit-cover">
+                    </div>
+                </div>
+                <div class="col-md-7 d-flex flex-column p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-${tag.color}">${tag.name}</span>
+                        <span class="text-muted small">${formatDate(article.publishedAt)}</span>
+                    </div>
+
+                    <h5 class="fw-semibold mb-2">${article.title}</h5>
+                    <p class="text-muted small mb-2">${article.description || article.preview}</p>
+                    <div class="text-secondary small mb-3">Source: ${article.sourceName || article.source || ''}</div>
+
+                    <div class="mt-auto d-flex gap-2">
+                        <a href="${article.url}" target="_blank" class="btn btn-sm btn-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>View
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger unsave-btn" data-id="${article.id}">
+                            <i class="fas fa-trash-alt me-1"></i>Remove
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title mb-2">${article.title}</h5>
-              <p class="card-text text-muted flex-grow-1">${article.description || article.preview}</p>
-              <div class="mb-2 text-end small text-secondary">Source: ${article.source || ''}</div>
-              <div class="d-flex flex-wrap gap-2 mt-auto">
-                <a href="${article.url}" target="_blank" class="btn btn-primary btn-sm flex-fill">
-                  <i class="fas fa-external-link-alt me-1"></i>View
-                </a>
-                <button class="btn btn-outline-danger btn-sm flex-fill unsave-btn" data-id="${article.id}">
-                  <i class="fas fa-trash-alt me-1"></i>Remove
-                </button>
-              </div>
-            </div>
-          </div>
         </div>`;
     });
+
     html += '</div>';
     $tab.html(html);
 }
+
+
+//Load all saved articles for current user
 function loadSavedArticles(userId) {
     ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
         function (articles) {
@@ -57,6 +63,27 @@ function loadSavedArticles(userId) {
         }
     );
 }
+$(document).on('click', '.unsave-btn', function () {
+    const articleId = $(this).data('id');
+    if (!currentUser) {
+        alert("Please login to remove saved articles.");
+        return;
+    }
+
+    ajaxCall("DELETE", serverUrl + `Articles/unsave?userId=${currentUser.id}&articleId=${articleId}`, null,
+        function (data) {
+            alert(data);
+            savedArticles = savedArticles.filter(a => a.id !== articleId);
+            renderSavedTab();
+        },
+        function (xhr) {
+            alert(xhr.responseText || "Failed to remove article");
+        }
+    );
+});
+
+
+
 // Event handlers
 $(document).ready(function () {
     renderUserActions();
@@ -64,3 +91,4 @@ $(document).ready(function () {
         loadSavedArticles(currentUser.id); 
     }
 });
+

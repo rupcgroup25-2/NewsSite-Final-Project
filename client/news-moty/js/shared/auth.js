@@ -74,6 +74,7 @@ function renderUserActions() {
     } else {
         $actions.append(`<button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
                          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>`);
+
     }
 }
 

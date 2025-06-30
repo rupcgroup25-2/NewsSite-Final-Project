@@ -66,7 +66,7 @@ namespace Newsite_Server.Controllers
                 return NotFound("No reports");
         }
 
-        [HttpPut("users/{id}/block")]
+        [HttpPut("{id}/block")]
         public IActionResult ToggleBlockSharing(int id)
         {
             User u = new User();
@@ -78,7 +78,7 @@ namespace Newsite_Server.Controllers
                 return NotFound("User not found");
         }
 
-        [HttpPut("users/{id}/deactivate")]
+        [HttpPut("{id}/deactivate")]
         public IActionResult DeactivateUser(int id)
         {
             User u = new User();
@@ -89,6 +89,13 @@ namespace Newsite_Server.Controllers
                 return Ok("User deactivated successfully");
             else
                 return NotFound("User not found or already deactivated");
+        }
+
+        [HttpGet("GetAllUsers")]
+        public IEnumerable<User> Get()
+        {
+            User user = new User();
+            return user.GetAllUsers();
         }
     }
 }

@@ -10,13 +10,6 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        // GET: api/<UsersController>
-        [HttpGet]
-        public IEnumerable<User> Get()
-        {
-            User user = new User();
-            return user.GetAllUsers();
-        }   
 
         [HttpPost("Login")]
         public IActionResult Login([FromBody] User user)
@@ -24,11 +17,12 @@ namespace Newsite_Server.Controllers
             User NewUser = user.LoginUser();
             if (NewUser != null)
             {
-                string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@gmail.com" ? "Admin" : "User"); //Create Token
+                string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@newshub.com" ? "Admin" : "User"); //Create Token
 
                 return Ok(new
                 {
-                    token, NewUser.Name, NewUser.Id });
+                    token, NewUser.Name, NewUser.Id, NewUser.Email
+                });
             }
             return (Unauthorized("Invalid email or password"));
         }

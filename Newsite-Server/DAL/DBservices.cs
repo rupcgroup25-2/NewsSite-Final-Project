@@ -974,7 +974,7 @@ namespace Newsite_Server.DAL
                 return 0;
             }
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticlesCount", con, null);
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticlesCountFinal", con, null);
             int count = 0;
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
             try

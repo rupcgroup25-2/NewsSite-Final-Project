@@ -96,9 +96,6 @@ $(document).on('click', '.unshare-btn', function () {
 // Event handlers
 $(document).ready(function () {
     renderUserActions();
-    if (currentUser) {
-        loadSharedArticles(currentUser.id);
-    }
+    loadAdminDashboardData();
 });
-
 

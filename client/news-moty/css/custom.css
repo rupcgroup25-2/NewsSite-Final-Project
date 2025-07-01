@@ -34,12 +34,18 @@ footer.bg-body {
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
+#navbarNav a.nav-link.active {
+    background-color: #93beff;
+}
+
 /* Category Pills/Tabs */
 #category-pills {
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: thin;
-  padding-bottom: 0.25rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    padding-bottom: 0.25rem;
+    padding-left: 0.25rem;
+    padding-top: 0.25rem;
 }
 #category-pills .nav-link {
   border-radius: 2rem;

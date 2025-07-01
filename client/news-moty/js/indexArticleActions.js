@@ -1,11 +1,4 @@
-﻿// Unsave article
-$(document).on('click', '.unsave-btn', function () {
-    const id = $(this).data('id');
-    savedArticles = savedArticles.filter(aid => aid !== id);
-    renderSavedTab();
-});
-
-// --- Save Article ---
+﻿// --- Save Article ---
 $(document).on('click', '.save-article-btn', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');

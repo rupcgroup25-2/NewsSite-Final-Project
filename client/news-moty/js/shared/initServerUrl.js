@@ -7,7 +7,7 @@ $(document).ready(init);
 function init() {
 
     if (isDevEnv()) {
-        port = 7065; //niv's port
+        port = 7065; 
         serverUrl = `https://localhost:${port}/api/`;
     }
     else {

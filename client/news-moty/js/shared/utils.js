@@ -12,3 +12,9 @@ function getGreeting() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
 }
+
+function isToday(dateString) {
+    const today = new Date();
+    const date = new Date(dateString);
+    return today.toDateString() === date.toDateString();
+}

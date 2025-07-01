@@ -62,3 +62,21 @@ let userTags = [];
 let users = [/* ... */];
 let articleComments = {};
 let articleReports = [];
+
+const NEWS_API_KEY = "7c45000aa11241f2bed13189e946fb47";
+const NEWS_CACHE_KEY = "newsApiCacheV2";
+const NEWS_CATEGORIES = ["technology", "health", "sports", "business", "entertainment", "environment"];
+
+function getCachedArticles() {
+    const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
+    if (cacheRaw) {
+        try {
+            const cache = JSON.parse(cacheRaw);
+            if (cache.articles && isToday(cache.date)) {
+                fetchedArticles = cache.articles;
+                return cache.articles;
+            }
+        } catch (e) { /* ignore */ }
+    }
+    return null;
+}

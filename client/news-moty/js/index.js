@@ -46,7 +46,7 @@ function renderArticles(category) {
             <span class="badge bg-${tagColor}">${article.category}</span>
             <div class="mt-2 text-muted small">${formatDate(article.publishedAt)}</div>
             <div class="mt-3 d-flex gap-2">
-              <button class="btn btn-outline-primary btn-sm view-article-btn" data-id="${article.id}">View</button>
+              <a href="article.html?id=${article.id}" class="btn btn-outline-primary btn-sm" target="_blank">View</a>
               <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn" data-id="${article.id}">
                 ${isSaved ? 'Saved' : 'Save'}
               </button>
@@ -84,10 +84,6 @@ const categoryMapping = {
 
 let fetchedArticles = [];
 let currentCategory = "all";
-
-const NEWS_API_KEY = "7c45000aa11241f2bed13189e946fb47";
-const NEWS_CACHE_KEY = "newsApiCacheV2";
-const NEWS_CATEGORIES = ["technology", "health", "sports", "business", "entertainment", "environment"];
 
 function renderHomeTab() {
     // Render the hero section placeholder
@@ -168,20 +164,6 @@ function renderHeroArticle(article) {
 
 function renderArticles(category) {
     fetchArticlesByCategory(category);
-}
-
-function getCachedArticles() {
-    const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
-    if (cacheRaw) {
-        try {
-            const cache = JSON.parse(cacheRaw);
-            if (cache.articles && isToday(cache.date)) {
-                fetchedArticles = cache.articles;
-                return cache.articles;
-            }
-        } catch (e) { /* ignore */ }
-    }
-    return null;
 }
 
 async function fetchAllArticlesOncePerDay() {
@@ -287,9 +269,7 @@ function renderExternalArticles(articles) {
                         <p class="card-text text-muted flex-grow-1">${article.preview}</p>
                         <div class="mb-2 text-end small text-secondary">Source: ${article.source}</div>
                         <div class="d-flex flex-wrap gap-2 mt-auto">
-                            <a href="${article.url}" target="_blank" class="btn btn-primary btn-sm flex-fill">
-                                <i class="fas fa-external-link-alt me-1"></i>View source
-                            </a>
+                            <a href="article.html?id=${article.id}" class="btn btn-outline-primary btn-sm" target="_blank">View</a>
                             <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
                             </button>
@@ -307,11 +287,6 @@ function renderExternalArticles(articles) {
     });
 }
 
-function isToday(dateString) {
-    const today = new Date();
-    const date = new Date(dateString);
-    return today.toDateString() === date.toDateString();
-}
 
 function showError(message) {
     const $list = $("#articles-list");

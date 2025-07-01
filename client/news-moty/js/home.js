@@ -5,7 +5,8 @@ $(document).ready(function () {
     // --- View Article Modal (with comments, save/share/report) ---
     $(document).on('click', '.view-article-btn', function () {
         const id = $(this).data('id');
-        const article = sampleArticles.find(a => a.id === id);
+        var articles = getCachedArticles();
+        const article = articles.find(a => a.id === id);
         if (!article) return;
         let html = `<h3>${article.title}</h3>
       <img src="${article.imageUrl}" class="img-fluid mb-3" alt="${article.title}">

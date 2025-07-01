@@ -48,7 +48,7 @@ namespace Newsite_Server.Controllers
         public IActionResult GetBlockedUsersCount()
         {
             Admin admin = new Admin();
-            int count = admin.GetSharedArticlesCount();
+            int count = admin.GetBlockedUsersCount();
             if (count > 0)
                 return Ok($"Number of blocked users: {count}");
             else

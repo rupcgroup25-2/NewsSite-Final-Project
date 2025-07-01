@@ -102,5 +102,11 @@ namespace Newsite_Server.BL
         {
             return dbs.RemoveTagFromArticle(articleId, tagId);
         }
+
+        public List<Article> GetAllArticles()
+        {
+            return dbs.GetAllArticles();
+        }
+
     }
 }

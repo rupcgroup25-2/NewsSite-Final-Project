@@ -1,4 +1,13 @@
-﻿function renderAdminDashboard(data) {
+﻿function renderAdminDashboard({
+    users,
+    activeUsersCount,
+    savedArticlesCount,
+    sharedArticlesCount,
+    blockedUsersCount,
+    reportsCount,
+    articles = [],
+    reports = []
+}) {
     const $tab = $('#admin');
 
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
@@ -9,52 +18,61 @@
 
     $('#admin-tab-li').removeClass('d-none');
 
-    const { users = [], articles = [], reports = [] } = data;
-
     const totalUsers = users.length;
-    const totalBlocked = users.filter(u => u.isBlocked).length;
-    const totalArticles = articles.length;
-    const totalShared = articles.filter(a => a.shared).length;
+    const totalBlocked = blockedUsersCount;
+    const totalArticles = savedArticlesCount;
+    const totalShared = sharedArticlesCount;
+    const totalReports = reportsCount;
 
     let html = `
     <div class="row g-4 mb-5 text-center">
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card shadow-sm border-primary h-100">
           <div class="card-body">
-            <h5 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>Users</h5>
-            <h2 class="display-5">${totalUsers}</h2>
-            <small class="text-muted">Total Registered Users</small>
+            <h6 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>Users</h6>
+            <h3>${totalUsers}</h3>
+            <small class="text-muted">Registered</small>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card shadow-sm border-success h-100">
           <div class="card-body">
-            <h5 class="card-title text-success"><i class="bi bi-journal-text me-2"></i>Articles</h5>
-            <h2 class="display-5">${totalArticles}</h2>
-            <small class="text-muted">Total Published Articles</small>
+            <h6 class="card-title text-success"><i class="bi bi-journal-text me-2"></i>Articles</h6>
+            <h3>${totalArticles}</h3>
+            <small class="text-muted">Published</small>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card shadow-sm border-info h-100">
           <div class="card-body">
-            <h5 class="card-title text-info"><i class="bi bi-share-fill me-2"></i>Shared</h5>
-            <h2 class="display-5">${totalShared}</h2>
-            <small class="text-muted">Articles Shared by Users</small>
+            <h6 class="card-title text-info"><i class="bi bi-share-fill me-2"></i>Shared</h6>
+            <h3>${totalShared}</h3>
+            <small class="text-muted">Shared by Users</small>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card shadow-sm border-danger h-100">
           <div class="card-body">
-            <h5 class="card-title text-danger"><i class="bi bi-person-x-fill me-2"></i>Blocked</h5>
-            <h2 class="display-5">${totalBlocked}</h2>
-            <small class="text-muted">Users Blocked</small>
+            <h6 class="card-title text-danger"><i class="bi bi-person-x-fill me-2"></i>Blocked</h6>
+            <h3>${totalBlocked}</h3>
+            <small class="text-muted">Blocked Users</small>
           </div>
         </div>
       </div>
-    </div>`;
+      <div class="col-md-2">
+        <div class="card shadow-sm border-warning h-100">
+          <div class="card-body">
+            <h6 class="card-title text-warning"><i class="bi bi-flag-fill me-2"></i>Reports</h6>
+            <h3>${totalReports}</h3>
+            <small class="text-muted">Total Reports</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 
     // טבלת משתמשים
     html += `
@@ -77,23 +95,37 @@
           <tbody>`;
 
     users.forEach(user => {
+        const statusBadge = user.active
+            ? '<span class="badge bg-success">Active</span>'
+            : '<span class="badge bg-danger">Blocked</span>';
+
+        const sharingBadge = !user.blockSharing
+            ? '<span class="badge bg-info text-dark">Sharing Allowed</span>'
+            : '<span class="badge bg-secondary">Sharing Blocked</span>';
+
+        const statusBtnClass = user.active ? 'danger' : 'success';
+        const statusBtnIcon = user.active ? 'person-x-fill' : 'person-check-fill';
+        const statusBtnTitle = user.active ? 'Deactivate User' : 'Activate User';
+
+        const sharingBtnClass = user.blockSharing ? 'primary' : 'secondary';
+        const sharingBtnIcon = user.blockSharing ? 'eye-fill' : 'eye-slash-fill';
+        const sharingBtnTitle = user.blockSharing ? 'Allow Sharing' : 'Block Sharing';
+
         html += `
-          <tr>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${user.isBlocked
-                ? '<span class="badge bg-danger">Blocked</span>'
-                : '<span class="badge bg-success">Active</span>'}</td>
-            <td>${user.canShare ? '<span class="text-success">Allowed</span>' : '<span class="text-muted">Blocked</span>'}</td>
-            <td class="text-center">
-              <button title="${user.isBlocked ? 'Unblock user' : 'Block user'}" class="btn btn-sm btn-outline-${user.isBlocked ? 'success' : 'warning'} toggle-block-btn me-2" data-id="${user.id}" style="cursor:pointer;">
-                <i class="bi bi-${user.isBlocked ? 'unlock-fill' : 'slash-circle-fill'}"></i>
-              </button>
-              <button title="${user.canShare ? 'Block Sharing' : 'Allow Sharing'}" class="btn btn-sm btn-outline-secondary toggle-share-btn" data-id="${user.id}" style="cursor:pointer;">
-                <i class="bi bi-share-fill"></i>
-              </button>
-            </td>
-          </tr>`;
+      <tr>
+        <td>${user.name}</td>
+        <td>${user.email}</td>
+        <td>${statusBadge}</td>
+        <td>${sharingBadge}</td>
+        <td class="text-center">
+          <button title="${statusBtnTitle}" class="btn btn-sm btn-outline-${statusBtnClass} toggle-deactivate-btn me-2" data-id="${user.id}">
+            <i class="bi bi-${statusBtnIcon}"></i>
+          </button>
+          <button title="${sharingBtnTitle}" class="btn btn-sm btn-outline-${sharingBtnClass} toggle-block-btn" data-id="${user.id}">
+            <i class="bi bi-${sharingBtnIcon}"></i>
+          </button>
+        </td>
+      </tr>`;
     });
 
     html += `
@@ -102,58 +134,58 @@
       </div>
     </div>`;
 
-    // דיווחים
+    // הצגת כמות הדיווחים בלבד (לא רשימה)
     html += `
-    <div class="card shadow-sm">
-      <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="bi bi-flag-fill me-2"></i>Reported Articles</h5>
-        <small>${reports.length} reports</small>
-      </div>`;
+<div class="card shadow-sm mb-5">
+  <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-flag-fill me-2"></i>Reports Details with Articles</h5>
+    <small>${reports.length} reports total</small>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle mb-0">
+      <thead class="table-danger">
+        <tr>
+          <th>Report ID</th>
+          <th>Reporter ID</th>
+          <th>Comment</th>
+          <th>Reported At</th>
+          <th>Article ID</th>
+          <th>Article Title</th>
+          <th>Article Author</th>
+          <th>Article Published At</th>
+        </tr>
+      </thead>
+      <tbody>
+`;
 
-    if (!reports.length) {
-        html += '<div class="p-4 text-center text-muted fst-italic">No reports yet.</div>';
-    } else {
+    reports.forEach(report => {
+        const article = articles.find(a => a.id === report.articleId) || {};
+
         html += `
-        <div class="table-responsive">
-          <table class="table table-striped table-hover mb-0">
-            <thead class="table-danger">
-              <tr>
-                <th>Article</th>
-                <th>Reason</th>
-                <th>Reporter</th>
-                <th>Date</th>
-                <th class="text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>`;
-        reports.forEach((r, i) => {
-            const article = articles.find(a => a.id === r.articleId);
-            html += `
-              <tr>
-                <td>${article?.title || r.articleId}</td>
-                <td>${r.reason}</td>
-                <td>${r.reporter}</td>
-                <td>${formatDate(r.date)}</td>
-                <td class="text-center">
-                  <button title="Clear Report" class="btn btn-sm btn-danger clear-report-btn" data-index="${i}" style="cursor:pointer;">
-                    <i class="bi bi-x-circle-fill"></i>
-                  </button>
-                </td>
-              </tr>`;
-        });
-        html += `
-            </tbody>
-          </table>
-        </div>`;
-    }
+    <tr>
+      <td>${report.id ?? ''}</td>
+      <td>${report.reporterId ?? ''}</td>
+      <td>${report.comment ?? ''}</td>
+      <td>${report.reportedAt ? new Date(report.reportedAt).toLocaleString() : ''}</td>
+      <td>${report.articleId ?? ''}</td>
+      <td>${article.title ?? 'N/A'}</td>
+      <td>${article.author ?? 'N/A'}</td>
+      <td>${article.publishedAt ? new Date(article.publishedAt).toLocaleString() : 'N/A'}</td>
+    </tr>
+  `;
+    });
 
-    html += `</div>`;
-
+    html += `
+      </tbody>
+    </table>
+  </div>
+</div>
+`;
     $tab.html(html);
 }
 
+// =======================
 
-// קריאות API מאובטחות
 function getWithAuth(endpoint) {
     return fetch(serverUrl + endpoint, {
         headers: {
@@ -179,19 +211,18 @@ function putWithAuth(endpoint) {
     });
 }
 
-// הפיכת טקסט למספר
 function parseCount(text) {
     const match = text.match(/\d+/);
     return match ? parseInt(match[0], 10) : 0;
 }
 
-// טעינת מידע לדשבורד
 async function loadAdminDashboardData() {
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
         $('#admin').html('<div class="alert alert-warning text-center shadow-sm rounded-3 p-3">Admin access only.</div>');
         $('#admin-tab-li').addClass('d-none');
         return;
     }
+
     $('#admin-tab-li').removeClass('d-none');
 
     try {
@@ -200,71 +231,86 @@ async function loadAdminDashboardData() {
             savedArticlesText,
             sharedArticlesText,
             blockedUsersText,
-            reportsText
+            reportsCountText,
+            usersResponse,
+            articlesResponse,
+            reportsResponse
         ] = await Promise.all([
             getWithAuth("Admin/ActiveUsersCount"),
             getWithAuth("Admin/SavedArticlesCount"),
             getWithAuth("Admin/SharedArticlesCount"),
             getWithAuth("Admin/BlockedUsersCount"),
             getWithAuth("Admin/ReportsCount"),
+
+            // שליפות בפועל של המידע
+            fetch(serverUrl + "Admin/GetAllUsers", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            }),
+            fetch(serverUrl + "Articles", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            }),
+            fetch(serverUrl + "Reports", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
         ]);
+
+        if (!usersResponse.ok || !articlesResponse.ok || !reportsResponse.ok) {
+            throw new Error("Failed to load one or more data sets (users/articles/reports).");
+        }
+
+        const users = await usersResponse.json();
+        const articles = await articlesResponse.json();
+        const reports = await reportsResponse.json();
 
         const summaryData = {
             activeUsersCount: parseCount(activeUsersText),
             savedArticlesCount: parseCount(savedArticlesText),
             sharedArticlesCount: parseCount(sharedArticlesText),
             blockedUsersCount: parseCount(blockedUsersText),
-            reportsCount: parseCount(reportsText),
+            reportsCount: parseCount(reportsCountText),
         };
 
-        const usersResponse = await fetch(serverUrl + "Admin/GetAllUsers", {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
+        renderAdminDashboard({
+            users,
+            articles,
+            reports,
+            ...summaryData
         });
-        if (!usersResponse.ok) throw new Error("Failed to load users");
-        const users = await usersResponse.json();
-
-        //const articlesResponse = await fetch("/api/Articles", {
-        //    headers: {
-        //        "Authorization": "Bearer " + localStorage.getItem("token")
-        //    }
-        //});
-        //const articles = await articlesResponse.json();
-
-        //const reportsResponse = await fetch("/api/Reports", {
-        //    headers: {
-        //        "Authorization": "Bearer " + localStorage.getItem("token")
-        //    }
-       /* });*/
-        //const reports = await reportsResponse.json();
-
-        renderAdminDashboard({ users, articles: [], reports: [], ...summaryData });
 
     } catch (err) {
         $('#admin').html(`<div class="alert alert-danger text-center">Error loading admin data: ${err.message}</div>`);
     }
 }
 
-// כפתור חסימת משתמש
+
+
+$(document).on('click', '.toggle-deactivate-btn', async function () {
+    const userId = $(this).data('id');
+    try {
+        await putWithAuth(`Admin/${userId}/deactivate`);
+        await loadAdminDashboardData(); // <- זה מצוין!
+    } catch {
+        alert("Failed to toggle user status.");
+    }
+});
+
 $(document).on('click', '.toggle-block-btn', async function () {
     const userId = $(this).data('id');
     try {
         await putWithAuth(`Admin/${userId}/block`);
-        await loadAdminDashboardData();
+        await loadAdminDashboardData(); // <- גם כאן!
     } catch {
-        alert("Failed to toggle user block status.");
+        alert("Failed to toggle sharing permission.");
     }
 });
 
-function formatDate(dateString) {
-    const d = new Date(dateString);
-    return d.toLocaleString(); // או כל פורמט אחר שתבחר
-}
-
-
-// Event handlers
 $(document).ready(function () {
-    renderUserActions();
+    renderUserActions(); // אם יש לך את זה בפונקציה נפרדת
     loadAdminDashboardData();
 });

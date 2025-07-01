@@ -1,6 +1,7 @@
 ﻿
 using System.Data;
 using System.Data.SqlClient;
+using System.Xml.Linq;
 using Newsite_Server.BL;
 using static BCrypt.Net.BCrypt;
 
@@ -195,7 +196,7 @@ namespace Newsite_Server.DAL
                 }
             }
         }
-   
+
         //===============Tag===============================================================================
 
         //--------------------------------------------------------------------------------------------------
@@ -316,7 +317,7 @@ namespace Newsite_Server.DAL
             paramDic.Add("@ArticleId", articleId);
             paramDic.Add("@TagId", tagId);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_AssignTagToArticle", con, paramDic); 
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_AssignTagToArticle", con, paramDic);
 
             try
             {
@@ -380,7 +381,57 @@ namespace Newsite_Server.DAL
 
         //===============Article===============================================================================
 
+        //--------------------------------------------------------------------------------------------------
+        // This method to get all articles 
+        //--------------------------------------------------------------------------------------------------
+        public List<Article> GetAllArticles()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
 
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            // כאן אין פרמטרים כי לוקחים את כל המאמרים
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllArticlesFinal", con, paramDic);
+
+            List<Article> articles = new List<Article>();
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+            try
+            {
+                while (reader.Read())
+                {
+                    Article a = new Article();
+                    a.Id = Convert.ToInt32(reader["Id"]);
+                    a.Title = reader["Title"]?.ToString();
+                    a.Description = reader["Description"]?.ToString();
+                    a.Url = reader["Url"]?.ToString();
+                    a.UrlToImage = reader["UrlToImage"]?.ToString();
+                    a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                    a.SourceName = reader["SourceName"]?.ToString();
+                    a.Author = reader["Author"]?.ToString();
+                    articles.Add(a);
+                }
+                return articles;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
         //--------------------------------------------------------------------------------------------------
         // This method add new article 
         //--------------------------------------------------------------------------------------------------
@@ -718,7 +769,33 @@ namespace Newsite_Server.DAL
             }
             finally { con.Close(); }
         }
-        
+
+        //--------------------------------------------------------------------------------------------------
+        // This method remove tags from article 
+        //--------------------------------------------------------------------------------------------------
+        public int RemoveTagFromArticle(int articleId, int tagId)
+        {
+            SqlConnection con = connect("myProjDB");
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+            {
+                { "@ArticleId", articleId },
+                { "@TagId", tagId }
+            };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteTagFromArticleFinal", con, paramDic);
+
+            try
+            {
+                return cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return 0;
+            }
+            finally { con.Close(); }
+        }
 
         //===============Report===========================================================================
 
@@ -763,31 +840,53 @@ namespace Newsite_Server.DAL
                 con.Close();
             }
         }
+
         //--------------------------------------------------------------------------------------------------
-        // This method remove tags from article 
+        // This method to get all reports 
         //--------------------------------------------------------------------------------------------------
-        public int RemoveTagFromArticle(int articleId, int tagId)
+        public List<Report> GetAllReports()
         {
-            SqlConnection con = connect("myProjDB");
-
-            Dictionary<string, object> paramDic = new Dictionary<string, object>
-            {
-                { "@ArticleId", articleId },
-                { "@TagId", tagId }
-            };
-
-            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteTagFromArticleFinal", con, paramDic);
+            SqlConnection con;
+            SqlCommand cmd;
 
             try
             {
-                return cmd.ExecuteNonQuery();
+                con = connect("myProjDB");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
-                return 0;
+                throw ex;
             }
-            finally { con.Close(); }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllReportsFinal", con, paramDic);
+
+            List<Report> reports = new List<Report>();
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                while (reader.Read())
+                {
+                    Report r = new Report();
+                    r.Id = Convert.ToInt32(reader["Id"]);
+                    r.ReporterId = Convert.ToInt32(reader["ReporterId"]);
+                    r.ArticleId = reader["ArticleId"] != DBNull.Value ? (int?)Convert.ToInt32(reader["ArticleId"]) : null;
+                    r.SharedArticleId = reader["SharedArticleId"] != DBNull.Value ? (int?)Convert.ToInt32(reader["SharedArticleId"]) : null;
+                    r.Comment = reader["Comment"]?.ToString();
+                    r.ReportedAt = Convert.ToDateTime(reader["ReportedAt"]);
+                    reports.Add(r);
+                }
+                return reports;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
         }
 
         //===============Admin===========================================================================
@@ -1019,7 +1118,7 @@ namespace Newsite_Server.DAL
             {
                 if (reader.Read())
                 {
-                    count = Convert.ToInt32(reader["Count"]);
+                    count = Convert.ToInt32(reader["BlockedUsersCount"]);
                 }
                 return count;
             }

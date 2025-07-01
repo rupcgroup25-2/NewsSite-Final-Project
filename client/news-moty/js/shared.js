@@ -60,8 +60,6 @@
     $tab.html(html);
 }
 
-
-
 function loadSharedArticles(userId) {
     ajaxCall("GET", serverUrl + `Articles/shared/${userId}`, null,
         function (articles) {
@@ -83,7 +81,7 @@ $(document).on('click', '.unshare-btn', function () {
 
     ajaxCall("DELETE", serverUrl + `Articles/unshare?userId=${currentUser.id}&articleId=${articleId}`, null,
         function (data) {
-            alert(data); 
+            alert(data);
             sharedArticles = sharedArticles.filter(a => a.id !== articleId);
             renderSharedTab();
         },
@@ -93,9 +91,11 @@ $(document).on('click', '.unshare-btn', function () {
     );
 });
 
-// Event handlers
 $(document).ready(function () {
     renderUserActions();
-    loadAdminDashboardData();
+    if (currentUser) {
+        loadSharedArticles(currentUser.id); // 🛠️ זה מה שהיה חסר!
+    } else {
+        renderSharedTab();
+    }
 });
-

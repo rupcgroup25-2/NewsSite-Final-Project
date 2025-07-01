@@ -35,6 +35,10 @@ namespace Newsite_Server.BL
         {
             return dbs.ReportArticles(ReporterId, ArticleId, SharedArticleId, Comment);
         }
+        public List<Report> GetAllReports()
+        {
+            return dbs.GetAllReports();
+        }
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -25,6 +26,15 @@ namespace Newsite_Server.Controllers
                 return Ok("Report submitted successfully.");
             else
                 return BadRequest("Report submission failed.");
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        //[Authorize(Roles = "Admin")] // All methods restricted only for admin
+        public IEnumerable<Report> GetAllReport()
+        {
+            Report report = new Report();
+            return report.GetAllReports();
         }
     }
 }

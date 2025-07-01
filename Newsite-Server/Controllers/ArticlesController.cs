@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -9,6 +10,15 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class ArticlesController : ControllerBase
     {
+        [AllowAnonymous]
+        [HttpGet]
+        //[Authorize(Roles = "Admin")] // All methods restricted only for admin
+        public IEnumerable<Article> GetAllArticles()
+        {
+            Article article = new Article();
+            return article.GetAllArticles();
+        }
+
         [HttpGet("saved/{userId}")]
         public IActionResult GetSavedArticles(int userId)
         {
@@ -108,5 +118,6 @@ namespace Newsite_Server.Controllers
             int result = new Article().RemoveTag(articleId, tagId);
             return result > 0 ? Ok("Tag removed from article") : NotFound("Tag not found on article");
         }
+
     }
 }

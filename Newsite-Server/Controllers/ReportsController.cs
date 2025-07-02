@@ -31,7 +31,7 @@ namespace Newsite_Server.Controllers
         [AllowAnonymous]
         [HttpGet]
         //[Authorize(Roles = "Admin")] // All methods restricted only for admin
-        public IEnumerable<Report> GetAllReport()
+        public IEnumerable<Object> GetAllReportAndArticles()
         {
             Report report = new Report();
             return report.GetAllReports();

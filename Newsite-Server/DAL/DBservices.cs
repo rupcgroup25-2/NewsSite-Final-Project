@@ -844,7 +844,7 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // This method to get all reports 
         //--------------------------------------------------------------------------------------------------
-        public List<Report> GetAllReports()
+        public List<object> GetAllReportsOnArticle()
         {
             SqlConnection con;
             SqlCommand cmd;
@@ -859,25 +859,28 @@ namespace Newsite_Server.DAL
             }
 
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllReportsOnArticlesFinal", con, paramDic);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllReportsFinal", con, paramDic);
-
-            List<Report> reports = new List<Report>();
+            List<object> reports = new List<object>();
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
                 while (reader.Read())
                 {
-                    Report r = new Report();
-                    r.Id = Convert.ToInt32(reader["Id"]);
-                    r.ReporterId = Convert.ToInt32(reader["ReporterId"]);
-                    r.ArticleId = reader["ArticleId"] != DBNull.Value ? (int?)Convert.ToInt32(reader["ArticleId"]) : null;
-                    r.SharedArticleId = reader["SharedArticleId"] != DBNull.Value ? (int?)Convert.ToInt32(reader["SharedArticleId"]) : null;
-                    r.Comment = reader["Comment"]?.ToString();
-                    r.ReportedAt = Convert.ToDateTime(reader["ReportedAt"]);
-                    reports.Add(r);
+                    Dictionary<string, object> report = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        string columnName = reader.GetName(i);
+                        object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                        report[columnName] = value;
+                    }
+
+                    reports.Add(report);
                 }
-                return reports;
+
+                return reports; // 🔹 זו הייתה חסרה
             }
             catch (Exception ex)
             {

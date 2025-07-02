@@ -125,6 +125,7 @@ $(document).on('submit', '#loginForm', function (e) {
             setTimeout(() => {
                 $('#loginModal').modal('hide');
                 hideMessage('#loginMessage');
+                location.reload();
             }, 1000);
         },
         function error(xhr, status, error) {
@@ -218,10 +219,10 @@ function checkValidation() {
 
 // Logout
 $(document).on('click', '#logout-btn', function () {
-    console.log("Logout clicked");
     currentUser = null;
     localStorage.removeItem('user');
     renderUserActions();
-    renderTabs();
+    location.reload();
+    //renderTabs();
 });
 

@@ -19,14 +19,14 @@ $(document).ready(async function () {
     const id = getArticleIdFromUrl();
     if (!id) return $('#articleContainer').html('<div class="alert alert-danger">No article ID provided.</div>');
     let articles;
-    if (isNaN(id))
+    if (isNaN(id)) {
         articles = getCachedArticles();
+    }
     else {
         await loadSavedArticles(currentUser.id);
         articles = savedArticles;
-        console.log(articles);
     }
-    const article = articles.find(a => a.id == id);
+    article = articles.find(a => a.id == id);
     if (!article) {
         return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
     }
@@ -90,6 +90,9 @@ $(document).ready(async function () {
             <a href="${article.url}" target="_blank" class="mt-2 btn btn-outline-dark btn-sm w-100">
               <i class="bi bi-box-arrow-up-right"></i> View Source
             </a>
+            <button class="btn btn-outline-danger btn-sm w-100 mt-2 report-article-btn" data-id="${id}">
+              <i class="bi bi-flag"></i> Report Article
+            </button>
           </div>
         </div>
 
@@ -128,3 +131,221 @@ function getArticleIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
 }
+
+// --- Share Article ---
+let shareArticleId = null;
+$(document).on('click', '.share-article-btn', function () {
+    if (!currentUser) {
+        $('#loginModal').modal('show');
+        return;
+    }
+    shareArticleId = $(this).data('id');
+    $('#shareComment').val('');
+    $('#shareError').addClass('d-none');
+    $('#shareModal').modal('show');
+});
+$('#shareForm').on('submit', function (e) {
+    e.preventDefault();
+    if (!currentUser || !shareArticleId) return;
+    const comment = $('#shareComment').val();
+    sharedArticles.push({
+        id: String(sharedArticles.length + 1),
+        articleId: shareArticleId,
+        userName: currentUser.name,
+        comment,
+        sharedAt: new Date()
+    });
+    $('#shareModal').modal('hide');
+});
+
+
+//to save the article id on the other share button
+$(document).on('click', '.share-article-btn', function () {
+    const articleId = $(this).data("id");
+    $('#btnShareArticle').data("id", articleId);
+    $('#shareModal').modal('show');
+});
+
+//Sharing the clicked article to the user
+
+$(document).on('click', '#btnShareArticle', function () {
+    if (!currentUser) {
+        alert("Please login to share articles.");
+        return;
+    }
+
+    const articleId = $(this).data("id");
+    const comment = $("#shareComment").val()?.trim() || "";
+
+    if (!article) {
+        alert("Article not found.");
+        return;
+    }
+
+    const articleToSend = {
+        comment: comment,
+        id: 0,
+        title: article.title || "",
+        description: article.preview || "",
+        url: article.url || "",
+        urlToImage: article.imageUrl || "",
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sourceName: article.source || "",
+        author: article.author || ""
+    };
+
+    ajaxCall(
+        "POST",
+        serverUrl + `Articles/ShareArticle?userId=${currentUser.id}`,
+        JSON.stringify(articleToSend),
+        function success(responseText) {
+            alert(responseText);
+            sharedArticles.push(article.id);
+            $('.share-article-btn').text("Article Shared");
+            $('.share-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
+        },
+        function error(xhr) {
+            alert(xhr.responseText || "Failed to share article.");
+        }
+    );
+});
+
+// --- Save Article ---
+$(document).on('click', '.save-article-btn', function () {
+    if (!currentUser) {
+        $('#loginModal').modal('show');
+        return;
+    }
+    const id = $(this).data('id');
+    if (savedArticles.includes(id)) {
+        savedArticles = savedArticles.filter(aid => aid !== id);
+    } else {
+        savedArticles.push(id);
+    }
+});
+
+//Saving the clicked article to the user
+$(document).on('click', '.save-article-btn', function () {
+    if (!currentUser) {
+        alert("Please login to save articles.");
+        return;
+    }
+
+    const articleToSend = {
+        comment: "",
+        id: 0,
+        title: article.title || "",
+        description: article.preview || "",
+        url: article.url || "",
+        urlToImage: article.imageUrl || "",
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sourceName: article.source || "",
+        author: article.author || ""
+    };
+    //console.log("Article found:", articleToSend);
+    if (!articleToSend) {
+        alert("Article not found.");
+        return;
+    }
+
+    ajaxCall(
+        "POST",
+        serverUrl + `Articles/SaveArticle?userId=${currentUser.id}`,
+        JSON.stringify(articleToSend),
+        function (responseText) {
+            alert(responseText);
+            savedArticles.push(article.id);
+            $('.save-article-btn').text("Article Saved");
+            $('.save-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
+        },
+        function () {
+            alert("Failed to save article");
+        }
+    );
+});
+
+
+// --- Report Article ---
+let reportArticleId = null;
+$(document).on('click', '.report-article-btn', function () {
+    if (!currentUser) {
+        $('#loginModal').modal('show');
+        return;
+    }
+    reportArticleId = $(this).data('id');
+    $('#reportReason').val('');
+    $('#reportComment').val('');
+    $('#reportError').addClass('d-none');
+    $('#reportModal').modal('show');
+});
+$('#reportForm').on('submit', function (e) {
+    e.preventDefault();
+    if (!currentUser || !reportArticleId) return;
+    const reason = $('#reportReason').val();
+    const comment = $('#reportComment').val();
+    if (!reason) {
+        $('#reportError').removeClass('d-none').text('Please select a reason.');
+        return;
+    }
+    articleReports.push({
+        articleId: reportArticleId,
+        reason,
+        comment,
+        reporter: currentUser.name,
+        date: new Date()
+    });
+    $('#reportModal').modal('hide');
+});
+
+//report the article by the user
+$(document).on('click', '.report-article-btn', function () {
+    const articleId = $(this).data("id");
+    $('#btnReportArticle').data("id", articleId); // שמירת ID
+    $('#reportModal').modal('show');
+});
+
+$(document).on('click', '#btnReportArticle', function () {
+    if (!currentUser) {
+        alert("Please login to report articles.");
+        return;
+    }
+
+    const reason = $("#reportReason").val();
+    const comment = $("#reportComment").val()?.trim() || "";
+
+    if (!reason) {
+        alert("Please select a reason for reporting.");
+        return;
+    }
+
+    if (!article) {
+        alert("Article not found.");
+        return;
+    }
+
+    const report = {
+        id: 0,
+        reporterId: currentUser.id,
+        articleId: null,
+        sharedArticleId: null,
+        comment: reason + (comment ? ` - ${comment}` : ""),
+        reportedAt: new Date().toISOString()
+    };
+
+    ajaxCall(
+        "POST",
+        serverUrl + "Reports",
+        JSON.stringify(report),
+        function success(responseText) {
+            alert("Report submitted successfully.");
+            $('#reportModal').modal('hide');
+            $("#reportComment").val("");
+            $("#reportReason").val("");
+            $('.report-article-btn').text("Article Reported");
+            $('.report-article-btn').removeClass('btn-outline-danger').addClass('btn-danger');
+        },
+        function error(xhr) {
+            alert(xhr.responseText || "Failed to submit report.");
+        }
+    );
+});

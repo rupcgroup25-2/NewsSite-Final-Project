@@ -399,50 +399,6 @@ $(document).on('click', '#btnShareArticle', function () {
 });
 
 //report the article by the user
-
-$(document).on('click', '#btnShareArticle', function () {
-    if (!currentUser) {
-        alert("Please login to share articles.");
-        return;
-    }
-
-    const articleId = $(this).data("id");
-    const comment = $("#shareComment").val()?.trim() || "";
-    const article = getArticleById(articleId);
-
-    if (!article) {
-        alert("Article not found.");
-        return;
-    }
-
-    const articleToSend = {
-        comment: comment,
-        id: 0,
-        title: article.title || "",
-        description: article.preview || "",
-        url: article.url || "",
-        urlToImage: article.imageUrl || "",
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        sourceName: article.source || "",
-        author: article.author || ""
-    };
-
-    ajaxCall(
-        "POST",
-        serverUrl + `Articles/ShareArticle?userId=${currentUser.id}`,
-        JSON.stringify(articleToSend),
-        function success(responseText) {
-            alert(responseText);
-            sharedArticles.push(article.id);
-            renderArticles(currentCategory);
-        },
-        function error(xhr) {
-            alert(xhr.responseText || "Failed to share article.");
-        }
-    );
-});
-
-
 $(document).on('click', '.report-article-btn', function () {
     const articleId = $(this).data("id");
     $('#btnReportArticle').data("id", articleId); // שמירת ID

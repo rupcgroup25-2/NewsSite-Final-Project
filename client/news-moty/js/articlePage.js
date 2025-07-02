@@ -1,8 +1,31 @@
-﻿$(document).ready(function () {
+﻿
+//Load all saved articles for current user
+function loadSavedArticles(userId) {
+    return new Promise((resolve, reject) => {
+        ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
+            function (articles) {
+                savedArticles = articles;
+                resolve(articles); // ✅ Resolve the Promise when done
+            },
+            function () {
+                $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved articles.</div>');
+                reject("Failed to load"); // ❌ Reject on error
+            }
+        );
+    });
+}
+
+$(document).ready(async function () {
     const id = getArticleIdFromUrl();
     if (!id) return $('#articleContainer').html('<div class="alert alert-danger">No article ID provided.</div>');
-
-    const articles = getCachedArticles();
+    let articles;
+    if (isNaN(id))
+        articles = getCachedArticles();
+    else {
+        await loadSavedArticles(currentUser.id);
+        articles = savedArticles;
+        console.log(articles);
+    }
     const article = articles.find(a => a.id == id);
     if (!article) {
         return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
@@ -19,7 +42,7 @@
             <h2 class="fw-bold">${article.title}</h2>
             <div class="text-muted small mb-2">
               <i class="bi bi-calendar-event"></i> ${formatDate(article.publishedAt)} &nbsp;
-              <i class="bi bi-person"></i> ${article.source || 'Unknown'} &nbsp;
+              <i class="bi bi-person"></i> ${article.source || article.sourceName || 'Unknown'} &nbsp;
               <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
             </div>
 
@@ -29,8 +52,8 @@
                 <a href="${article.sourceUrl}" target="_blank">Read the original article</a>
               </div>` : ''}
 
-            <img src="${article.imageUrl}" class="img-fluid mb-3" alt="${article.title}">
-            <p class="fs-6">${article.content}</p>
+            <img src="${article.imageUrl || article.urlToImage}" class="img-fluid mb-3" alt="${article.title}">
+            <p class="fs-6">${article.preview || article.description}</p>
 
             ${article.sourceUrl ? `
               <a href="${article.sourceUrl}" class="btn btn-outline-secondary mt-3" target="_blank">
@@ -78,7 +101,7 @@
               <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
             </div>
             <div class="mb-2"><strong>Published</strong><br>${formatDate(article.publishedAt)}</div>
-            <div class="mb-2"><strong>Source</strong><br>${article.source || 'Unknown'}</div>
+            <div class="mb-2"><strong>Source</strong><br>${article.source || article.sourceName || 'Unknown'}</div>
             <div><strong>Comments</strong><br>${comments.length} comment${comments.length === 1 ? '' : 's'}</div>
           </div>
         </div>
@@ -87,7 +110,7 @@
   `;
 
     $('#articleContainer').html(html);
-    renderComments(id);
+    //renderComments(id);
 
     $('#commentForm').off('submit').on('submit', function (e) {
         e.preventDefault();
@@ -95,7 +118,7 @@
         if (text && currentUser) {
             if (!articleComments[id]) articleComments[id] = [];
             articleComments[id].push({ user: currentUser.name, text, date: new Date() });
-            renderComments(id);
+            //renderComments(id);
             $('#commentInput').val('');
         }
     });

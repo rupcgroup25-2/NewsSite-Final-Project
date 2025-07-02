@@ -34,9 +34,8 @@
                     <div class="text-secondary small mb-3">Source: ${article.sourceName || article.source || ''}</div>
 
                     <div class="mt-auto d-flex gap-2">
-                        <a href="${article.url}" target="_blank" class="btn btn-sm btn-primary">
-                            <i class="fas fa-external-link-alt me-1"></i>View
-                        </a>
+                        <a href="article.html?id=${article.id}" class="btn btn-primary btn-sm" target="_blank">View</a>
+                        </button>
                         <button class="btn btn-sm btn-outline-danger unsave-btn" data-id="${article.id}">
                             <i class="fas fa-trash-alt me-1"></i>Remove
                         </button>
@@ -50,7 +49,6 @@
     $tab.html(html);
 }
 
-
 //Load all saved articles for current user
 function loadSavedArticles(userId) {
     ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
@@ -63,6 +61,7 @@ function loadSavedArticles(userId) {
         }
     );
 }
+
 $(document).on('click', '.unsave-btn', function () {
     const articleId = $(this).data('id');
     if (!currentUser) {

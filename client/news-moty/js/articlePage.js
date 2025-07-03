@@ -15,18 +15,35 @@ function loadSavedArticles(userId) {
     });
 }
 
+function loadSingleArticle(userId, articleId) {
+    return new Promise((resolve, reject) => {
+        const params = new URLSearchParams(window.location.search);
+        collection = params.get('collection');
+        ajaxCall("GET", serverUrl + `Articles/single${collection}/userId/${userId}/articleId/${articleId}`, null,
+            function (article) {
+                resolve(article);
+            },
+            function () {
+                $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved article.</div>');
+                reject("Failed to load");
+            }
+        );
+    });
+}
+
 $(document).ready(async function () {
     const id = getArticleIdFromUrl();
     if (!id) return $('#articleContainer').html('<div class="alert alert-danger">No article ID provided.</div>');
     let articles;
+    article = {};
     if (isNaN(id)) {
         articles = getCachedArticles();
+        article = articles.find(a => a.id == id);
     }
     else {
-        await loadSavedArticles(currentUser.id);
-        articles = savedArticles;
+        article = await loadSingleArticle(currentUser.id, id);
     }
-    article = articles.find(a => a.id == id);
+    
     if (!article) {
         return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
     }

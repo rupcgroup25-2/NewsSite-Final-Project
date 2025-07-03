@@ -665,6 +665,55 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method select single saved article by id for a user
+        //--------------------------------------------------------------------------------------------------
+        public Article GetSingleSavedArticlesForUser(int userId, int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@ArticleId", articleId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSingleSavedArticleForUserFinal", con, paramDic);
+
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                reader.Read();
+                Article a = new Article();
+                a.Id = Convert.ToInt32(reader["Id"]);
+                a.Title = reader["Title"].ToString();
+                a.Description = reader["Description"].ToString();
+                a.Url = reader["Url"].ToString();
+                a.UrlToImage = reader["UrlToImage"].ToString();
+                a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                a.SourceName = reader["SourceName"].ToString();
+                a.Author = reader["Author"].ToString();
+                return a;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
         //--------------------------------------------------------------------------------------------------
         // This method select all shared articles for a user with his comments
         //--------------------------------------------------------------------------------------------------
@@ -716,6 +765,55 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method select single shared article by id for a user
+        //--------------------------------------------------------------------------------------------------
+        public Article GetSingleSharedArticlesForUser(int userId, int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@ArticleId", articleId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSingleSharedArticleForUserFinal", con, paramDic);
+
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                reader.Read();
+                Article a = new Article();
+                a.Id = Convert.ToInt32(reader["Id"]);
+                a.Title = reader["Title"].ToString();
+                a.Description = reader["Description"].ToString();
+                a.Url = reader["Url"].ToString();
+                a.UrlToImage = reader["UrlToImage"].ToString();
+                a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                a.SourceName = reader["SourceName"].ToString();
+                a.Author = reader["Author"].ToString();
+                return a;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
         //--------------------------------------------------------------------------------------------------
         // This method delete saved articles for user
         //--------------------------------------------------------------------------------------------------

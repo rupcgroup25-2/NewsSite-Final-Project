@@ -44,9 +44,7 @@
                     </div>
 
                     <div class="mt-auto d-flex gap-2">
-                        <a href="${article.url}" target="_blank" class="btn btn-sm btn-primary">
-                            <i class="fas fa-external-link-alt me-1"></i>View
-                        </a>
+                        <a href="article.html?id=${article.id}&collection=Shared" class="btn btn-primary btn-sm" target="_blank">View</a>
                         <button class="btn btn-sm btn-outline-danger unshare-btn" data-id="${article.id}">
                             <i class="fas fa-trash-alt me-1"></i>Remove
                         </button>

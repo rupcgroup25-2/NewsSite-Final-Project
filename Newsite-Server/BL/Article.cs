@@ -83,9 +83,19 @@ namespace Newsite_Server.BL
             return dbs.GetSavedArticlesForUser(userId);
         }
 
+        public Article GetSingleSavedArticlesForUser(int userId, int articleId)
+        {
+            return dbs.GetSingleSavedArticlesForUser(userId, articleId);
+        }
+
         public List<Article> GetSharedArticlesForUser(int userId)
         {
             return dbs.GetSharedArticlesForUser(userId);
+        }
+
+        public Article GetSingleSharedArticlesForUser(int userId, int articleId)
+        {
+            return dbs.GetSingleSharedArticlesForUser(userId, articleId);
         }
 
         public int DeleteSavedForUser(int userId)

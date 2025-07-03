@@ -30,6 +30,17 @@ namespace Newsite_Server.Controllers
             return Ok(articles);
         }
 
+        [HttpGet("singleSaved/userId/{userId}/articleId/{articleId}")]
+        public IActionResult GetSingleSavedArticles(int userId, int articleId)
+        {
+            Article article = new Article().GetSingleSavedArticlesForUser(userId, articleId);
+
+            if (article == null)
+                return NotFound("Article not found for this user");
+
+            return Ok(article);
+        }
+
         [HttpGet("shared/{userId}")]
         public IActionResult GetSharedArticles(int userId)
         {
@@ -39,6 +50,17 @@ namespace Newsite_Server.Controllers
                 return NotFound("No shared articles found for this user");
 
             return Ok(articles);
+        }
+
+        [HttpGet("singleShared/userId/{userId}/articleId/{articleId}")]
+        public IActionResult GetSingleSharedArticles(int userId, int articleId)
+        {
+            Article article = new Article().GetSingleSharedArticlesForUser(userId, articleId);
+
+            if (article == null)
+                return NotFound("Article not found for this user");
+
+            return Ok(article);
         }
 
         // POST api/<ArticlesController>

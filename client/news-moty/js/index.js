@@ -411,7 +411,7 @@ $(document).on('click', '#btnReportArticle', function () {
         return;
     }
 
-    const articleId = $(this).data("id"); // זה ID פנימי - או "api_..." או מספר
+    const articleId = $(this).data("id"); 
     const reason = $("#reportReason").val();
     const comment = $("#reportComment").val()?.trim() || "";
 
@@ -426,19 +426,36 @@ $(document).on('click', '#btnReportArticle', function () {
         return;
     }
 
-    const report = {
+    const reportToSend = {
         id: 0,
         reporterId: currentUser.id,
-        articleId: null, 
-        sharedArticleId: null, 
+        articleId: 0,
+        sharedArticleId: null,
         comment: reason + (comment ? ` - ${comment}` : ""),
         reportedAt: new Date().toISOString()
+    };
+
+    const articleToSend = {
+        comment: "",
+        id: 0,
+        title: article.title || "",
+        description: article.preview || "",
+        url: article.url || "",
+        urlToImage: article.imageUrl || "",
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sourceName: article.source || "",
+        author: article.author || ""
+    };
+
+    const data = {
+        Report: reportToSend,
+        Article: articleToSend
     };
 
     ajaxCall(
         "POST",
         serverUrl + "Reports",
-        JSON.stringify(report),
+        JSON.stringify(data),
         function success(responseText) {
             alert("Report submitted successfully.");
             $('#reportModal').modal('hide');

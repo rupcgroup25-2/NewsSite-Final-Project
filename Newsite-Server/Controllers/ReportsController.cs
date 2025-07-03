@@ -19,10 +19,13 @@ namespace Newsite_Server.Controllers
 
         // POST api/<ReportsController>
         [HttpPost]
-        public IActionResult SubmitReport([FromBody] Report report)
+        public IActionResult SubmitReport([FromBody] ReportWithArticleDto dto)
         {
-            int result = report.SubmitReport();
-            if (result > 0)
+            int resultSavingArticle = dto.Article.InsertArticleIfNotExists();
+            dto.Report.ArticleId = resultSavingArticle;
+            int resultSavingReport = dto.Report.SubmitReport();
+
+            if (resultSavingReport > 0)
                 return Ok("Report submitted successfully.");
             else
                 return BadRequest("Report submission failed.");

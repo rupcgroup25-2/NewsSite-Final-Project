@@ -46,8 +46,7 @@ namespace Newsite_Server.BL
             Article existing = dbs.GetArticleByUrl(this.Url);
             if (existing != null)
             {
-                this.Id = existing.Id;
-                return 0; // exists
+                return existing.Id; ; // exists
             }
 
             int newId = dbs.InsertArticle(this);

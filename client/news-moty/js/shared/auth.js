@@ -63,6 +63,7 @@ function createModals() {
 
 $(document).ready(function () {
     createModals();
+    renderUserActions();
 });
 
 // Render user-related actions (Login/Register buttons or greeting and Logout button)

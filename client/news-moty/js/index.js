@@ -62,7 +62,6 @@ function renderArticles(category) {
 
 // Event handlers
 $(document).ready(function () {
-    renderUserActions();
     renderHomeTab();
 })
 

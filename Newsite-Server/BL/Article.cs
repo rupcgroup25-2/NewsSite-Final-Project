@@ -71,10 +71,16 @@ namespace Newsite_Server.BL
 
         public int ShareArticleWithComment(int userId, int articleId, string comment)
         {
-            int insertResult = InsertArticleIfNotExists();
+            int watchSharedPermission = dbs.GetWatchSharedPermission(userId);
 
-            //  SharedArticles insert to the table
-            return dbs.ShareArticleForUser(userId, this.Id, comment);
+            if (watchSharedPermission == 0)
+            {// blockSharing is 0
+                int insertResult = InsertArticleIfNotExists();
+
+                //  SharedArticles insert to the table
+                return dbs.ShareArticleForUser(userId, this.Id, comment);
+            }
+            else return 0;
         }
 
         public List<Article> GetSavedArticlesForUser(int userId)
@@ -89,7 +95,13 @@ namespace Newsite_Server.BL
 
         public List<Article> GetSharedArticlesForUser(int userId)
         {
-            return dbs.GetSharedArticlesForUser(userId);
+            int watchSharedPermission = dbs.GetWatchSharedPermission(userId);
+            if (watchSharedPermission == 0)// blockSharing is 0 
+            {
+                return dbs.GetSharedArticlesForUser(userId);
+            }
+
+            return new List<Article>();
         }
 
         public Article GetSingleSharedArticlesForUser(int userId, int articleId)

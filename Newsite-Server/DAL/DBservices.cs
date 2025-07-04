@@ -767,6 +767,54 @@ namespace Newsite_Server.DAL
         }
 
         //--------------------------------------------------------------------------------------------------
+        // This method check if the user is blocked or not for watching shared articles
+        //--------------------------------------------------------------------------------------------------
+        public int GetWatchSharedPermission(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetUserBlockSharingFinal", con, paramDic);
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                if (reader.Read())
+                {
+                    int blockSharing = Convert.ToInt32(reader["BlockSharing"]);
+
+                    return blockSharing;
+                }
+                else
+                {
+                    // לא נמצאה שורה - אפשר להחליט להחזיר -1 או לזרוק שגיאה
+                    return -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
         // This method select single shared article by id for a user
         //--------------------------------------------------------------------------------------------------
         public Article GetSingleSharedArticlesForUser(int userId, int articleId)

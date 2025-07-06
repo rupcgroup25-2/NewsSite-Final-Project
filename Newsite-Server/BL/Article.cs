@@ -129,5 +129,10 @@ namespace Newsite_Server.BL
             return dbs.GetAllArticles();
         }
 
+        public List<Article> GetSavedArticlesBySearch(int userId, string word)
+        {
+            return dbs.SearchSavedArticles(userId, word);
+        }
+
     }
 }

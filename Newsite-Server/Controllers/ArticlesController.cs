@@ -63,6 +63,20 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
 
+        [HttpGet("search")]
+        public IActionResult SearchSavedArticles([FromQuery] int userId, [FromQuery] string word)
+        {
+            if (string.IsNullOrWhiteSpace(word))
+                return BadRequest("Search term cannot be null");
+
+            List<Article> articles = new Article().GetSavedArticlesBySearch(userId, word);
+
+            if (articles == null || articles.Count == 0)
+                return NotFound("No matching saved articles found.");
+
+            return Ok(articles);
+        }
+
         // POST api/<ArticlesController>
         [HttpPost]
         public IActionResult AddArticle([FromBody] Article article)

@@ -1,4 +1,4 @@
-﻿function renderSavedTab() {
+﻿function renderSavedTab(searchTerm = "") {
     const $tab = $('#saved');
 
     if (!currentUser) {
@@ -7,11 +7,23 @@
     }
 
     if (!savedArticles || savedArticles.length === 0) {
-        $tab.html('<div class="alert alert-secondary text-center">No saved articles yet.</div>');
+        $tab.html('<div class="alert alert-secondary text-center">No saved articles found.</div>');
         return;
     }
 
-    let html = '<div class="container px-2 px-md-4">';
+    let html = `
+        <div class="container px-2 px-md-4">
+            <div class="mb-3">
+                <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${searchTerm}">
+            </div>
+    `;
+
+    const highlight = (text) => {
+        if (!searchTerm) return text;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    };
+
     savedArticles.forEach(article => {
         const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
 
@@ -29,8 +41,8 @@
                         <span class="text-muted small">${formatDate(article.publishedAt)}</span>
                     </div>
 
-                    <h5 class="fw-semibold mb-2">${article.title}</h5>
-                    <p class="text-muted small mb-2">${article.description || article.preview}</p>
+                    <h5 class="fw-semibold mb-2">${highlight(article.title)}</h5>
+                    <p class="text-muted small mb-2">${highlight(article.description || article.preview)}</p>
                     <div class="text-secondary small mb-3">Source: ${article.sourceName || article.source || ''}</div>
 
                     <div class="mt-auto d-flex gap-2">
@@ -48,18 +60,8 @@
     $tab.html(html);
 }
 
-//Load all saved articles for current user
-function loadSavedArticles(userId) {
-    ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
-        function (articles) {
-            savedArticles = articles;
-            renderSavedTab();
-        },
-        function () {
-            $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved articles.</div>');
-        }
-    );
-}
+
+
 
 $(document).on('click', '.unsave-btn', function () {
     const articleId = $(this).data('id');
@@ -80,13 +82,68 @@ $(document).on('click', '.unsave-btn', function () {
     );
 });
 
+// search bar
+
+
+// Debounced search handler
+let debounceTimer = null;
+$(document).on('input', '#savedSearchInput', function () {
+    clearTimeout(debounceTimer);
+    const searchTerm = $(this).val();
+
+    debounceTimer = setTimeout(() => {
+        if (currentUser) {
+            if (searchTerm.trim().length > 0) {
+                loadSavedArticles(currentUser.id, searchTerm);
+            } else {
+                loadSavedArticles(currentUser.id); 
+            }
+        }
+    }, 400); 
+});
+
+// Load saved articles (with optional search)
+function loadSavedArticles(userId, searchTerm = "") {
+    const trimmedSearch = searchTerm.trim();
+    const encodedSearch = encodeURIComponent(trimmedSearch);
+
+    const url = trimmedSearch.length > 0
+        ? `${serverUrl}Articles/search?userId=${userId}&word=${encodedSearch}`
+        : `${serverUrl}Articles/saved/${userId}`;
+
+    ajaxCall("GET", url, null,
+        function (articles) {
+            savedArticles = articles;
+            renderSavedTab(searchTerm);
+        },
+        function () {
+            renderError("Failed to load saved articles.");
+        }
+    );
+}
+function renderError(message) {
+    const $tab = $('#saved');
+    const currentSearchTerm = $('#savedSearchInput').val() || "";
+
+    let html = `
+        <div class="container px-2 px-md-4">
+            <div class="mb-3">
+                <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${currentSearchTerm}">
+            </div>
+            <div class="alert alert-danger text-center">${message}</div>
+        </div>
+    `;
+
+    $tab.html(html);
+}
+
 
 
 // Event handlers
 $(document).ready(function () {
     renderUserActions();
     if (currentUser) {
-        loadSavedArticles(currentUser.id); 
+        loadSavedArticles(currentUser.id, ""); 
     }
 });
 

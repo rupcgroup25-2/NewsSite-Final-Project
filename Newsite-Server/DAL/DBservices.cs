@@ -813,7 +813,60 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
+        //--------------------------------------------------------------------------------------------------
+        // This method search in savedArticlesTable
+        //--------------------------------------------------------------------------------------------------
+        public List<Article> SearchSavedArticles(int userId, string searchText)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
 
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@SearchText", searchText);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_SearchSavedArticlesFinal", con, paramDic);
+
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            List<Article> savedArticles = new List<Article>();
+
+            try
+            {
+                while (reader.Read())
+                {
+                    Article a = new Article();
+                    a.Id = Convert.ToInt32(reader["Id"]);
+                    a.Title = reader["Title"].ToString();
+                    a.Description = reader["Description"].ToString();
+                    a.Url = reader["Url"].ToString();
+                    a.UrlToImage = reader["UrlToImage"].ToString();
+                    a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                    a.SourceName = reader["SourceName"].ToString();
+                    a.Author = reader["Author"].ToString();
+
+                    savedArticles.Add(a);
+                }
+
+                return savedArticles;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
         //--------------------------------------------------------------------------------------------------
         // This method select single shared article by id for a user
         //--------------------------------------------------------------------------------------------------

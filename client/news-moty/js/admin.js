@@ -21,51 +21,51 @@ function renderAdminDashboard({
 
     $('#admin-tab-li').removeClass('d-none');
 
-    const totalUsers = users.length;
+    const totalUsers = activeUsersCount;
     const totalBlocked = blockedUsersCount;
     const totalArticles = savedArticlesCount;
     const totalShared = sharedArticlesCount;
     const totalReports = reportsCount;
 
     let html = `
-  <div class="row g-4 mb-5 text-center">
-    <div class="col-md-2">
+<div class="row g-4 mb-5 text-center justify-content-center">
+<div class="col-6 col-md-2">
       <div class="card shadow-sm border-primary h-100">
         <div class="card-body">
           <h6 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>Users</h6>
           <h3>${totalUsers}</h3>
-          <small class="text-muted">Registered</small>
+          <small class="text-muted">Active Users</small>
         </div>
       </div>
     </div>
-    <div class="col-md-2">
+<div class="col-6 col-md-2">
       <div class="card shadow-sm border-success h-100">
         <div class="card-body">
           <h6 class="card-title text-success"><i class="bi bi-journal-text me-2"></i>Articles</h6>
           <h3>${totalArticles}</h3>
-          <small class="text-muted">Published</small>
+          <small class="text-muted">Saved By Users</small>
         </div>
       </div>
     </div>
-    <div class="col-md-2">
+<div class="col-6 col-md-2">
       <div class="card shadow-sm border-info h-100">
         <div class="card-body">
           <h6 class="card-title text-info"><i class="bi bi-share-fill me-2"></i>Shared</h6>
           <h3>${totalShared}</h3>
-          <small class="text-muted">Shared by Users</small>
+          <small class="text-muted">Shared By Users</small>
         </div>
       </div>
     </div>
-    <div class="col-md-2">
+<div class="col-6 col-md-2">
       <div class="card shadow-sm border-danger h-100">
         <div class="card-body">
           <h6 class="card-title text-danger"><i class="bi bi-person-x-fill me-2"></i>Blocked</h6>
           <h3>${totalBlocked}</h3>
-          <small class="text-muted">Blocked Users</small>
+          <small class="text-muted">Blocked Sharing Users</small>
         </div>
       </div>
     </div>
-    <div class="col-md-2">
+<div class="col-6 col-md-2">
       <div class="card shadow-sm border-warning h-100">
         <div class="card-body">
           <h6 class="card-title text-warning"><i class="bi bi-flag-fill me-2"></i>Reports</h6>
@@ -84,7 +84,7 @@ function renderAdminDashboard({
       <small>${totalUsers} users</small>
     </div>
     <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle mb-0">
+  <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
         <thead class="table-primary">
           <tr>
             <th>Name</th>

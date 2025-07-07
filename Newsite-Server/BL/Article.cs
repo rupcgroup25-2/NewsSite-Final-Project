@@ -38,6 +38,8 @@ namespace Newsite_Server.BL
         public DateTime PublishedAt { get => publishedAt; set => publishedAt = value; }
         public string SourceName { get => sourceName; set => sourceName = value; }
         public string Author { get => author; set => author = value; }
+        public int SharedById { get; set; }      
+        public string SharedByName { get; set; }
 
         DBservices dbs = new DBservices();
 

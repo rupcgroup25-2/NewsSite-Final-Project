@@ -117,7 +117,7 @@ function loadSavedArticles(userId, searchTerm = "") {
             renderSavedTab(searchTerm);
         },
         function () {
-            renderError("Failed to load saved articles.");
+            renderError("Not found..");
         }
     );
 }

@@ -90,5 +90,15 @@ namespace Newsite_Server.BL
         {
             return dbs.ToggleDeactivateUser(this.Id);
         }
+
+        public int FollowUser(int followerId, int followedId)
+        {
+            return dbs.FollowUser(followerId, followedId);
+        }
+        public int UnFollowUser(int followerId, int followedId)
+        {
+            return dbs.UnfollowUser(followerId, followedId);
+        }
+
     }
 }

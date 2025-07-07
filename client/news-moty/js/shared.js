@@ -31,7 +31,7 @@
 
                     <div class="mb-2">
                         <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded-1">
-                            👤 Shared by: ${currentUser.name || "Unknown"}
+                        👤 Shared by: ${article.sharedByName || (article.sharedById === currentUser.id ? currentUser.name : "Unknown")}
                         </span>
                     </div>
 

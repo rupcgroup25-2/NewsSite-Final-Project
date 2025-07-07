@@ -205,3 +205,44 @@ footer.bg-body {
 }
 
 /* ===== End Custom News Site Styles ===== */ 
+
+/*admin style
+*/
+#admin {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.btn-sm i {
+    font-size: 1.2rem;
+}
+
+.table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: #bbb transparent;
+}
+
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background-color: #bbb;
+        border-radius: 4px;
+    }

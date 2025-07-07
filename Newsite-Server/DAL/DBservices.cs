@@ -197,6 +197,50 @@ namespace Newsite_Server.DAL
             }
         }
 
+        //--------------------------------------------------------------------------------------------------
+        // Insert Followed user to follower 
+        //--------------------------------------------------------------------------------------------------
+        public int FollowUser(int followerId, int followedId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0; 
+            }
+
+            // מילון פרמטרים
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@FollowerId", followerId);
+            paramDic.Add("@FollowedId", followedId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_FollowUserFinal", con, paramDic);
+
+            try
+            {
+                int result = cmd.ExecuteNonQuery(); 
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
         //===============Tag===============================================================================
 
         //--------------------------------------------------------------------------------------------------
@@ -752,6 +796,8 @@ namespace Newsite_Server.DAL
                     a.SourceName = reader["SourceName"].ToString();
                     a.Author = reader["Author"].ToString();
                     a.Comment = reader["Comment"].ToString(); // מהשיתוף
+                    a.SharedById = Convert.ToInt32(reader["SharedByUserId"]);
+                    a.SharedByName = reader["SharedByName"].ToString();
                     articles.Add(a);
                 }
                 return articles;
@@ -765,7 +811,47 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
+        //--------------------------------------------------------------------------------------------------
+        // This method to unfollow user
+        //--------------------------------------------------------------------------------------------------
+        public int UnfollowUser(int followerId, int followedId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
 
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@FollowerId", followerId);
+            paramDic.Add("@FollowedId", followedId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_UnfollowUserFinal", con, paramDic);
+
+            try
+            {
+                int result = cmd.ExecuteNonQuery();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
         //--------------------------------------------------------------------------------------------------
         // This method check if the user is blocked or not for watching shared articles
         //--------------------------------------------------------------------------------------------------

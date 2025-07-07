@@ -39,5 +39,29 @@ namespace Newsite_Server.Controllers
             return Ok(new { message = "Success" });
         }
 
+        [HttpPost("Follow")]
+        public IActionResult FollowUser(int followerId, int followedId)
+        {
+            User user = new User();
+
+            int result = user.FollowUser(followerId, followedId);
+
+            if (result > 0)
+                return Ok("Follow successfully");
+            else
+                return Ok("Already following or failed to add follow");
+        }
+
+        [HttpDelete("unfollow")]
+        public IActionResult UnfollowUser(int followerId,  int followedId)
+        {
+            User user = new User();
+            int result = user.UnFollowUser(followerId, followedId);
+
+            if (result > 0)
+                return Ok("Unfollowed successfully");
+            else
+                return BadRequest("Failed to unfollow");
+        }
     }
 }

@@ -32,6 +32,19 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        [HttpPost("assign/userId/{userId}/tagName/{tagName}")]
+        public IActionResult AssignTagToUser(int userId, string tagName)
+        {
+            Tag tag = new Tag { Name = tagName };
+            int result = tag.AssignToUser(userId);
+
+            if (result > 0)
+                return Ok("Tag assigned to user successfully.");
+            else
+                return BadRequest("Failed to assign tag to user (duplicate or error).");
+        }
+
+
         // DELETE api/<TagsController>/5
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]

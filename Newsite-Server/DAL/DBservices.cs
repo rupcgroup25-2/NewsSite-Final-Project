@@ -290,6 +290,57 @@ namespace Newsite_Server.DAL
             }
 
         }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method assigns a tag to a user. If the tag does not exist, it creates the tag first.
+        // Calls stored procedure: sp_AddUserTagByNameFinal
+        //--------------------------------------------------------------------------------------------------
+        public int AssignTagToUser(string tagName, int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // open DB connection
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@TagName", tagName);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_InsertUser-TagPair", con, paramDic); // create command
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // try to execute
+                return numEffected;
+            }
+            catch (SqlException ex)
+            {
+                // Handles RAISERROR from SQL
+                Console.WriteLine("SQL Exception: " + ex.Message);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
         //--------------------------------------------------------------------------------------------------
         // This method to select all tags
         //--------------------------------------------------------------------------------------------------

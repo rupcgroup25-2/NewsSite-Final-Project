@@ -49,74 +49,7 @@
     <main class="container-lg py-4 min-vh-100">
         <div id="interests"></div>
     </main>
-    <!-- Shared Modals -->
-    <!-- Share Modal -->
-    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="shareModalLabel">Share Article</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="shareForm">
-                        <div class="mb-3">
-                            <label for="shareComment" class="form-label">Add your comment</label>
-                            <textarea class="form-control" id="shareComment" rows="3" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Share</button>
-                    </form>
-                    <div id="shareError" class="alert alert-danger mt-3 d-none"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Report Modal -->
-    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="reportModalLabel">Report Article</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="reportForm">
-                        <div class="mb-3">
-                            <label for="reportReason" class="form-label">Reason</label>
-                            <select class="form-select" id="reportReason" required>
-                                <option value="">Select a reason...</option>
-                                <option value="spam">Spam</option>
-                                <option value="inappropriate">Inappropriate content</option>
-                                <option value="misinformation">Misinformation</option>
-                                <option value="copyright">Copyright violation</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="reportComment" class="form-label">Additional details</label>
-                            <textarea class="form-control" id="reportComment" rows="3"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-danger w-100">Report</button>
-                    </form>
-                    <div id="reportError" class="alert alert-danger mt-3 d-none"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Article Detail Modal (with comments) -->
-    <div class="modal fade" id="articleModal" tabindex="-1" aria-labelledby="articleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="articleModalLabel">Article</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="articleModalBody">
-                    <!-- Article content will be injected here -->
-                </div>
-            </div>
-        </div>
-    </div>
+   
     <!-- Footer -->
     <footer class="bg-body border-top mt-5 py-3">
         <div class="container text-center small text-muted">

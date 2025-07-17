@@ -14,6 +14,11 @@
       </div>
     </div>`;
     });
+    html += `<div class="mb-3">
+                <label for="new-interest" class="form-label">Add new interest</label>
+                <input type="text" id="new-interest" class="form-control" placeholder="Type a new interest and press Add">
+                <button class="btn btn-secondary mt-2" id="add-interest-btn">Add</button>
+            </div>`;
     html += '</div><button class="btn btn-primary mt-3" id="save-interests-btn">Save Preferences</button>';
     $tab.html(html);
 }

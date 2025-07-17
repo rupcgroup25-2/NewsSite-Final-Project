@@ -28,6 +28,12 @@ namespace Newsite_Server.BL
             return dbs.SelectAllTags();
         }
 
+        public List<Tag> GetTagsForUser(int userId)
+        {
+            return dbs.GetTagsForUser(userId);
+        }
+
+
         public int AssignToUser(int userId)
         {
             DBservices dbs = new DBservices();

@@ -176,6 +176,7 @@ namespace Newsite_Server.DAL
                         u.Password = hashedPassword;
                         u.Active = Convert.ToBoolean(dr["Active"]);
                         u.BlockSharing = Convert.ToBoolean(dr["BlockSharing"]);
+                        u.Tags = GetTagsForUser(u.Id);
                         return u;
                     }
                 }

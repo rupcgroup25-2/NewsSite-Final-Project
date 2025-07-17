@@ -21,7 +21,11 @@ namespace Newsite_Server.Controllers
 
                 return Ok(new
                 {
-                    token, NewUser.Name, NewUser.Id, NewUser.Email
+                    token,
+                    NewUser.Name,
+                    NewUser.Id,
+                    NewUser.Email,
+                    NewUser.Tags
                 });
             }
             return (Unauthorized("Invalid email or password"));

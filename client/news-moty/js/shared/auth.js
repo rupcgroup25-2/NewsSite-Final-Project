@@ -104,9 +104,9 @@ $(document).on('submit', '#loginForm', function (e) {
         email: username,
         password: password,
         active: true,
-        blockSharing: false
+        blockSharing: false,
+        tags: []
     };
-
 
     ajaxCall(
         "POST",

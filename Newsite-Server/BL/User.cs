@@ -13,6 +13,7 @@ namespace Newsite_Server.BL
         string password;
         bool active;
         bool blockSharing;
+        List<Tag> tags;
 
         public User() { }
         public User(string email, string password)
@@ -36,6 +37,7 @@ namespace Newsite_Server.BL
         public string Password { get => password; set => password = value; }
         public bool Active { get => active; set => active = value; }
         public bool BlockSharing { get => blockSharing; set => blockSharing = value; }
+        public List<Tag> Tags { get => tags; set => tags = value ?? new List<Tag>(); }
 
         DBservices dbs = new DBservices();
 

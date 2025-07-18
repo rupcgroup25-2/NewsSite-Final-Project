@@ -46,8 +46,8 @@
                     <div class="text-secondary small mb-3">Source: ${article.sourceName || article.source || ''}</div>
 
                     <div class="mt-auto d-flex gap-2">
-                        <a href="article.html?id=${article.id}&collection=Saved" class="btn btn-primary btn-sm" target="_blank">View</a>
-                        <button class="btn btn-sm btn-outline-danger unsave-btn" data-id="${article.id}">
+                            <a href="article.html?id=${article.id}&collection=Saved" class="btn btn-outline-primary" style="text-decoration:none" target="_blank">View</a>
+                        <button class="btn btn-outline-danger unsave-btn" data-id="${article.id}">
                             <i class="fas fa-trash-alt me-1"></i>Remove
                         </button>
                     </div>

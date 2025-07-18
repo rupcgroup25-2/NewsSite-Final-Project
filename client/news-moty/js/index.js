@@ -46,7 +46,9 @@ function renderArticles(category) {
             <span class="badge bg-${tagColor}">${article.category}</span>
             <div class="mt-2 text-muted small">${formatDate(article.publishedAt)}</div>
             <div class="mt-3 d-flex gap-2">
-              <a href="article.html?id=${article.id}" class="btn btn-outline-primary btn-sm" target="_blank">View</a>
+              <button class="btn btn-outline-primary btn-sm flex-fill">
+                <a href="article.html?id=${article.id}" style="text-decoration:none" target="_blank">View</a>
+              </button>
               <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn" data-id="${article.id}">
                 ${isSaved ? 'Saved' : 'Save'}
               </button>
@@ -268,14 +270,16 @@ function renderExternalArticles(articles) {
                         <p class="card-text text-muted flex-grow-1">${article.preview}</p>
                         <div class="mb-2 text-end small text-secondary">Source: ${article.source}</div>
                         <div class="d-flex flex-wrap gap-2 mt-auto">
-                            <a href="article.html?id=${article.id}" class="btn btn-outline-primary btn-sm" target="_blank">View</a>
-                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn flex-fill" data-id="${article.id}">
+                            
+                            <a href="article.html?id=${article.id}" class="btn btn-outline-primary flex-fill" style="text-decoration:none" target="_blank">View</a>
+                            
+                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} save-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
                             </button>
-                            <button class="btn btn-outline-info btn-sm share-article-btn flex-fill" data-id="${article.id}">
+                            <button class="btn btn-outline-info share-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-share me-1"></i>Share
                             </button>
-                            <button class="btn btn-outline-danger btn-sm report-article-btn flex-fill" data-id="${article.id}">
+                            <button class="btn btn-outline-danger report-article-btn flex-fill" data-id="${article.id}">
                                 <i class="fas fa-flag me-1"></i>Report
                             </button>
                         </div>

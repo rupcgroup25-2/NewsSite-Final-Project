@@ -1,6 +1,7 @@
 ﻿
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 using Newsite_Server.BL;
 using static BCrypt.Net.BCrypt;
@@ -84,6 +85,49 @@ namespace Newsite_Server.DAL
                 }
             }
 
+        }
+
+        public List<string> SelectAllUsersEmail()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllUserEmailsFinal", con, null);         // create the command
+            List<string> emails = new List<string>();
+
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                while (dataReader.Read())
+                {
+                    emails.Add(dataReader.GetString(0));
+                }
+                return emails;
+            }
+
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
         }
 
         //--------------------------------------------------------------------------------------------------

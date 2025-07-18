@@ -21,6 +21,9 @@
                 <button class="btn btn-primary mt-2" id="add-interest-btn">Add</button>
             </div>`;
 
+    html += `<input type="text" id="emailSearch" placeholder="Search by email..." autocomplete="off" />
+            <ul id="suggestions" class="list-group position-absolute w-100"></ul>`;
+
     $tab.html(html);
 }
 
@@ -28,6 +31,7 @@
 $(document).ready(function () {
     renderUserActions();
     renderInterestsTab();
+    loadEmails();
 });
 
 //Adding new interest
@@ -84,4 +88,45 @@ $(document).on('click', '.interest-tag', function () {
             alert("Failed to remove interest: " + (xhr.responseText || xhr.statusText));
         }
     );
+});
+
+//Searching user's for following
+let allEmails = [];
+
+function loadEmails() {
+    ajaxCall(
+        "GET",
+        serverUrl + "Users/allEmails",
+        null, // No body for GET
+        function success(data) {
+            allEmails = data;
+        },
+        function error(xhr) {
+            alert("Failed to fetch emails: " + (xhr.responseText || xhr.statusText));
+        }
+    );
+}
+
+// Handle input event for the search bar
+$(document).on("input", "#emailSearch", function () {
+    const query = $(this).val().toLowerCase();
+    const $suggestions = $("#suggestions");
+    $suggestions.empty();
+
+    if (!query) return;
+
+    const matches = allEmails.filter(email => email.toLowerCase().includes(query)).slice(0, 10);
+
+    matches.forEach(email => {
+        const $li = $("<li>")
+            .text(email)
+            .addClass("list-group-item")
+            .css("cursor", "pointer")
+            .on("click", function () {
+                $("#emailSearch").val(email);
+                $suggestions.empty();
+            });
+
+        $suggestions.append($li);
+    });
 });

@@ -93,6 +93,11 @@ namespace Newsite_Server.BL
             return dbs.ToggleDeactivateUser(this.Id);
         }
 
+        public List<string> GetAllEmails()
+        {
+            return dbs.SelectAllUsersEmail();
+        }
+
         public int FollowUser(int followerId, int followedId)
         {
             return dbs.FollowUser(followerId, followedId);

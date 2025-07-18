@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 using Newsite_Server.Services;
+using System.Data.SqlClient;
+using System.Data;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
@@ -42,6 +44,19 @@ namespace Newsite_Server.Controllers
 
             return Ok(new { message = "Success" });
         }
+
+        [HttpGet]
+        [Route("allEmails")]
+        public IActionResult GetAllUsersEmails()
+        {
+            User user = new User();
+            List<string> emails = user.GetAllEmails();
+            if (emails.Any())
+                return Ok(emails);
+            else
+                return BadRequest("Server error.");
+        }
+
 
         [HttpPost("Follow")]
         public IActionResult FollowUser(int followerId, int followedId)

@@ -1,10 +1,8 @@
-CREATE PROCEDURE [dbo].[sp_InsertUser-TagPair]
+ALTER PROCEDURE [dbo].[sp_InsertUser-TagPair]
     @UserId INT,
     @TagName NVARCHAR(100)
 AS
 BEGIN
-    -- SET NOCOUNT ON;  -- Removed so we get the number of rows affected
-
     DECLARE @TagId INT;
 
     -- Check if the tag exists, get its ID
@@ -47,5 +45,8 @@ BEGIN
 
     -- Insert the user-tag pair
     INSERT INTO UserTagsTableFinal (UserId, TagId)
-    VALUES (@UserId, @TagId);  -- This will now return 1 row affected
+    VALUES (@UserId, @TagId);
+
+    -- Return the TagId
+    SELECT @TagId AS TagId;
 END

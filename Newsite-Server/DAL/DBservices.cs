@@ -319,12 +319,69 @@ namespace Newsite_Server.DAL
 
             try
             {
-                int numEffected = cmd.ExecuteNonQuery(); // try to execute
-                return numEffected;
+                object result = cmd.ExecuteScalar(); // get the TagId from SQL
+
+                if (result != null && int.TryParse(result.ToString(), out int tagId))
+                {
+                    return tagId;
+                }
+                else
+                {
+                    Console.WriteLine("Failed to retrieve TagId.");
+                    return 0;
+                }
             }
             catch (SqlException ex)
             {
                 // Handles RAISERROR from SQL
+                Console.WriteLine("SQL Exception: " + ex.Message);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method removes a tag from the user.
+        //--------------------------------------------------------------------------------------------------
+        public int RemoveTageFromUser(int userId, int tagId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // open DB connection
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Error: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@TagId", tagId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_RemoveUserTagFinal", con, paramDic); // your SP name here
+
+            try
+            {
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected;
+            }
+            catch (SqlException ex)
+            {
                 Console.WriteLine("SQL Exception: " + ex.Message);
                 return 0;
             }

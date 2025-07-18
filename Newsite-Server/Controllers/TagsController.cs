@@ -36,12 +36,24 @@ namespace Newsite_Server.Controllers
         public IActionResult AssignTagToUser(int userId, string tagName)
         {
             Tag tag = new Tag { Name = tagName };
-            int result = tag.AssignToUser(userId);
+            int tagId = tag.AssignToUser(userId);
 
-            if (result > 0)
-                return Ok("Tag assigned to user successfully.");
+            if (tagId > 0)
+                return Ok(new { TagId = tagId, Message = "Tag assigned to user successfully." });
             else
                 return BadRequest("Failed to assign tag to user (duplicate or error).");
+        }
+
+        [HttpDelete("RemoveFromUser/userId/{userId}/tagId/{tagId}")]
+        public IActionResult RemoveTagFromUser(int userId, int tagId)
+        {
+            Tag tag = new Tag();
+            int result = tag.RemoveTagFromUser(userId, tagId);
+
+            if (result > 0)
+                return Ok($"Tag '{tagId}' removed from user {userId}.");
+            else
+                return NotFound("Tag not found or not associated with this user.");
         }
 
 

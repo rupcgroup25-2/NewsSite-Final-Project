@@ -33,11 +33,16 @@ namespace Newsite_Server.BL
             return dbs.GetTagsForUser(userId);
         }
 
-
         public int AssignToUser(int userId)
         {
             DBservices dbs = new DBservices();
             return dbs.AssignTagToUser(this.Name, userId);
+        }
+
+        public int RemoveTagFromUser(int userId, int tagId)
+        {
+            DBservices dbs = new DBservices();
+            return dbs.RemoveTageFromUser(userId, tagId);
         }
 
         public int DeleteTag(int tagId)

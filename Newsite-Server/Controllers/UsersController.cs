@@ -46,7 +46,7 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpGet]
-        [Route("allEmails")]
+        [Route("AllEmails")]
         public IActionResult GetAllUsersEmails()
         {
             User user = new User();
@@ -59,23 +59,23 @@ namespace Newsite_Server.Controllers
 
 
         [HttpPost("Follow")]
-        public IActionResult FollowUser(int followerId, int followedId)
+        public IActionResult FollowUser(int followerId, string followedEmail)
         {
             User user = new User();
 
-            int result = user.FollowUser(followerId, followedId);
+            int result = user.FollowUser(followerId, followedEmail);
 
             if (result > 0)
                 return Ok("Follow successfully");
             else
-                return Ok("Already following or failed to add follow");
+                return BadRequest("Already following or failed to add follow");
         }
 
-        [HttpDelete("unfollow")]
-        public IActionResult UnfollowUser(int followerId,  int followedId)
+        [HttpDelete("Unfollow")]
+        public IActionResult UnfollowUser(int followerId,  string followedEmail)
         {
             User user = new User();
-            int result = user.UnFollowUser(followerId, followedId);
+            int result = user.UnFollowUser(followerId, followedEmail);
 
             if (result > 0)
                 return Ok("Unfollowed successfully");

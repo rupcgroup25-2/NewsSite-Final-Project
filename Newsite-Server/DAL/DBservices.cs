@@ -245,7 +245,7 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // Insert Followed user to follower 
         //--------------------------------------------------------------------------------------------------
-        public int FollowUser(int followerId, int followedId)
+        public int FollowUser(int followerId, string followedEmail)
         {
             SqlConnection con;
             SqlCommand cmd;
@@ -263,13 +263,55 @@ namespace Newsite_Server.DAL
             // מילון פרמטרים
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@FollowerId", followerId);
-            paramDic.Add("@FollowedId", followedId);
+            paramDic.Add("@FollowedEmail", followedEmail);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_FollowUserFinal", con, paramDic);
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_FollowUserByEmailFinal", con, paramDic);
 
             try
             {
                 int result = cmd.ExecuteNonQuery(); 
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method to unfollow user
+        //--------------------------------------------------------------------------------------------------
+        public int UnfollowUser(int followerId, string followedEmail)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@FollowerId", followerId);
+            paramDic.Add("@FollowedEmail", followedEmail);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_UnfollowUserByEmailFinal", con, paramDic);
+
+            try
+            {
+                int result = cmd.ExecuteNonQuery();
                 return result;
             }
             catch (Exception ex)
@@ -1017,47 +1059,7 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
-        //--------------------------------------------------------------------------------------------------
-        // This method to unfollow user
-        //--------------------------------------------------------------------------------------------------
-        public int UnfollowUser(int followerId, int followedId)
-        {
-            SqlConnection con;
-            SqlCommand cmd;
-            try
-            {
-                con = connect("myProjDB");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                return 0;
-            }
 
-            Dictionary<string, object> paramDic = new Dictionary<string, object>();
-            paramDic.Add("@FollowerId", followerId);
-            paramDic.Add("@FollowedId", followedId);
-
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_UnfollowUserFinal", con, paramDic);
-
-            try
-            {
-                int result = cmd.ExecuteNonQuery();
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
-            }
-        }
         //--------------------------------------------------------------------------------------------------
         // This method check if the user is blocked or not for watching shared articles
         //--------------------------------------------------------------------------------------------------

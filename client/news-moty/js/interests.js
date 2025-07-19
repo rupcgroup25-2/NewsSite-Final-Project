@@ -21,8 +21,13 @@
                 <button class="btn btn-primary mt-2" id="add-interest-btn">Add</button>
             </div>`;
 
-    html += `<input type="text" id="emailSearch" placeholder="Search by email..." autocomplete="off" />
-            <ul id="suggestions" class="list-group position-absolute w-100"></ul>`;
+    html += `<div class="mb-3">
+            <label for="emailSearch" class="form-label">Follow users</label>
+            <input type="text" id="emailSearch" class="form-control" placeholder="Search by email..." autocomplete="off" />
+            <ul id="suggestions" class="list-group position-absolute w-100"></ul>
+            <button class="btn btn-primary mt-2" id="follow-user-btn">Follow</button>
+            <button class="btn btn-danger mt-2" id="unfollow-user-btn">Unfollow</button>
+            </div>`;
 
     $tab.html(html);
 }
@@ -96,13 +101,14 @@ let allEmails = [];
 function loadEmails() {
     ajaxCall(
         "GET",
-        serverUrl + "Users/allEmails",
+        serverUrl + "Users/AllEmails",
         null, // No body for GET
         function success(data) {
             allEmails = data;
         },
         function error(xhr) {
-            alert("Failed to fetch emails: " + (xhr.responseText || xhr.statusText));
+            console.log("Failed to fetch emails: " + (xhr.responseText || xhr.statusText));
+            $("#emailSearch").hide();
         }
     );
 }
@@ -129,4 +135,49 @@ $(document).on("input", "#emailSearch", function () {
 
         $suggestions.append($li);
     });
+});
+
+//Follow and Unfollow events
+$(document).on('click', '#follow-user-btn', function () {
+    const email = $('#emailSearch').val().trim();
+    if (!email) {
+        alert("Please enter an email to follow.");
+        return;
+    }
+
+    const url = `${serverUrl}Users/Follow?followerId=${currentUser.id}&followedEmail=${email}`;
+
+    ajaxCall(
+        "POST",
+        url,
+        null,
+        function success() {
+            alert("Follow request sent.");
+        },
+        function error(xhr) {
+            alert((xhr.responseText || xhr.statusText));
+        }
+    );
+});
+
+$(document).on('click', '#unfollow-user-btn', function () {
+    const email = $('#emailSearch').val().trim();
+    if (!email) {
+        alert("Please enter an email to unfollow.");
+        return;
+    }
+
+    const url = `${serverUrl}Users/Unfollow?followerId=${currentUser.id}&followedEmail=${email}`;
+
+    ajaxCall(
+        "DELETE",
+        url,
+        null,
+        function success() {
+            alert("Unfollow request sent.");
+        },
+        function error(xhr) {
+            alert((xhr.responseText || xhr.statusText));
+        }
+    );
 });

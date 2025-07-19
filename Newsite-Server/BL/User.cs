@@ -98,13 +98,13 @@ namespace Newsite_Server.BL
             return dbs.SelectAllUsersEmail();
         }
 
-        public int FollowUser(int followerId, int followedId)
+        public int FollowUser(int followerId, string followedEmail)
         {
-            return dbs.FollowUser(followerId, followedId);
+            return dbs.FollowUser(followerId, followedEmail);
         }
-        public int UnFollowUser(int followerId, int followedId)
+        public int UnFollowUser(int followerId, string followedEmail)
         {
-            return dbs.UnfollowUser(followerId, followedId);
+            return dbs.UnfollowUser(followerId, followedEmail);
         }
 
     }

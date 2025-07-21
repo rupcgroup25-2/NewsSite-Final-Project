@@ -21,7 +21,7 @@
     const highlight = (text) => {
         if (!searchTerm) return text;
         const regex = new RegExp(`(${searchTerm})`, 'gi');
-        return text.replace(regex, '<mark>$1</mark>');
+        return text.replace(regex, '<span class="highlight">$1</span>');
     };
 
     savedArticles.forEach(article => {
@@ -86,20 +86,22 @@ $(document).on('click', '.unsave-btn', function () {
 
 
 // Debounced search handler
-let debounceTimer = null;
+let debounceTimer;
 $(document).on('input', '#savedSearchInput', function () {
-    clearTimeout(debounceTimer);
-    const searchTerm = $(this).val();
+    const searchTerm = $(this).val(); 
+
+    clearTimeout(debounceTimer); 
 
     debounceTimer = setTimeout(() => {
+        const trimmed = searchTerm.trim();
         if (currentUser) {
-            if (searchTerm.trim().length > 0) {
-                loadSavedArticles(currentUser.id, searchTerm);
-            } else {
-                loadSavedArticles(currentUser.id); 
+            if (trimmed.length >= 3) {
+                loadSavedArticles(currentUser.id, trimmed);
+            } else if (trimmed.length === 0) {
+                loadSavedArticles(currentUser.id);
             }
         }
-    }, 400); 
+    }, 400);
 });
 
 // Load saved articles (with optional search)

@@ -42,11 +42,21 @@ $(document).ready(async function () {
     else {
         article = await loadSingleArticle(currentUser.id, id);
     }
-    
+
     if (!article) {
         return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
     }
-
+    if (article.sourceUrl) {
+    try {
+         extractedContent = await extractArticleContent(article.sourceUrl);
+        article.fullText = extractedContent;
+    } catch (err) {
+        console.warn("Could not extract article content:", err);
+        article.fullText = article.preview || article.description || '';
+    }
+} else {
+    article.fullText = article.preview || article.description || '';
+}
     const comments = articleComments[id] || [];
 
     const html = `
@@ -69,7 +79,7 @@ $(document).ready(async function () {
               </div>` : ''}
 
             <img src="${article.imageUrl || article.urlToImage}" class="img-fluid mb-3" alt="${article.title}">
-            <p class="fs-6">${article.preview || article.description}</p>
+            <div class="fs-6" style="white-space: pre-line;">${escapeHtml(article.fullText)}</div>
 
             ${article.sourceUrl ? `
               <a href="${article.sourceUrl}" class="btn btn-outline-secondary mt-3" target="_blank">
@@ -147,6 +157,22 @@ function getArticleIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
 }
+function extractArticleContent(url) {
+    return new Promise((resolve, reject) => {
+        const extractUrl = serverUrl + `Articles/extract?url=${encodeURIComponent(url)}`;
+        ajaxCall("GET", extractUrl, null,
+            function (response) {
+                if (response && response.content && response.content.trim()) {
+                    resolve(response.content);
+                } else {
+                    reject("No content extracted from article.");
+                }
+            },
+            function (xhr) {
+                reject(xhr.responseText || "Failed to extract article content.");
+            });
+    });
+}
 
 // --- Share Article ---
 let shareArticleId = null;
@@ -196,7 +222,7 @@ $(document).on('click', '.save-article-btn', function () {
         savedArticles.push(id);
     }
 });
-function saveSCB (responseText) {
+function saveSCB(responseText) {
     alert(responseText);
     savedArticles.push(article.id);
     $('.save-article-btn').text("Article Saved");
@@ -249,4 +275,15 @@ function reportSCB(responseText) {
 
 function reportECB(xhr) {
     alert(xhr.responseText || "Failed to submit report.");
+}
+
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }

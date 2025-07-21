@@ -155,5 +155,20 @@ namespace Newsite_Server.Controllers
             return result > 0 ? Ok("Tag removed from article") : NotFound("Tag not found on article");
         }
 
+        [HttpGet("extract")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Extract([FromQuery] string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return BadRequest("URL is required.");
+
+            var content = await SimpleArticleExtractor.ExtractAsync(url);
+
+            if (string.IsNullOrWhiteSpace(content))
+                return NotFound("Could not extract article content.");
+
+            return Ok(new { Content = content });
+        }
     }
 }
+

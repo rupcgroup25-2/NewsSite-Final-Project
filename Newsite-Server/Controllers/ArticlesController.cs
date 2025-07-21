@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -157,18 +161,56 @@ namespace Newsite_Server.Controllers
 
         [HttpGet("extract")]
         [AllowAnonymous]
-        public async Task<IActionResult> Extract([FromQuery] string url)
+        public async Task<IActionResult> Extract(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return BadRequest("URL is required.");
 
-            var content = await SimpleArticleExtractor.ExtractAsync(url);
+            var content = await ArticleExtractor.ExtractArticleAsync(url);
 
             if (string.IsNullOrWhiteSpace(content))
                 return NotFound("Could not extract article content.");
 
-            return Ok(new { Content = content });
+            return Ok(new { content = content });
         }
+
+        [HttpPost("tts")]
+        public async Task<IActionResult> TextToSpeech([FromBody] TtsRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Text))
+                return BadRequest("Text is required");
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "sk_32deaa732f16256ec65ce745e6c5e01c7ea79bc75b1556c8");
+            client.DefaultRequestHeaders.Add("Accept", "audio/mpeg");
+
+            var payload = new
+            {
+                text = request.Text,
+                model_id = "eleven_monolingual_v1", // דגם ברירת מחדל
+                voice_settings = new
+                {
+                    stability = 0.5,
+                    similarity_boost = 0.5
+                }
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // שים לב שצריך להשתמש ב-ID של קול תקני מתוך ElevenLabs
+            string voiceId = "EXAVITQu4vr4xnSDxMaL"; // קול ברירת מחדל (Rachel)
+
+            var response = await client.PostAsync($"https://api.elevenlabs.io/v1/text-to-speech/{voiceId}", content);
+
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+
+            var audioBytes = await response.Content.ReadAsByteArrayAsync();
+            return File(audioBytes, "audio/mpeg");
+        }
+
     }
+
 }
 

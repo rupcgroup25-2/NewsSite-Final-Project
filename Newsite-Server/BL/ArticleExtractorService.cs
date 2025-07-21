@@ -1,13 +1,15 @@
 ﻿using HtmlAgilityPack;
 using System;
+using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-public static class SimpleArticleExtractor
+public static class ArticleExtractor
 {
     private static readonly HttpClient httpClient = new();
 
-    public static async Task<string> ExtractAsync(string url)
+    public static async Task<string> ExtractArticleAsync(string url)
     {
         try
         {
@@ -15,27 +17,66 @@ public static class SimpleArticleExtractor
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            // חיפוש גמיש לפי article או divים נפוצים
-            var articleNode =
-                doc.DocumentNode.SelectSingleNode("//article") ??
-                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'article')]") ??
-                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'content')]") ??
-                doc.DocumentNode.SelectSingleNode("//main") ??
-                doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'main')]") ??
-                doc.DocumentNode.SelectSingleNode("//div[string-length(normalize-space(text())) > 200]") ??
-                doc.DocumentNode.SelectSingleNode("//body");
+            // הסרה של סקריפטים וסטיילים
+            RemoveNoiseNodes(doc);
 
-            if (articleNode == null)
+            // חיפוש אזור תוכן לפי article / main / class/id
+            HtmlNode contentNode =
+                doc.DocumentNode.SelectSingleNode("//article") ??
+                doc.DocumentNode.SelectSingleNode("//main") ??
+                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'content')]") ??
+                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'article')]") ??
+                doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'main')]");
+
+            // fallback: חפש div עם הכי הרבה טקסט
+            if (contentNode == null)
+            {
+                contentNode = doc.DocumentNode
+                    .SelectNodes("//div")
+                    ?.OrderByDescending(div => div.InnerText.Length)
+                    .FirstOrDefault();
+            }
+
+            if (contentNode == null)
                 return null;
 
-            var text = HtmlEntity.DeEntitize(articleNode.InnerText).Trim();
+            // ניקוי טקסט
+            string rawText = HtmlEntity.DeEntitize(contentNode.InnerText);
+            string cleanedText = CleanText(rawText);
 
-            return text;
+            return cleanedText;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error extracting article: {ex.Message}");
             return null;
         }
+    }
+
+    private static void RemoveNoiseNodes(HtmlDocument doc)
+    {
+        var noiseXpaths = new[]
+        {
+            "//script", "//style", "//nav", "//footer", "//aside", "//form", "//noscript"
+        };
+
+        foreach (var xpath in noiseXpaths)
+        {
+            var nodes = doc.DocumentNode.SelectNodes(xpath);
+            if (nodes == null) continue;
+            foreach (var node in nodes)
+                node.Remove();
+        }
+    }
+
+    private static string CleanText(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "";
+
+        // החלפת רווחים מרובים, טאבים, שורות ריקות
+        string cleaned = Regex.Replace(input, @"\s{2,}", " ");
+        cleaned = Regex.Replace(cleaned, @"(\r?\n\s*){2,}", "\n\n"); // שמירה על פסקאות
+        return cleaned.Trim();
     }
 }

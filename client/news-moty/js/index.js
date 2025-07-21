@@ -323,7 +323,9 @@ $(document).on('click', '.save-article-btn', function () {
         urlToImage: article.imageUrl || "",
         publishedAt: article.publishedAt || new Date().toISOString(),
         sourceName: article.source || "",
-        author: article.author || ""
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
     };
     console.log("Article found:", articleToSend);
     if (!articleToSend) {
@@ -383,7 +385,9 @@ $(document).on('click', '#btnShareArticle', function () {
         urlToImage: article.imageUrl || "",
         publishedAt: article.publishedAt || new Date().toISOString(),
         sourceName: article.source || "",
-        author: article.author || ""
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
     };
 
     ajaxCall(
@@ -447,7 +451,9 @@ $(document).on('click', '#btnReportArticle', function () {
         urlToImage: article.imageUrl || "",
         publishedAt: article.publishedAt || new Date().toISOString(),
         sourceName: article.source || "",
-        author: article.author || ""
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
     };
 
     const data = {

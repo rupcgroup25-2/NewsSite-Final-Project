@@ -48,11 +48,16 @@ function initializeFirebaseAuth() {
 }
 
 // פונקציה לאתחול הצ'אט של כתבה
-async function initChat(articleId, userName) {
-    if (!articleId) {
-        console.error("Invalid articleId in initChat:", articleId);
+async function initChat(articleData, userName) {
+    // במקום לקבל articleId, נקבל את כל נתוני הכתבה
+    const unifiedId = generateUnifiedArticleId(articleData);
+
+    if (!unifiedId) {
+        console.error("Cannot generate unified ID for article:", articleData);
         return;
     }
+
+    console.log("Using unified chat ID:", unifiedId);
 
     // וודא שהמשתמש מחובר ל-Firebase Auth
     try {
@@ -74,8 +79,7 @@ async function initChat(articleId, userName) {
     }
 
     // יצירת reference לאוסף ההודעות של הצ'אט ב-Firestore
-    // שינוי מ-chats ל-chatrooms לפי הכללים שלך
-    const messagesRef = collection(db, 'chatrooms', articleId, 'messages');
+    const messagesRef = collection(db, 'chatrooms', unifiedId, 'messages');
 
     // שאילתה למיון ההודעות לפי timestamp
     const q = query(messagesRef, orderBy('timestamp'));
@@ -86,9 +90,26 @@ async function initChat(articleId, userName) {
             chatMessages.innerHTML = '';
             snapshot.forEach(doc => {
                 const msg = doc.data();
+                // בדוק אם זו ההודעה שלי
+                const isMine = (msg.userName === userName);
+                const messageClass = isMine ? 'my-message' : 'other-message';
+                const alignClass = isMine ? 'text-end' : 'text-start';
+                // צבע רקע נוסף כבר ב-CSS
+
                 const div = document.createElement('div');
-                div.className = 'chat-message p-2 mb-1 rounded';
-                div.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
+                div.className = `chat-message p-2 mb-1 rounded ${messageClass} ${alignClass}`;
+
+                const timestamp = msg.timestamp ?
+                    new Date(msg.timestamp.toDate()).toLocaleTimeString() :
+                    'now';
+
+                div.innerHTML = `
+                    <div>
+                        <strong>${msg.userName}:</strong> 
+                        <span>${msg.text}</span>
+                    </div>
+                    <small class="text-muted">${timestamp}</small>
+                `;
                 chatMessages.appendChild(div);
             });
             chatMessages.scrollTop = chatMessages.scrollHeight; // גלילה לתחתית
@@ -106,7 +127,8 @@ async function initChat(articleId, userName) {
                 await addDoc(messagesRef, {
                     text,
                     userName,
-                    timestamp: serverTimestamp()
+                    timestamp: serverTimestamp(),
+                    articleTitle: articleData.title // הוסף את כותרת הכתבה למעקב
                 });
                 chatInput.value = '';
             } catch (error) {
@@ -117,7 +139,8 @@ async function initChat(articleId, userName) {
 
         // אפשרות לשלוח הודעה בעזרת Enter
         chatInput.onkeypress = (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendBtn.click();
             }
         };
@@ -128,14 +151,34 @@ async function initChat(articleId, userName) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const articleId = getArticleIdFromUrl();
 
-    if (!articleId) {
-        console.error("No articleId found in URL");
-        return;
+function generateUnifiedArticleId(article) {
+    if (!article) return null;
+
+    // אופציה 1: אם יש URL, השתמש בו
+    if (article.url) {
+        // נוציא את הדומיין ונשמור רק את החלק הייחודי
+        const url = new URL(article.url);
+        const path = url.pathname + url.search;
+        // נסיר תווים לא חוקיים עבור Firestore collection ID
+        return btoa(path).replace(/[^a-zA-Z0-9]/g, '').substring(0, 50);
     }
 
+    // אופציה 2: אם אין URL, נשתמש בכותרת + תאריך פרסום
+    if (article.title && article.publishedAt) {
+        const combined = article.title + article.publishedAt;
+        return btoa(combined).replace(/[^a-zA-Z0-9]/g, '').substring(0, 50);
+    }
+
+    // אופציה 3: אם זה כתבה מקומית עם ID מספרי, נשתמש בו
+    if (article.id && !isNaN(article.id)) {
+        return `local_${article.id}`;
+    }
+
+    return null;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     // המתן עד שה-article נטען
     const waitForArticle = () => {
         return new Promise((resolve) => {
@@ -152,9 +195,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await waitForArticle();
 
-    const userName = currentUser ? currentUser.name : `Guest_${Math.random().toString(36).substr(2, 5)}`;
-    await initChat(articleId, userName);
+    const userName = currentUser ?
+        currentUser.name :
+        `Guest_${Math.random().toString(36).substr(2, 5)}`;
+
+    // העבר את כל נתוני הכתבה במקום רק ה-ID
+    await initChat(window.article, userName);
 });
+
+
+// פתרון 4: אלטרנטיבה - השתמש בהאש של הכתבה
+function generateArticleHash(article) {
+    // יצור hash פשוט מהכותרת והתאריך
+    let text = '';
+    if (article.title) text += article.title;
+    if (article.publishedAt) text += article.publishedAt;
+    if (article.url) text += article.url;
+
+    // Hash function פשוט
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+        const char = text.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    return `article_${Math.abs(hash)}`;
+}
+
+// שימוש בפונקציה החדשה
+async function initChatWithHash(articleData, userName) {
+    const chatId = generateArticleHash(articleData);
+    console.log("Using hashed chat ID:", chatId);
+
+    // יתר הקוד זהה לפונקציה המקורית, רק עם chatId במקום unifiedId
+    // ...
+}
 
 // שאר הפונקציות נשארות אותו דבר...
 
@@ -190,27 +266,13 @@ function loadSingleArticle(userId, articleId) {
     });
 }
 
+
 function getArticleIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
 }
 
-function extractArticleContent(url) {
-    return new Promise((resolve, reject) => {
-        const extractUrl = serverUrl + `Articles/extract?url=${encodeURIComponent(url)}`;
-        ajaxCall("GET", extractUrl, null,
-            function (response) {
-                if (response && response.content && response.content.trim()) {
-                    resolve(response.content);
-                } else {
-                    reject("No content extracted from article.");
-                }
-            },
-            function (xhr) {
-                reject(xhr.responseText || "Failed to extract article content.");
-            });
-    });
-}
+
 
 // --- Share Article ---
 let shareArticleId = null;
@@ -455,6 +517,23 @@ $(document).ready(async function () {
 </div>
 `;
 
+//extract text scraper
+    function extractArticleContent(url) {
+        return new Promise((resolve, reject) => {
+            const extractUrl = serverUrl + `Articles/extract?url=${encodeURIComponent(url)}`;
+            ajaxCall("GET", extractUrl, null,
+                function (response) {
+                    if (response && response.content && response.content.trim()) {
+                        resolve(response.content);
+                    } else {
+                        reject("No content extracted from article.");
+                    }
+                },
+                function (xhr) {
+                    reject(xhr.responseText || "Failed to extract article content.");
+                });
+        });
+    }
     $('#articleContainer').html(html);
     if (extractedContent) {
         $('.article-body').html(wrapWordsInSpans(extractedContent));

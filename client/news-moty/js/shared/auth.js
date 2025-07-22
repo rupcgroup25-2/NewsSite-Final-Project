@@ -152,7 +152,8 @@ $(document).on('submit', '#registerForm', function (e) {
         email: email,
         password: password,
         active: true,
-        blockSharing: false
+        blockSharing: false,
+        tags:[]
     };
 
     ajaxCall(

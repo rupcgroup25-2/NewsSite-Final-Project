@@ -1,14 +1,174 @@
-﻿//Load all saved articles for current user
+﻿//firebase chat
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+// Your web app's Firebase configuration
+// הוסף כאן את ה-firebaseConfig שלך
+const firebaseConfig = {
+    apiKey: "AIzaSyBNmhr9BYmpGC0jLG9TFCoR3rCNKI8IPIM",
+    authDomain: "newspapersite-ruppin.firebaseapp.com",
+    projectId: "newspapersite-ruppin",
+    storageBucket: "newspapersite-ruppin.firebasestorage.app",
+    messagingSenderId: "397153014495",
+    appId: "1:397153014495:web:c3613b494555359a86cf6a",
+    measurementId: "G-WN88XW35LV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Firebase Auth Setup - התחברות אנונימית לצורך הצ'אט
+function initializeFirebaseAuth() {
+    return new Promise((resolve, reject) => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User signed in:", user.uid);
+                resolve(user);
+            } else {
+                // התחברות אנונימית אם אין משתמש
+                signInAnonymously(auth)
+                    .then((result) => {
+                        console.log("Anonymous sign in successful:", result.user.uid);
+                        resolve(result.user);
+                    })
+                    .catch((error) => {
+                        console.error("Anonymous sign in failed:", error);
+                        reject(error);
+                    });
+            }
+        });
+    });
+}
+
+// פונקציה לאתחול הצ'אט של כתבה
+async function initChat(articleId, userName) {
+    if (!articleId) {
+        console.error("Invalid articleId in initChat:", articleId);
+        return;
+    }
+
+    // וודא שהמשתמש מחובר ל-Firebase Auth
+    try {
+        await initializeFirebaseAuth();
+    } catch (error) {
+        console.error("Failed to authenticate:", error);
+        return;
+    }
+
+    const chatContainer = document.getElementById('firebaseChatContainer');
+    const chatMessages = document.getElementById('messages');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // בדיקה שכל הרכיבים קיימים
+    if (!chatContainer || !chatMessages || !chatInput || !sendBtn) {
+        console.error("Chat elements not found in DOM");
+        return;
+    }
+
+    // יצירת reference לאוסף ההודעות של הצ'אט ב-Firestore
+    // שינוי מ-chats ל-chatrooms לפי הכללים שלך
+    const messagesRef = collection(db, 'chatrooms', articleId, 'messages');
+
+    // שאילתה למיון ההודעות לפי timestamp
+    const q = query(messagesRef, orderBy('timestamp'));
+
+    try {
+        // האזנה לשינויים בזמן אמת
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            chatMessages.innerHTML = '';
+            snapshot.forEach(doc => {
+                const msg = doc.data();
+                const div = document.createElement('div');
+                div.className = 'chat-message p-2 mb-1 rounded';
+                div.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
+                chatMessages.appendChild(div);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight; // גלילה לתחתית
+        }, (error) => {
+            console.error("Error listening to messages:", error);
+            chatMessages.innerHTML = '<div class="alert alert-danger">Error loading chat messages</div>';
+        });
+
+        // שליחת הודעה
+        sendBtn.onclick = async () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            try {
+                await addDoc(messagesRef, {
+                    text,
+                    userName,
+                    timestamp: serverTimestamp()
+                });
+                chatInput.value = '';
+            } catch (error) {
+                console.error("Error sending message:", error);
+                alert("Failed to send message. Please try again.");
+            }
+        };
+
+        // אפשרות לשלוח הודעה בעזרת Enter
+        chatInput.onkeypress = (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        };
+
+    } catch (error) {
+        console.error("Error initializing chat:", error);
+        chatMessages.innerHTML = '<div class="alert alert-danger">Error initializing chat</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const articleId = getArticleIdFromUrl();
+
+    if (!articleId) {
+        console.error("No articleId found in URL");
+        return;
+    }
+
+    // המתן עד שה-article נטען
+    const waitForArticle = () => {
+        return new Promise((resolve) => {
+            const checkArticle = () => {
+                if (window.article) {
+                    resolve();
+                } else {
+                    setTimeout(checkArticle, 100);
+                }
+            };
+            checkArticle();
+        });
+    };
+
+    await waitForArticle();
+
+    const userName = currentUser ? currentUser.name : `Guest_${Math.random().toString(36).substr(2, 5)}`;
+    await initChat(articleId, userName);
+});
+
+// שאר הפונקציות נשארות אותו דבר...
+
+//Load all saved articles for current user
 function loadSavedArticles(userId) {
     return new Promise((resolve, reject) => {
         ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
             function (articles) {
                 savedArticles = articles;
-                resolve(articles); // ✅ Resolve the Promise when done
+                resolve(articles);
             },
             function () {
                 $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved articles.</div>');
-                reject("Failed to load"); // ❌ Reject on error
+                reject("Failed to load");
             }
         );
     });
@@ -34,6 +194,7 @@ function getArticleIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
 }
+
 function extractArticleContent(url) {
     return new Promise((resolve, reject) => {
         const extractUrl = serverUrl + `Articles/extract?url=${encodeURIComponent(url)}`;
@@ -63,6 +224,7 @@ $(document).on('click', '.share-article-btn', function () {
     $('#shareError').addClass('d-none');
     $('#shareModal').modal('show');
 });
+
 $('#shareForm').on('submit', function (e) {
     e.preventDefault();
     if (!currentUser || !shareArticleId) return;
@@ -76,12 +238,14 @@ $('#shareForm').on('submit', function (e) {
     });
     $('#shareModal').modal('hide');
 });
+
 function shareSCB(responseText) {
     alert(responseText);
     sharedArticles.push(article.id);
     $('.share-article-btn').text("Article Shared");
     $('.share-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
 }
+
 function shareECB(xhr) {
     alert(xhr.responseText || "Failed to share article.");
 }
@@ -99,6 +263,7 @@ $(document).on('click', '.save-article-btn', function () {
         savedArticles.push(id);
     }
 });
+
 function saveSCB(responseText) {
     alert(responseText);
     savedArticles.push(article.id);
@@ -110,37 +275,6 @@ function saveECB() {
     alert("Failed to save article");
 }
 
-// --- Report Article ---
-//let reportArticleId = null;
-//$(document).on('click', '.report-article-btn', function () {
-//    if (!currentUser) {
-//        $('#loginModal').modal('show');
-//        return;
-//    }
-//    reportArticleId = $(this).data('id');
-//    $('#reportReason').val('');
-//    $('#reportComment').val('');
-//    $('#reportError').addClass('d-none');
-//    $('#reportModal').modal('show');
-//});
-//$('#reportForm').on('submit', function (e) {
-//    e.preventDefault();
-//    if (!currentUser || !reportArticleId) return;
-//    const reason = $('#reportReason').val();
-//    const comment = $('#reportComment').val();
-//    if (!reason) {
-//        $('#reportError').removeClass('d-none').text('Please select a reason.');
-//        return;
-//    }
-//    articleReports.push({
-//        articleId: reportArticleId,
-//        reason,
-//        comment,
-//        reporter: currentUser.name,
-//        date: new Date()
-//    });
-//    $('#reportModal').modal('hide');
-//});
 function reportSCB(responseText) {
     alert("Report submitted successfully.");
     $('#reportModal').modal('hide');
@@ -154,45 +288,45 @@ function reportECB(xhr) {
     alert(xhr.responseText || "Failed to submit report.");
 }
 
-
-function escapeHtml(text) {
-    if (!text) return '';
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+//to split the words in the body to spans
+function wrapWordsInSpans(text) {
+    return text.split(/(\s+)/).map((word, i) => {
+        if (word.trim() === '') return word;
+        return `<span class="tts-word" data-index="${i}">${word}</span>`;
+    }).join('');
 }
 
 $(document).ready(async function () {
     const id = getArticleIdFromUrl();
     if (!id) return $('#articleContainer').html('<div class="alert alert-danger">No article ID provided.</div>');
+
     let articles;
-    article = {};
+    window.article = {}; // הוסף את זה לגלובל scope
+
     if (isNaN(id)) {
         articles = getCachedArticles();
-        article = articles.find(a => a.id == id);
+        window.article = articles.find(a => a.id == id);
     }
     else {
-        article = await loadSingleArticle(currentUser.id, id);
+        window.article = await loadSingleArticle(currentUser.id, id);
     }
 
-    if (!article) {
+    if (!window.article) {
         return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
     }
 
-    if (article.url) {
+    let extractedContent;
+    if (window.article.url) {
         try {
-            extractedContent = await extractArticleContent(article.url);
-            extractedContent;
+            extractedContent = await extractArticleContent(window.article.url);
         } catch (err) {
             console.warn("Could not extract article content:", err);
-            article.fullText = article.preview || article.description || '';
+            window.article.fullText = window.article.preview || window.article.description || '';
         }
     } else {
-        article.fullText = article.preview || article.description || '';
+        window.article.fullText = window.article.preview || window.article.description || '';
     }
+
     const comments = articleComments[id] || [];
 
     const html = `
@@ -201,20 +335,20 @@ $(document).ready(async function () {
   <div class="col-lg-8">
     <div class="card mb-4 shadow-sm">
         <div class="card-body" style="width: 100%; max-width: none;">
-        <h2 class="fw-bold">${article.title}</h2>
+        <h2 class="fw-bold">${window.article.title}</h2>
         <div class="text-muted small mb-2">
-          <i class="bi bi-calendar-event"></i> ${formatDate(article.publishedAt)} &nbsp;
-          <i class="bi bi-person"></i> ${article.source || article.sourceName || 'Unknown'} &nbsp;
-          <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
+          <i class="bi bi-calendar-event"></i> ${formatDate(window.article.publishedAt)} &nbsp;
+          <i class="bi bi-person"></i> ${window.article.source || window.article.sourceName || 'Unknown'} &nbsp;
+          <span class="badge bg-${availableTags.find(t => t.id === window.article.category)?.color || 'secondary'}">${window.article.category}</span>
         </div>
 
-        ${article.sourceUrl ? `
+        ${window.article.sourceUrl ? `
           <div class="alert alert-light border d-flex justify-content-between align-items-center small">
             <span>This article is from an external source.</span>
-            <a href="${article.sourceUrl}" target="_blank">Read the original article</a>
+            <a href="${window.article.sourceUrl}" target="_blank">Read the original article</a>
           </div>` : ''}
 
-        <img src="${article.imageUrl || article.urlToImage}" class="img-fluid mb-3" alt="${article.title}">
+        <img src="${window.article.imageUrl || window.article.urlToImage}" class="img-fluid mb-3" alt="${window.article.title}">
 
         <div class="article-summary card mb-4 shadow-sm">
           <div class="card-body">
@@ -232,9 +366,7 @@ $(document).ready(async function () {
           color: #333;
           white-space: pre-line;
           text-align: justify;
-          margin-top: 1rem;
-        ">
-          ${extractedContent}
+          margin-top: 1rem;">
         </div>
 
         <!-- Playback Buttons Moved Here -->
@@ -250,8 +382,8 @@ $(document).ready(async function () {
           </button>
         </div>
 
-        ${article.sourceUrl ? `
-          <a href="${article.sourceUrl}" class="btn btn-outline-secondary mt-3" target="_blank">
+        ${window.article.sourceUrl ? `
+          <a href="${window.article.sourceUrl}" class="btn btn-outline-secondary mt-3" target="_blank">
             <i class="bi bi-box-arrow-up-right"></i> Read Original Article
           </a>` : ''}
       </div>
@@ -282,7 +414,7 @@ $(document).ready(async function () {
         <button class="btn btn-outline-dark btn-sm w-100 share-article-btn" data-id="${id}">
           <i class="bi bi-share"></i> Share Article
         </button>
-        <a href="${article.url}" target="_blank" class="mt-2 btn btn-outline-dark btn-sm w-100">
+        <a href="${window.article.url}" target="_blank" class="mt-2 btn btn-outline-dark btn-sm w-100">
           <i class="bi bi-box-arrow-up-right"></i> View Source
         </a>
         <button class="btn btn-outline-danger btn-sm w-100 mt-2 report-article-btn" data-id="${id}">
@@ -291,16 +423,32 @@ $(document).ready(async function () {
       </div>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mb-3">
       <div class="card-body">
         <h6 class="fw-bold">Article Information</h6>
         <div class="mb-2">
           <strong>Category</strong><br>
-          <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
+          <span class="badge bg-${availableTags.find(t => t.id === window.article.category)?.color || 'secondary'}">${window.article.category}</span>
         </div>
-        <div class="mb-2"><strong>Published</strong><br>${formatDate(article.publishedAt)}</div>
-        <div class="mb-2"><strong>Source</strong><br>${article.source || article.sourceName || 'Unknown'}</div>
+        <div class="mb-2"><strong>Published</strong><br>${formatDate(window.article.publishedAt)}</div>
+        <div class="mb-2"><strong>Source</strong><br>${window.article.source || window.article.sourceName || 'Unknown'}</div>
         <div><strong>Comments</strong><br>${comments.length} comment${comments.length === 1 ? '' : 's'}</div>
+      </div>
+    </div>
+
+    <!-- Live Chat - מועבר לסיידבר -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-chat-square-dots"></i> Live Chat</h6>
+        <div id="firebaseChatContainer">
+          <div id="messages" style="height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; margin-bottom: 10px; border-radius: 5px; background-color: #f8f9fa;"></div>
+          <div class="input-group">
+            <input id="chatInput" type="text" class="form-control form-control-sm" placeholder="Type your message..." />
+            <button id="sendBtn" class="btn btn-primary btn-sm">
+              <i class="bi bi-send"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -308,7 +456,13 @@ $(document).ready(async function () {
 `;
 
     $('#articleContainer').html(html);
-    //renderComments(id);
+    if (extractedContent) {
+        $('.article-body').html(wrapWordsInSpans(extractedContent));
+        window.extractedContent = extractedContent; // שמור גלובלית לצורך TTS
+    } else if (window.article.fullText) {
+        $('.article-body').html(wrapWordsInSpans(window.article.fullText));
+        window.extractedContent = window.article.fullText; // שמור גלובלית לצורך TTS
+    }
 
     $('#commentForm').off('submit').on('submit', function (e) {
         e.preventDefault();
@@ -316,7 +470,6 @@ $(document).ready(async function () {
         if (text && currentUser) {
             if (!articleComments[id]) articleComments[id] = [];
             articleComments[id].push({ user: currentUser.name, text, date: new Date() });
-            //renderComments(id);
             $('#commentInput').val('');
         }
     });
@@ -324,35 +477,21 @@ $(document).ready(async function () {
 
 //TTS READER
 let speechUtterance = null;
-let currentChunkIndex = 0;
-let chunks = [];
 let isPaused = false;
 
-function splitTextIntoChunks(text, maxLength = 200) {
-    const result = [];
-    let start = 0;
-    while (start < text.length) {
-        let end = start + maxLength;
-        if (end > text.length) end = text.length;
-        if (end < text.length) {
-            let lastSpace = text.lastIndexOf(' ', end);
-            if (lastSpace > start) end = lastSpace;
-        }
-        result.push(text.substring(start, end).trim());
-        start = end;
-    }
-    return result;
-}
-
-function speakChunks() {
-    if (currentChunkIndex >= chunks.length) {
-        // סיימנו הכל - איפוס
-        currentChunkIndex = 0;
-        chunks = [];
+function startSpeaking(text) {
+    if (!text || text.trim() === '') {
+        alert("No text to read.");
         return;
     }
 
-    speechUtterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex]);
+    isPaused = false;
+
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+    }
+
+    speechUtterance = new SpeechSynthesisUtterance(text);
     speechUtterance.lang = 'en-US';
     speechUtterance.pitch = 0.9;
     speechUtterance.rate = 0.9;
@@ -362,31 +501,21 @@ function speakChunks() {
     if (!voice && voices.length > 0) voice = voices[0];
     if (voice) speechUtterance.voice = voice;
 
-    speechUtterance.onend = () => {
-        if (!isPaused) {
-            currentChunkIndex++;
-            speakChunks();
+    speechUtterance.onboundary = function (event) {
+        if (event.name === 'word') {
+            const start = event.charIndex;
+            const end = start + event.charLength;
+            highlightSpokenWord(start, end);
         }
+    };
+
+    speechUtterance.onend = () => {
+        $('.tts-word').removeClass('highlighted');
     };
 
     window.speechSynthesis.speak(speechUtterance);
 }
 
-function startSpeaking(text) {
-    if (!text || text.trim() === '') {
-        alert("No text to read.");
-        return;
-    }
-    chunks = splitTextIntoChunks(text);
-    currentChunkIndex = 0;
-    isPaused = false;
-
-    if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-    }
-
-    speakChunks();
-}
 function stopSpeaking() {
     if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
         isPaused = true;
@@ -400,12 +529,13 @@ function resumeSpeaking() {
         window.speechSynthesis.resume();
     }
 }
+
 $(document).on('click', '#readArticleBtn', function () {
-    if (!extractedContent || extractedContent.trim().length === 0) {
+    if (!window.extractedContent || window.extractedContent.trim().length === 0) {
         alert("No content to read.");
         return;
     }
-    startSpeaking(extractedContent);
+    startSpeaking(window.extractedContent);
 });
 
 $(document).on('click', '#stopReadArticleBtn', function () {
@@ -416,6 +546,19 @@ $(document).on('click', '#resumeReadArticleBtn', function () {
     resumeSpeaking();
 });
 
+function highlightSpokenWord(start, end) {
+    $('.tts-word').removeClass('highlighted');
+    let totalLength = 0;
+    $('.tts-word').each(function () {
+        const text = $(this).text();
+        const wordLength = text.length;
+        if (start >= totalLength && start < totalLength + wordLength) {
+            $(this).addClass('highlighted');
+            return false;
+        }
+        totalLength += wordLength + 1;
+    });
+}
 
 //SUMMARIZE
 $(document).on('click', '#generateSummaryBtn', function () {
@@ -423,7 +566,7 @@ $(document).on('click', '#generateSummaryBtn', function () {
     $('#articleSummary').text('');
     $(this).prop('disabled', true);
 
-    const articleText = extractedContent|| '';
+    const articleText = window.extractedContent || '';
 
     if (!articleText) {
         alert("No content available to summarize.");
@@ -435,12 +578,12 @@ $(document).on('click', '#generateSummaryBtn', function () {
     ajaxCall(
         "POST",
         serverUrl + "Articles/summarize",
-        JSON.stringify({ text: articleText }),  // stringify כאן
+        JSON.stringify({ text: articleText }),
         function (data) {
             if (data.summary) {
                 console.log(data.summary)
                 $('#articleSummary').text(data.summary).show();
-                $('.article-summary').show(); 
+                $('.article-summary').show();
             } else {
                 alert("No summary received");
             }

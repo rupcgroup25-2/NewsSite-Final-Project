@@ -196,92 +196,116 @@ $(document).ready(async function () {
     const comments = articleComments[id] || [];
 
     const html = `
-    <div class="row">
-      <!-- Main Article Content -->
-      <div class="col-lg-8">
-        <div class="card mb-4 shadow-sm">
+<div class="row">
+  <!-- Main Article Content -->
+  <div class="col-lg-8">
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body" style="width: 100%; max-width: none;">
+        <h2 class="fw-bold">${article.title}</h2>
+        <div class="text-muted small mb-2">
+          <i class="bi bi-calendar-event"></i> ${formatDate(article.publishedAt)} &nbsp;
+          <i class="bi bi-person"></i> ${article.source || article.sourceName || 'Unknown'} &nbsp;
+          <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
+        </div>
+
+        ${article.sourceUrl ? `
+          <div class="alert alert-light border d-flex justify-content-between align-items-center small">
+            <span>This article is from an external source.</span>
+            <a href="${article.sourceUrl}" target="_blank">Read the original article</a>
+          </div>` : ''}
+
+        <img src="${article.imageUrl || article.urlToImage}" class="img-fluid mb-3" alt="${article.title}">
+
+        <div class="article-summary card mb-4 shadow-sm">
           <div class="card-body">
-            <h2 class="fw-bold">${article.title}</h2>
-            <div class="text-muted small mb-2">
-              <i class="bi bi-calendar-event"></i> ${formatDate(article.publishedAt)} &nbsp;
-              <i class="bi bi-person"></i> ${article.source || article.sourceName || 'Unknown'} &nbsp;
-              <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
-            </div>
-
-            ${article.sourceUrl ? `
-              <div class="alert alert-light border d-flex justify-content-between align-items-center small">
-                <span>This article is from an external source.</span>
-                <a href="${article.sourceUrl}" target="_blank">Read the original article</a>
-              </div>` : ''}
-
-            <img src="${article.imageUrl || article.urlToImage}" class="img-fluid mb-3" alt="${article.title}">
-            <div class="fs-6" style="white-space: pre-line;">${extractedContent}</div>
-
-            ${article.sourceUrl ? `
-              <a href="${article.sourceUrl}" class="btn btn-outline-secondary mt-3" target="_blank">
-                <i class="bi bi-box-arrow-up-right"></i> Read Original Article
-              </a>` : ''}
+            <h4 class="fw-bold">Summary</h4>
+            <p id="articleSummary" style="font-size: 1.2rem; line-height: 1.6; color: #555; display:none;"></p>
+            <button id="generateSummaryBtn" class="btn btn-primary btn-sm mt-2">Generate Summary</button>
+            <div id="summaryLoading" style="display:none;">Loading summary...</div>
           </div>
         </div>
 
-        <!-- Comments Section -->
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="mb-3"><i class="bi bi-chat-dots"></i> Comments (${comments.length})</h5>
-            ${currentUser ? `
-              <form id="commentForm" class="mb-3">
-                <textarea class="form-control mb-2" id="commentInput" rows="3" placeholder="Share your thoughts on this article..." required></textarea>
-                <button class="btn btn-secondary" type="submit">Post Comment</button>
-              </form>` : `<div class="alert alert-info">Login to comment.</div>`}
-            <div id="comments-list"></div>
-          </div>
+        <div class="article-body" style="
+          font-size: 1.4rem;
+          line-height: 1.9;
+          font-family: 'Segoe UI', 'Open Sans', sans-serif;
+          color: #333;
+          white-space: pre-line;
+          text-align: justify;
+          margin-top: 1rem;
+        ">
+          ${extractedContent}
         </div>
-      </div>
 
-      <!-- Sidebar -->
-      <div class="col-lg-4">
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h6 class="fw-bold">Actions</h6>
-            <button class="btn btn-${savedArticles.includes(id) ? 'dark' : 'outline-dark'} btn-sm w-100 mb-2 save-article-btn" data-id="${id}">
-              <i class="bi bi-bookmark${savedArticles.includes(id) ? '-fill' : ''}"></i> ${savedArticles.includes(id) ? 'Saved' : 'Save Article'}
-            </button>
-            <button class="btn btn-outline-dark btn-sm w-100 share-article-btn" data-id="${id}">
-              <i class="bi bi-share"></i> Share Article
-            </button>
-              <button id="readArticleBtn" class="btn btn-outline-primary btn-sm w-100 mb-2">
-               <i class="bi bi-volume-up"></i> Read Article
-              </button>
-              <button id="stopReadArticleBtn" class="btn btn-outline-danger btn-sm w-100 mb-2">
-               <i class="bi bi-stop-circle"></i> Stop Reading
-            </button>
-            <button id="resumeReadArticleBtn" class="btn btn-outline-success btn-sm w-100 mb-2">
+        <!-- Playback Buttons Moved Here -->
+        <div class="mt-4 d-flex flex-wrap gap-2 justify-content-start">
+          <button id="readArticleBtn" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-volume-up"></i> Read Article
+          </button>
+          <button id="stopReadArticleBtn" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-stop-circle"></i> Stop Reading
+          </button>
+          <button id="resumeReadArticleBtn" class="btn btn-outline-success btn-sm">
             <i class="bi bi-play-circle"></i> Resume Reading
-            </button>
-            <a href="${article.url}" target="_blank" class="mt-2 btn btn-outline-dark btn-sm w-100">
-              <i class="bi bi-box-arrow-up-right"></i> View Source
-            </a>
-            <button class="btn btn-outline-danger btn-sm w-100 mt-2 report-article-btn" data-id="${id}">
-              <i class="bi bi-flag"></i> Report Article
-            </button>
-          </div>
+          </button>
         </div>
 
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h6 class="fw-bold">Article Information</h6>
-            <div class="mb-2">
-              <strong>Category</strong><br>
-              <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
-            </div>
-            <div class="mb-2"><strong>Published</strong><br>${formatDate(article.publishedAt)}</div>
-            <div class="mb-2"><strong>Source</strong><br>${article.source || article.sourceName || 'Unknown'}</div>
-            <div><strong>Comments</strong><br>${comments.length} comment${comments.length === 1 ? '' : 's'}</div>
-          </div>
-        </div>
+        ${article.sourceUrl ? `
+          <a href="${article.sourceUrl}" class="btn btn-outline-secondary mt-3" target="_blank">
+            <i class="bi bi-box-arrow-up-right"></i> Read Original Article
+          </a>` : ''}
       </div>
     </div>
-  `;
+
+    <!-- Comments Section -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-3"><i class="bi bi-chat-dots"></i> Comments (${comments.length})</h5>
+        ${currentUser ? `
+          <form id="commentForm" class="mb-3">
+            <textarea class="form-control mb-2" id="commentInput" rows="3" placeholder="Share your thoughts on this article..." required></textarea>
+            <button class="btn btn-secondary" type="submit">Post Comment</button>
+          </form>` : `<div class="alert alert-info">Login to comment.</div>`}
+        <div id="comments-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold">Actions</h6>
+        <button class="btn btn-${savedArticles.includes(id) ? 'dark' : 'outline-dark'} btn-sm w-100 mb-2 save-article-btn" data-id="${id}">
+          <i class="bi bi-bookmark${savedArticles.includes(id) ? '-fill' : ''}"></i> ${savedArticles.includes(id) ? 'Saved' : 'Save Article'}
+        </button>
+        <button class="btn btn-outline-dark btn-sm w-100 share-article-btn" data-id="${id}">
+          <i class="bi bi-share"></i> Share Article
+        </button>
+        <a href="${article.url}" target="_blank" class="mt-2 btn btn-outline-dark btn-sm w-100">
+          <i class="bi bi-box-arrow-up-right"></i> View Source
+        </a>
+        <button class="btn btn-outline-danger btn-sm w-100 mt-2 report-article-btn" data-id="${id}">
+          <i class="bi bi-flag"></i> Report Article
+        </button>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold">Article Information</h6>
+        <div class="mb-2">
+          <strong>Category</strong><br>
+          <span class="badge bg-${availableTags.find(t => t.id === article.category)?.color || 'secondary'}">${article.category}</span>
+        </div>
+        <div class="mb-2"><strong>Published</strong><br>${formatDate(article.publishedAt)}</div>
+        <div class="mb-2"><strong>Source</strong><br>${article.source || article.sourceName || 'Unknown'}</div>
+        <div><strong>Comments</strong><br>${comments.length} comment${comments.length === 1 ? '' : 's'}</div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
 
     $('#articleContainer').html(html);
     //renderComments(id);
@@ -298,6 +322,7 @@ $(document).ready(async function () {
     });
 });
 
+//TTS READER
 let speechUtterance = null;
 let currentChunkIndex = 0;
 let chunks = [];
@@ -389,4 +414,43 @@ $(document).on('click', '#stopReadArticleBtn', function () {
 
 $(document).on('click', '#resumeReadArticleBtn', function () {
     resumeSpeaking();
+});
+
+
+//SUMMARIZE
+$(document).on('click', '#generateSummaryBtn', function () {
+    $('#summaryLoading').show();
+    $('#articleSummary').text('');
+    $(this).prop('disabled', true);
+
+    const articleText = extractedContent|| '';
+
+    if (!articleText) {
+        alert("No content available to summarize.");
+        $('#summaryLoading').hide();
+        $(this).prop('disabled', false);
+        return;
+    }
+
+    ajaxCall(
+        "POST",
+        serverUrl + "Articles/summarize",
+        JSON.stringify({ text: articleText }),  // stringify כאן
+        function (data) {
+            if (data.summary) {
+                console.log(data.summary)
+                $('#articleSummary').text(data.summary).show();
+                $('.article-summary').show(); 
+            } else {
+                alert("No summary received");
+            }
+            $('#summaryLoading').hide();
+            $('#generateSummaryBtn').prop('disabled', false);
+        },
+        function (xhr) {
+            alert("Failed to generate summary: " + (xhr.responseText || xhr.statusText));
+            $('#summaryLoading').hide();
+            $('#generateSummaryBtn').prop('disabled', false);
+        }
+    );
 });

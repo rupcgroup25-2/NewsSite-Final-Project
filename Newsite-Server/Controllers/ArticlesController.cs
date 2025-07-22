@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 
+
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
@@ -174,40 +175,58 @@ namespace Newsite_Server.Controllers
             return Ok(new { content = content });
         }
 
-        [HttpPost("tts")]
-        public async Task<IActionResult> TextToSpeech([FromBody] TtsRequest request)
+        [HttpPost("summarize")]
+        public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
         {
-            if (string.IsNullOrWhiteSpace(request.Text))
-                return BadRequest("Text is required");
+            if (!requestBody.TryGetProperty("text", out JsonElement textElement) || string.IsNullOrWhiteSpace(textElement.GetString()))
+            {
+                return BadRequest("Text is required for summarization.");
+            }
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "sk_32deaa732f16256ec65ce745e6c5e01c7ea79bc75b1556c8");
-            client.DefaultRequestHeaders.Add("Accept", "audio/mpeg");
+            string text = textElement.GetString();
+
+            // ✂️ הגבלה על אורך הטקסט - נחתוך אם ארוך מדי
+            if (text.Length > 3000)
+            {
+                text = text.Substring(0, 3000);
+            }
+
+            string huggingFaceApiToken = "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"; // 🔒 אל תשכח להכניס את הטוקן האמיתי
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", huggingFaceApiToken);
 
             var payload = new
             {
-                text = request.Text,
-                model_id = "eleven_monolingual_v1", // דגם ברירת מחדל
-                voice_settings = new
-                {
-                    stability = 0.5,
-                    similarity_boost = 0.5
-                }
+                inputs = text,
+                parameters = new { min_length = 50, max_length = 200 },
+                options = new { wait_for_model = true }
             };
 
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            // שים לב שצריך להשתמש ב-ID של קול תקני מתוך ElevenLabs
-            string voiceId = "EXAVITQu4vr4xnSDxMaL"; // קול ברירת מחדל (Rachel)
-
-            var response = await client.PostAsync($"https://api.elevenlabs.io/v1/text-to-speech/{voiceId}", content);
+            var response = await httpClient.PostAsync("https://api-inference.huggingface.co/models/facebook/bart-large-cnn", content);
 
             if (!response.IsSuccessStatusCode)
-                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, error);
+            }
 
-            var audioBytes = await response.Content.ReadAsByteArrayAsync();
-            return File(audioBytes, "audio/mpeg");
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(responseString);
+            var root = doc.RootElement;
+
+            if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() == 0 || !root[0].TryGetProperty("summary_text", out JsonElement summaryElement))
+            {
+                return BadRequest("No summary returned from HuggingFace API.");
+            }
+
+            var firstSummary = summaryElement.GetString();
+
+            return Ok(new { summary = firstSummary });
         }
 
     }

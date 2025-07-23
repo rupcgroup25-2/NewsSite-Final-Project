@@ -397,3 +397,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 Newsite-Server/huggingface-key.txt
+client/news-moty/js/firebaseConfig.js

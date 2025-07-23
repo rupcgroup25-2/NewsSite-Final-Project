@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
+
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
@@ -67,6 +68,17 @@ namespace Newsite_Server.Controllers
         public IActionResult GetSingleSharedArticles(int userId, int articleId)
         {
             Article article = new Article().GetSingleSharedArticlesForUser(userId, articleId);
+
+            if (article == null)
+                return NotFound("Article not found for this user");
+
+            return Ok(article);
+        }
+
+        [HttpGet("singleShared/articleId/{articleId}")]
+        public IActionResult GetSharedArticleById(int articleId)
+        {
+            Article article = new Article().GetSharedArticleById(articleId);
 
             if (article == null)
                 return NotFound("Article not found for this user");

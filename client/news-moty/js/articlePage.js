@@ -247,7 +247,7 @@ function loadSingleArticle(userId, articleId) {
         let collection = params.get('collection');
         let apiUrl = '';
         if (collection == "Shared")
-            apiUrl = '';//add an SP to get article by ID, use the endpoint here.
+            apiUrl = serverUrl + `Articles/single${collection}/articleId/${articleId}`;//add an SP to get article by ID, use the endpoint here.
         else {
             apiUrl = serverUrl + `Articles/single${collection}/userId/${userId}/articleId/${articleId}`;
         }

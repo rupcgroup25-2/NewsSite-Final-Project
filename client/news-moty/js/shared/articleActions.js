@@ -85,10 +85,7 @@ $(document).on('click', '#btnShareArticle', function (e) {
     const articleId = $(this).data("id");
     const comment = $("#shareComment").val()?.trim() || "";
 
-    if (!article) {
-        alert("Article not found.");
-        return;
-    }
+
 
     const articleToSend = {
         comment: comment,

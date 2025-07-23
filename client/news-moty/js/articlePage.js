@@ -244,8 +244,15 @@ function loadSavedArticles(userId) {
 function loadSingleArticle(userId, articleId) {
     return new Promise((resolve, reject) => {
         const params = new URLSearchParams(window.location.search);
-        collection = params.get('collection');
-        ajaxCall("GET", serverUrl + `Articles/single${collection}/userId/${userId}/articleId/${articleId}`, null,
+        let collection = params.get('collection');
+        let apiUrl = '';
+        if (collection == "Shared")
+            apiUrl = '';//add an SP to get article by ID, use the endpoint here.
+        else {
+            apiUrl = serverUrl + `Articles/single${collection}/userId/${userId}/articleId/${articleId}`;
+        }
+
+        ajaxCall("GET", apiUrl, null,
             function (article) {
                 resolve(article);
             },
@@ -304,6 +311,16 @@ function shareECB(xhr) {
 }
 
 // --- Save Article ---
+function saveSCB(responseText) {
+    alert(responseText);
+    savedArticles.push(article.id);
+    $('.save-article-btn').text("Article Saved");
+    $('.save-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
+}
+
+function saveECB() {
+    alert("Failed to save article");
+}
 $(document).on('click', '.save-article-btn', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');
@@ -315,18 +332,8 @@ $(document).on('click', '.save-article-btn', function () {
     } else {
         savedArticles.push(id);
     }
+    saveArticle(article, saveSCB, saveECB);
 });
-
-function saveSCB(responseText) {
-    alert(responseText);
-    savedArticles.push(article.id);
-    $('.save-article-btn').text("Article Saved");
-    $('.save-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
-}
-
-function saveECB() {
-    alert("Failed to save article");
-}
 
 function reportSCB(responseText) {
     alert("Report submitted successfully.");

@@ -48,7 +48,7 @@ namespace Newsite_Server.BL
             Article existing = dbs.GetArticleByUrl(this.Url);
             if (existing != null)
             {
-                return existing.Id; ; // exists
+                return existing.Id; // exists
             }
 
             int newId = dbs.InsertArticle(this);
@@ -67,8 +67,10 @@ namespace Newsite_Server.BL
         {
             // check if already exist or just inserted and got an id
             int insertResult = InsertArticleIfNotExists();
-
-            return dbs.SaveArticleForUser(userId, this.Id);
+            if(insertResult != this.id)
+                return dbs.SaveArticleForUser(userId, insertResult);
+            else
+                return dbs.SaveArticleForUser(userId, this.Id);
         }
 
         public int ShareArticleWithComment(int userId, int articleId, string comment)

@@ -112,7 +112,7 @@ $(document).on('click', '#btnShareArticle', function (e) {
 });
 
 //Saving the clicked article to the user
-$(document).on('click', '.save-article-btn', function () {
+function saveArticle(article, saveSCB, saveECB) {
     if (!currentUser) {
         alert("Please login to save articles.");
         return;
@@ -127,7 +127,9 @@ $(document).on('click', '.save-article-btn', function () {
         urlToImage: article.imageUrl || "",
         publishedAt: article.publishedAt || new Date().toISOString(),
         sourceName: article.source || "",
-        author: article.author || ""
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
     };
 
     if (!articleToSend) {
@@ -142,7 +144,8 @@ $(document).on('click', '.save-article-btn', function () {
         saveSCB,
         saveECB
     );
-});
+}
+
 
 //report the article by the user
 $(document).on('submit', '#reportForm', function (e) {

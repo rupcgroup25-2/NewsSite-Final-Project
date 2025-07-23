@@ -305,48 +305,21 @@ function showError(message) {
 
 //Saving the clicked article to the user
 $(document).on('click', '.save-article-btn', function () {
-    console.log("enter");
-    if (!currentUser) {
-        alert("Please login to save articles.");
-        return;
-    }
-
-    const articleId = $(this).data("id");
-    console.log("Clicked save for article ID:", articleId);
+    const articleId = $(this).data('id');
     const article = getArticleById(articleId);
-    const articleToSend = {
-        comment: "",
-        id: 0,
-        title: article.title || "",
-        description: article.preview || "",
-        url: article.url || "",
-        urlToImage: article.imageUrl || "",
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        sourceName: article.source || "",
-        author: article.author || "",
-        sharedById: 0,
-        sharedByName: "string"
-    };
-    console.log("Article found:", articleToSend);
-    if (!articleToSend) {
-        alert("Article not found.");
-        return;
-    }
-
-    ajaxCall(
-        "POST",
-        serverUrl + `Articles/SaveArticle?userId=${currentUser.id}`,
-        JSON.stringify(articleToSend),
-        function (responseText) {
-            alert(responseText);
-            savedArticles.push(article.id);
-            renderArticles(currentCategory);
-        },
-        function () {
-            alert("Failed to save article");
-        }
-    );
+    saveArticle(article);
 });
+
+
+function saveSCB(responseText) {
+    alert(responseText);
+    savedArticles.push(article.id);
+    renderArticles(currentCategory);
+}
+
+function saveECB() {
+    alert("Failed to save article");
+}
 
 function getArticleById(id) {
     return fetchedArticles.find(a => a.id === id);

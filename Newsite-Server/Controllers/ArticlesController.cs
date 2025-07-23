@@ -17,6 +17,10 @@ namespace Newsite_Server.Controllers
     public class ArticlesController : ControllerBase
     {
 
+        const int MIN_SUMMARY_LENGTH = 100;
+        const int MAX_SUMMARY_LENGTH = 200;
+        const int MAX_TEXT_LENGTH = 3000;
+
         [AllowAnonymous]
         [HttpGet]
         //[Authorize(Roles = "Admin")] // All methods restricted only for admin
@@ -179,7 +183,7 @@ namespace Newsite_Server.Controllers
 
         [HttpPost("summarize")]
         public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
-        {
+         {
             if (!requestBody.TryGetProperty("text", out JsonElement textElement) || string.IsNullOrWhiteSpace(textElement.GetString()))
             {
                 return BadRequest("Text is required for summarization.");
@@ -188,9 +192,9 @@ namespace Newsite_Server.Controllers
             string text = textElement.GetString();
 
             // ✂️ הגבלה על אורך הטקסט - נחתוך אם ארוך מדי
-            if (text.Length > 3000)
+            if (text.Length > MAX_TEXT_LENGTH)
             {
-                text = text.Substring(0, 3000);
+                text = text.Substring(0, MAX_TEXT_LENGTH);
             }
 
             string huggingFaceApiToken = System.IO.File.ReadAllText("huggingface-key.txt");
@@ -202,7 +206,7 @@ namespace Newsite_Server.Controllers
             var payload = new
             {
                 inputs = text,
-                parameters = new { min_length = 50, max_length = 200 },
+                parameters = new { min_length = MIN_SUMMARY_LENGTH, max_length = MAX_SUMMARY_LENGTH},
                 options = new { wait_for_model = true }
             };
 

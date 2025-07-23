@@ -8,15 +8,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 
 // Your web app's Firebase configuration
 // הוסף כאן את ה-firebaseConfig שלך
-const firebaseConfig = {
-    apiKey: "AIzaSyBNmhr9BYmpGC0jLG9TFCoR3rCNKI8IPIM",
-    authDomain: "newspapersite-ruppin.firebaseapp.com",
-    projectId: "newspapersite-ruppin",
-    storageBucket: "newspapersite-ruppin.firebasestorage.app",
-    messagingSenderId: "397153014495",
-    appId: "1:397153014495:web:c3613b494555359a86cf6a",
-    measurementId: "G-WN88XW35LV"
-};
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -209,7 +201,6 @@ function generateArticleHash(article) {
     // יצור hash פשוט מהכותרת והתאריך
     let text = '';
     if (article.title) text += article.title;
-    if (article.publishedAt) text += article.publishedAt;
     if (article.url) text += article.url;
 
     // Hash function פשוט

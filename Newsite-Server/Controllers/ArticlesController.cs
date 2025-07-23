@@ -5,7 +5,8 @@ using Newsite_Server.BL;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,6 +16,7 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class ArticlesController : ControllerBase
     {
+
         [AllowAnonymous]
         [HttpGet]
         //[Authorize(Roles = "Admin")] // All methods restricted only for admin
@@ -191,7 +193,8 @@ namespace Newsite_Server.Controllers
                 text = text.Substring(0, 3000);
             }
 
-            string huggingFaceApiToken = "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"; // 🔒 אל תשכח להכניס את הטוקן האמיתי
+            string huggingFaceApiToken = System.IO.File.ReadAllText("huggingface-key.txt");
+
 
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", huggingFaceApiToken);

@@ -1,4 +1,4 @@
-﻿// renderAdminDashboard.js
+﻿// renderAdminDashboard.js - Modern Version
 
 function renderAdminDashboard({
     users,
@@ -14,7 +14,17 @@ function renderAdminDashboard({
 
     // בדיקת הרשאות admin
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
-        $tab.html('<div class="alert alert-warning text-center shadow-sm rounded-3 p-3">Admin access only.</div>');
+        $tab.html(`
+            <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                <div class="card shadow-lg border-0" style="max-width: 400px; border-radius: 20px;">
+                    <div class="card-body text-center p-5">
+                        <i class="bi bi-shield-lock text-warning mb-3" style="font-size: 3rem;"></i>
+                        <h4 class="text-muted">Admin Access Required</h4>
+                        <p class="text-muted">You need admin privileges to access this dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        `);
         $('#admin-tab-li').addClass('d-none');
         return;
     }
@@ -28,162 +38,424 @@ function renderAdminDashboard({
     const totalReports = reportsCount;
 
     let html = `
-<div class="row g-4 mb-5 text-center justify-content-center">
-<div class="col-6 col-md-2">
-      <div class="card shadow-sm border-primary h-100">
-        <div class="card-body">
-          <h6 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>Users</h6>
-          <h3>${totalUsers}</h3>
-          <small class="text-muted">Active Users</small>
-        </div>
-      </div>
-    </div>
-<div class="col-6 col-md-2">
-      <div class="card shadow-sm border-success h-100">
-        <div class="card-body">
-          <h6 class="card-title text-success"><i class="bi bi-journal-text me-2"></i>Articles</h6>
-          <h3>${totalArticles}</h3>
-          <small class="text-muted">Saved By Users</small>
-        </div>
-      </div>
-    </div>
-<div class="col-6 col-md-2">
-      <div class="card shadow-sm border-info h-100">
-        <div class="card-body">
-          <h6 class="card-title text-info"><i class="bi bi-share-fill me-2"></i>Shared</h6>
-          <h3>${totalShared}</h3>
-          <small class="text-muted">Shared By Users</small>
-        </div>
-      </div>
-    </div>
-<div class="col-6 col-md-2">
-      <div class="card shadow-sm border-danger h-100">
-        <div class="card-body">
-          <h6 class="card-title text-danger"><i class="bi bi-person-x-fill me-2"></i>Blocked</h6>
-          <h3>${totalBlocked}</h3>
-          <small class="text-muted">Blocked Sharing Users</small>
-        </div>
-      </div>
-    </div>
-<div class="col-6 col-md-2">
-      <div class="card shadow-sm border-warning h-100">
-        <div class="card-body">
-          <h6 class="card-title text-warning"><i class="bi bi-flag-fill me-2"></i>Reports</h6>
-          <h3>${totalReports}</h3>
-          <small class="text-muted">Total Reports</small>
-        </div>
-      </div>
-    </div>
-  </div>`;
+        <div class="container-fluid px-0">
+            <!-- Header Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <h1 class="display-5 fw-bold text-primary mb-2">
+                                <i class="bi bi-speedometer2 me-3"></i>Admin Dashboard
+                            </h1>
+                            <p class="lead text-muted mb-0">Manage users, monitor activity, and review reports</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-primary fw-bold" style="font-size:1.15rem;">Last updated: ${new Date().toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    // טבלת משתמשים
-    html += `
-  <div class="card shadow-sm mb-5">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>User Management</h5>
-      <small>${totalUsers} users</small>
-    </div>
-    <div class="table-responsive">
-  <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
-        <thead class="table-primary">
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Sharing</th>
-            <th class="text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>`;
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="card-body text-white text-center p-4">
+                            <i class="bi bi-people-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
+                            <h2 class="fw-bold mb-1">${totalUsers}</h2>
+                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Active Users</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="card-body text-white text-center p-4">
+                            <i class="bi bi-journal-text mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
+                            <h2 class="fw-bold mb-1">${totalArticles}</h2>
+                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Saved Articles</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #3a8dde 0%, #00d4ff 100%);">
+                        <div class="card-body text-white text-center p-4">
+                            <i class="bi bi-share-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
+                            <h2 class="fw-bold mb-1">${totalShared}</h2>
+                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Shared Items</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <div class="card-body text-white text-center p-4">
+                            <i class="bi bi-person-x-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
+                            <h2 class="fw-bold mb-1">${totalBlocked}</h2>
+                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Blocked Users</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                        <div class="card-body text-dark text-center p-4">
+                            <i class="bi bi-flag-fill mb-3" style="font-size: 2.5rem; opacity: 0.8;"></i>
+                            <h2 class="fw-bold mb-1">${totalReports}</h2>
+                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Total Reports</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    users.forEach(user => {
+            <!-- Users Management Table -->
+            <div class="card border-0 shadow-lg mb-5" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-lines-fill text-white me-3" style="font-size: 1.5rem;"></i>
+                            <h4 class="text-white mb-0 fw-bold">User Management</h4>
+                        </div>
+                        <div class="text-white">
+                            <span class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">
+                                <i class="bi bi-people me-1"></i>${totalUsers} users
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 modern-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-bold py-3 px-4">
+                                        <i class="bi bi-person me-2 text-primary"></i>User Details
+                                    </th>
+                                    <th class="fw-bold py-3">
+                                        <i class="bi bi-envelope me-2 text-primary"></i>Email
+                                    </th>
+                                    <th class="fw-bold py-3 text-center">
+                                        <i class="bi bi-check-circle me-2 text-success"></i>Status
+                                    </th>
+                                    <th class="fw-bold py-3 text-center">
+                                        <i class="bi bi-share me-2 text-info"></i>Sharing
+                                    </th>
+                                    <th class="fw-bold py-3 text-center">
+                                        <i class="bi bi-gear me-2 text-warning"></i>Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+    users.forEach((user, index) => {
         const statusBadge = user.active
-            ? '<span class="badge bg-success">Active</span>'
-            : '<span class="badge bg-danger">Blocked</span>';
+            ? '<span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Active</span>'
+            : '<span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i>Blocked</span>';
 
         const sharingBadge = !user.blockSharing
-            ? '<span class="badge bg-info text-dark">Sharing Allowed</span>'
-            : '<span class="badge bg-secondary">Sharing Blocked</span>';
+            ? '<span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill"><i class="bi bi-share-fill me-1"></i>Allowed</span>'
+            : '<span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill"><i class="bi bi-ban me-1"></i>Blocked</span>';
 
         const statusBtnClass = user.active ? 'danger' : 'success';
         const statusBtnIcon = user.active ? 'person-x-fill' : 'person-check-fill';
-        const statusBtnTitle = user.active ? 'Deactivate User' : 'Activate User';
+        const statusBtnTitle = user.active ? 'Block User' : 'Unblock User';
 
-        const sharingBtnClass = user.blockSharing ? 'primary' : 'secondary';
-        const sharingBtnIcon = user.blockSharing ? 'eye-fill' : 'eye-slash-fill';
+        const sharingBtnClass = user.blockSharing ? 'info' : 'secondary';
+        const sharingBtnIcon = user.blockSharing ? 'unlock-fill' : 'lock-fill';
         const sharingBtnTitle = user.blockSharing ? 'Allow Sharing' : 'Block Sharing';
 
+        const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+
         html += `
-      <tr>
-        <td>${user.name}</td>
-        <td>${user.email}</td>
-        <td>${statusBadge}</td>
-        <td>${sharingBadge}</td>
-        <td class="text-center">
-          <button title="${statusBtnTitle}" class="btn btn-sm btn-outline-${statusBtnClass} toggle-deactivate-btn me-2" data-id="${user.id}">
-            <i class="bi bi-${statusBtnIcon}"></i>
-          </button>
-          <button title="${sharingBtnTitle}" class="btn btn-sm btn-outline-${sharingBtnClass} toggle-block-btn" data-id="${user.id}">
-            <i class="bi bi-${sharingBtnIcon}"></i>
-          </button>
-        </td>
-      </tr>`;
+            <tr class="${rowClass}">
+                <td class="py-3 px-4">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-3">
+                            ${user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="fw-semibold text-dark">${user.name}</div>
+                            <small class="text-muted">ID: ${user.id}</small>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-3">
+                    <span class="text-dark">${user.email}</span>
+                </td>
+                <td class="py-3 text-center">${statusBadge}</td>
+                <td class="py-3 text-center">${sharingBadge}</td>
+                <td class="py-3 text-center">
+                    <div class="btn-group" role="group">
+                        <button title="${statusBtnTitle}" 
+                                class="btn btn-outline-${statusBtnClass} btn-sm rounded-pill me-2 action-btn toggle-deactivate-btn" 
+                                data-id="${user.id}">
+                            <i class="bi bi-${statusBtnIcon}"></i>
+                        </button>
+                        <button title="${sharingBtnTitle}" 
+                                class="btn btn-outline-${sharingBtnClass} btn-sm rounded-pill action-btn toggle-block-btn" 
+                                data-id="${user.id}">
+                            <i class="bi bi-${sharingBtnIcon}"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
     });
 
     html += `
-        </tbody>
-      </table>
-    </div>
-  </div>`;
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-    // טבלת דיווחים מלאה עם כל השדות ששלחת
-    html += `
-    <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
-      <thead style="background-color: #f8d7da;">
-        <tr>
-          <th>Id</th>
-          <th>Reporter Id</th>
-          <th>Reporter Name</th>
-          <th>Reporter Email</th>
-          <th>Comment</th>
-          <th>Reported At</th>
-          <th>Article Id</th>
-          <th>Article Title</th>
-          <th>Article Preview</th>
-          <th>Shared Article Id</th>
-          <th>Shared Article Title</th>
-          <th>Shared By Name</th>
-          <th>Total Reports On This Item</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+            <!-- Reports Management Table -->
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #fa709a 0%, #e0b200 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-flag-fill text-white me-3" style="font-size: 1.5rem;"></i>
+                            <h4 class="text-white mb-0 fw-bold">Reports Management</h4>
+                        </div>
+                        <div class="text-white">
+                            <span class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">
+                                <i class="bi bi-exclamation-triangle me-1"></i>${totalReports} reports
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">`;
 
-    reports.forEach(r => {
+    if (reports.length === 0) {
         html += `
-      <tr>
-        <td>${r.Id}</td>
-        <td>${r.ReporterId}</td>
-        <td>${r.ReporterName || '-'}</td>
-        <td>${r.ReporterEmail || '-'}</td>
-        <td>${r.Comment || '-'}</td>
-        <td>${r.ReportedAt ? new Date(r.ReportedAt).toLocaleString() : '-'}</td>
-        <td>${r.ArticleId !== null ? r.ArticleId : '-'}</td>
-        <td>${r.ArticleTitle || '-'}</td>
-        <td>${r.ArticlePreview || '-'}</td>
-        <td>${r.SharedArticleId !== null ? r.SharedArticleId : '-'}</td>
-        <td>${r.SharedArticleTitle || '-'}</td>
-        <td>${r.SharedByName || '-'}</td>
-        <td>${r.TotalReportsOnThisItem || 0}</td>
-      </tr>
-    `;
-    });
+                    <div class="text-center py-5">
+                        <i class="bi bi-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted">No Reports Found</h5>
+                        <p class="text-muted">All clear! No user reports at the moment.</p>
+                    </div>`;
+    } else {
+        html += `
+                    <div class="table-responsive" style="overflow-x:auto; max-height:400px;">
+                        <table class="table table-hover mb-0 modern-table reports-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-bold py-3 px-3 text-center">ID</th>
+                                    <th class="fw-bold py-3">Reporter Info</th>
+                                    <th class="fw-bold py-3">Report Details</th>
+                                    <th class="fw-bold py-3">Article Info</th>
+                                    <th class="fw-bold py-3 text-center">Shared Content</th>
+                                    <th class="fw-bold py-3 text-center">Reports Count</th>
+                                    <th class="fw-bold py-3">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+        reports.forEach((r, index) => {
+            const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+            const reportDate = r.ReportedAt ? new Date(r.ReportedAt).toLocaleDateString() : '-';
+            const reportTime = r.ReportedAt ? new Date(r.ReportedAt).toLocaleTimeString() : '';
+
+            html += `
+                <tr class="${rowClass}">
+                    <td class="py-3 px-3 text-center">
+                        <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">#${r.Id}</span>
+                    </td>
+                    <td class="py-3">
+                        <div class="reporter-info">
+                            <div class="d-flex align-items-center mb-1">
+                                <div class="avatar-small me-2">
+                                    ${(r.ReporterName || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">${r.ReporterName || 'Unknown'}</div>
+                                    <small class="text-muted">${r.ReporterEmail || 'No email'}</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">ID: ${r.ReporterId}</small>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <div class="report-details">
+                            ${r.Comment ? `
+                                <div class="comment-box p-2 bg-light rounded mb-2">
+                                    <i class="bi bi-chat-quote text-muted me-1"></i>
+                                    <span class="text-dark">${r.Comment.length > 50 ? r.Comment.substring(0, 50) + '...' : r.Comment}</span>
+                                </div>
+                            ` : '<span class="text-muted fst-italic">No comment provided</span>'}
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        ${r.ArticleId !== null ? `
+                            <div class="article-info">
+                                <div class="fw-semibold text-primary mb-1">
+                                    <i class="bi bi-newspaper me-1"></i>
+                                    ${r.ArticleTitle || 'Untitled Article'}
+                                </div>
+                                <small class="text-muted">ID: ${r.ArticleId}</small>
+                                ${r.ArticlePreview ? `
+                                    <div class="mt-1">
+                                        <small class="text-muted">${r.ArticlePreview.length > 40 ? r.ArticlePreview.substring(0, 40) + '...' : r.ArticlePreview}</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : '<span class="text-muted fst-italic">No article</span>'}
+                    </td>
+                    <td class="py-3 text-center">
+                        ${r.SharedArticleId !== null ? `
+                            <div class="shared-info">
+                                <div class="fw-semibold">
+                                    <i class="bi bi-share me-1"></i>
+                                    ${r.SharedArticleTitle || 'Untitled'}
+                                </div>
+                                <small class="text-muted">Shared by: ${r.SharedByName || 'Unknown'}</small>
+                                <br><small class="text-muted">ID: ${r.SharedArticleId}</small>
+                            </div>
+                        ` : '<span class="text-muted fst-italic">Not shared</span>'}
+                    </td>
+                    <td class="py-3 text-center">
+                        <span class="badge bg-dark text-white rounded-pill px-3 py-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            ${r.TotalReportsOnThisItem || 0}
+                        </span>
+                    </td>
+                    <td class="py-3">
+                        <div class="date-info">
+                            <div class="fw-semibold text-dark">${reportDate}</div>
+                            ${reportTime && `<small class="text-muted">${reportTime}</small>`}
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+        html += `
+                            </tbody>
+                        </table>
+                    </div>`;
+    }
 
     html += `
-        </tbody>
-      </table>
-    </div>
-  </div>`;
+                </div>
+            </div>
+        </div>
+
+        <style>
+        .card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .modern-table {
+            font-size: 0.95rem;
+        }
+        .modern-table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+        }
+        .modern-table td {
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+        }
+        .table-row-even {
+            background-color: #fafbfc;
+        }
+        .table-row-odd {
+            background-color: #ffffff;
+        }
+        .table-row-even:hover, .table-row-odd:hover {
+            background-color: #f0f8ff !important;
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .avatar-small {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+            border-width: 1.5px;
+        }
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .comment-box {
+            border-left: 3px solid #007bff;
+        }
+
+        .reports-table td {
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .reporter-info, .article-info, .shared-info, .report-details {
+            line-height: 1.3;
+        }
+
+        .date-info {
+            white-space: nowrap;
+        }
+
+        .admin-card-text {
+            text-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 1px 0 #333;
+        }
+
+        .admin-bubble {
+            display: inline-block;
+            background: rgba(255,255,255,0.85);
+            color: #222;
+            font-size: 2.1rem;
+            font-weight: bold;
+            border-radius: 2rem;
+            padding: 0.25em 1.2em;
+            margin-bottom: 0.2em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .admin-bubble-label {
+            display: inline-block;
+            background: rgba(255,255,255,0.65);
+            color: #333;
+            font-size: 1.05rem;
+            font-weight: 500;
+            border-radius: 1.2rem;
+            padding: 0.15em 0.9em;
+            margin-top: 0.2em;
+        }
+
+        @media (max-width: 768px) {
+            .modern-table {
+                font-size: 0.85rem;
+            }
+            .avatar-circle {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+            .reports-table td {
+                max-width: 150px;
+            }
+        }
+        </style>`;
 
     $tab.html(html);
 }
@@ -223,12 +495,34 @@ function parseCount(text) {
 // טעינת כל הנתונים לדשבורד
 async function loadAdminDashboardData() {
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
-        $('#admin').html('<div class="alert alert-warning text-center shadow-sm rounded-3 p-3">Admin access only.</div>');
+        $('#admin').html(`
+            <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                <div class="card shadow-lg border-0" style="max-width: 400px; border-radius: 20px;">
+                    <div class="card-body text-center p-5">
+                        <i class="bi bi-shield-lock text-warning mb-3" style="font-size: 3rem;"></i>
+                        <h4 class="text-muted">Admin Access Required</h4>
+                        <p class="text-muted">You need admin privileges to access this dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        `);
         $('#admin-tab-li').addClass('d-none');
         return;
     }
 
     $('#admin-tab-li').removeClass('d-none');
+
+    // הצגת Loading
+    $('#admin').html(`
+        <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="text-muted">Loading dashboard data...</h5>
+            </div>
+        </div>
+    `);
 
     try {
         const [
@@ -258,7 +552,7 @@ async function loadAdminDashboardData() {
         ]);
 
         if (!usersResponse.ok || !articlesResponse.ok || !reportsResponse.ok) {
-            throw new Error("Failed to load one or more data sets (users/articles/reports).");
+            throw new Error("Failed to load one or more data sets.");
         }
 
         const users = await usersResponse.json();
@@ -281,28 +575,55 @@ async function loadAdminDashboardData() {
         });
 
     } catch (err) {
-        $('#admin').html(`<div class="alert alert-danger text-center">Error loading admin data: ${err.message}</div>`);
+        $('#admin').html(`
+            <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+                <div class="card shadow-lg border-0 border-danger" style="max-width: 500px; border-radius: 20px;">
+                    <div class="card-body text-center p-5">
+                        <i class="bi bi-exclamation-triangle text-danger mb-3" style="font-size: 3rem;"></i>
+                        <h4 class="text-danger">Loading Error</h4>
+                        <p class="text-muted">Failed to load dashboard data: ${err.message}</p>
+                        <button class="btn btn-primary rounded-pill px-4 mt-3" onclick="loadAdminDashboardData()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `);
     }
 }
 
 // אירועים לכפתורים לשינוי סטטוס משתמשים
 $(document).on('click', '.toggle-deactivate-btn', async function () {
     const userId = $(this).data('id');
+    const $btn = $(this);
+
+    // הוספת אנימציית טעינה
+    const originalHtml = $btn.html();
+    $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span>').prop('disabled', true);
+
     try {
         await putWithAuth(`Admin/${userId}/deactivate`);
         await loadAdminDashboardData();
     } catch {
-        alert("Failed to toggle user status.");
+        alert("Failed to toggle user status. Please try again.");
+        $btn.html(originalHtml).prop('disabled', false);
     }
 });
 
 $(document).on('click', '.toggle-block-btn', async function () {
     const userId = $(this).data('id');
+    const $btn = $(this);
+
+    // הוספת אנימציית טעינה
+    const originalHtml = $btn.html();
+    $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span>').prop('disabled', true);
+
     try {
         await putWithAuth(`Admin/${userId}/block`);
         await loadAdminDashboardData();
     } catch {
-        alert("Failed to toggle sharing permission.");
+        alert("Failed to toggle sharing permission. Please try again.");
+        $btn.html(originalHtml).prop('disabled', false);
     }
 });
 

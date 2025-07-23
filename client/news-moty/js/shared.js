@@ -43,12 +43,15 @@
                         ${article.comment || '(No comment provided)'}
                     </div>
 
-                    <div class="mt-auto d-flex gap-2">
-                            <a href="article.html?id=${article.id}&collection=Shared" class="btn btn-outline-primary" style="text-decoration:none" target="_blank">View</a>
-                        <button class="btn btn-outline-danger unshare-btn" data-id="${article.id}">
-                            <i class="fas fa-trash-alt me-1"></i>Remove
-                        </button>
-                    </div>
+ <div class="mt-auto d-flex gap-2">
+    <a href="article.html?id=${article.id}&collection=Shared" class="btn btn-outline-primary" style="text-decoration:none" target="_blank">View</a>
+    ${article.sharedById === currentUser.id
+                ? `<button class="btn btn-outline-danger unshare-btn" data-id="${article.id}">
+                <i class="fas fa-trash-alt me-1"></i>Remove
+           </button>`
+                : ''
+    }
+</div>
                 </div>
             </div>
         </div>`;

@@ -5,11 +5,26 @@
   --news-glass-bg-dark: rgba(30,34,40,0.85);
   --news-glass-blur: 12px;
   --news-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  --news-shadow-dark: 0 4px 24px 0 rgba(0,0,0,0.3);
   --news-card-radius: 1.25rem;
   --news-card-hover: 0 8px 32px 0 rgba(0,0,0,0.16);
+  --news-card-hover-dark: 0 8px 32px 0 rgba(0,0,0,0.5);
+  --news-text-primary: #212529;
+  --news-text-secondary: #6c757d;
+  --news-bg-body: #f8f9fa;
+  --news-bg-card: #ffffff;
+  --news-border: rgba(0,0,0,0.125);
 }
+
 [data-bs-theme="dark"] {
   --news-glass-bg: var(--news-glass-bg-dark);
+  --news-shadow: var(--news-shadow-dark);
+  --news-card-hover: var(--news-card-hover-dark);
+  --news-text-primary: #f8f9fa;
+  --news-text-secondary: #adb5bd;
+  --news-bg-body: #212529;
+  --news-bg-card: #343a40;
+  --news-border: rgba(255,255,255,0.125);
 }
 
 /* Glassmorphic Navbar */
@@ -174,15 +189,433 @@ footer.bg-body {
 }
 
 /* Dark Mode Tweaks */
+[data-bs-theme="dark"] {
+  background-color: var(--news-bg-body) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] body {
+  background-color: var(--news-bg-body) !important;
+  color: var(--news-text-primary) !important;
+}
+
 [data-bs-theme="dark"] .article-card {
-  background: #23272b;
-  color: #f8f9fa;
+  background: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+  border: 1px solid var(--news-border) !important;
 }
+
+[data-bs-theme="dark"] .card {
+  background: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+  border: 1px solid var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .card-title {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .card-text {
+  color: var(--news-text-secondary) !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+  color: var(--news-text-secondary) !important;
+}
+
 [data-bs-theme="dark"] #hero-article .card {
-  background: var(--news-glass-bg-dark);
+  background: var(--news-glass-bg-dark) !important;
+  color: var(--news-text-primary) !important;
 }
+
 [data-bs-theme="dark"] .modal-content {
-  background: var(--news-glass-bg-dark);
+  background: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+  border: 1px solid var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .form-control {
+  background-color: #495057 !important;
+  border-color: var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus {
+  background-color: #495057 !important;
+  border-color: #86b7fe !important;
+  color: var(--news-text-primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+[data-bs-theme="dark"] .form-select {
+  background-color: #495057 !important;
+  border-color: var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .form-label {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .alert {
+  background-color: #495057 !important;
+  border-color: var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .alert-info {
+  background-color: #0f2b42 !important;
+  border-color: #1c5480 !important;
+  color: #a6d5fa !important;
+}
+
+[data-bs-theme="dark"] .alert-danger {
+  background-color: #58151c !important;
+  border-color: #842029 !important;
+  color: #ea868f !important;
+}
+
+[data-bs-theme="dark"] .alert-success {
+  background-color: #0a3622 !important;
+  border-color: #0f5132 !important;
+  color: #75b798 !important;
+}
+
+[data-bs-theme="dark"] .navbar {
+  background: var(--news-glass-bg-dark) !important;
+}
+
+[data-bs-theme="dark"] .navbar-brand {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .nav-link {
+  color: var(--news-text-secondary) !important;
+}
+
+[data-bs-theme="dark"] .nav-link:hover {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .nav-link.active {
+  color: #fff !important;
+}
+
+[data-bs-theme="dark"] footer {
+  background: var(--news-glass-bg-dark) !important;
+  color: var(--news-text-secondary) !important;
+}
+
+[data-bs-theme="dark"] .table {
+  background-color: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .table th,
+[data-bs-theme="dark"] .table td {
+  border-color: var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .table thead th {
+  background-color: #495057 !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: var(--news-text-secondary) !important;
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: #fff !important;
+}
+
+[data-bs-theme="dark"] .border-top {
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .border-bottom {
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .bg-body-tertiary {
+  background-color: var(--news-bg-card) !important;
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: var(--news-bg-body) !important;
+}
+
+/* Main content areas in dark mode */
+[data-bs-theme="dark"] main {
+  background-color: var(--news-bg-body) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .main,
+[data-bs-theme="dark"] .content,
+[data-bs-theme="dark"] .article-content {
+  background-color: var(--news-bg-body) !important;
+  color: var(--news-text-primary) !important;
+}
+
+/* Override any remaining black text */
+[data-bs-theme="dark"] * {
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] *:not(.btn):not(.badge):not(.alert):not(.navbar-brand):not(.nav-link) {
+  color: inherit !important;
+}
+
+/* Ensure readability for all content */
+[data-bs-theme="dark"] .row,
+[data-bs-theme="dark"] .col,
+[data-bs-theme="dark"] .col-1,
+[data-bs-theme="dark"] .col-2,
+[data-bs-theme="dark"] .col-3,
+[data-bs-theme="dark"] .col-4,
+[data-bs-theme="dark"] .col-5,
+[data-bs-theme="dark"] .col-6,
+[data-bs-theme="dark"] .col-7,
+[data-bs-theme="dark"] .col-8,
+[data-bs-theme="dark"] .col-9,
+[data-bs-theme="dark"] .col-10,
+[data-bs-theme="dark"] .col-11,
+[data-bs-theme="dark"] .col-12,
+[data-bs-theme="dark"] .col-auto,
+[data-bs-theme="dark"] .col-sm,
+[data-bs-theme="dark"] .col-md,
+[data-bs-theme="dark"] .col-lg,
+[data-bs-theme="dark"] .col-xl,
+[data-bs-theme="dark"] .col-xxl {
+  color: var(--news-text-primary) !important;
+}
+
+/* Chat messages dark mode */
+[data-bs-theme="dark"] .my-message {
+  background-color: #0d6efd !important;
+  color: #fff !important;
+}
+
+[data-bs-theme="dark"] .other-message {
+  background-color: #495057 !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] #messages {
+  background: var(--news-bg-card) !important;
+  border-color: var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+/* Article content dark mode - for article page and modals */
+[data-bs-theme="dark"] #articleContainer {
+  background-color: var(--news-bg-body) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] #articleContainer .card {
+  background: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+  border: 1px solid var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] #articleContainer h1,
+[data-bs-theme="dark"] #articleContainer h2,
+[data-bs-theme="dark"] #articleContainer h3,
+[data-bs-theme="dark"] #articleContainer h4,
+[data-bs-theme="dark"] #articleContainer h5,
+[data-bs-theme="dark"] #articleContainer h6 {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] #articleContainer p,
+[data-bs-theme="dark"] #articleContainer div,
+[data-bs-theme="dark"] #articleContainer span {
+  color: var(--news-text-primary) !important;
+}
+
+/* Article Modal content dark mode */
+[data-bs-theme="dark"] #articleModalBody {
+  background: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] #articleModalBody h1,
+[data-bs-theme="dark"] #articleModalBody h2,
+[data-bs-theme="dark"] #articleModalBody h3,
+[data-bs-theme="dark"] #articleModalBody h4,
+[data-bs-theme="dark"] #articleModalBody h5,
+[data-bs-theme="dark"] #articleModalBody h6 {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] #articleModalBody p,
+[data-bs-theme="dark"] #articleModalBody div,
+[data-bs-theme="dark"] #articleModalBody span {
+  color: var(--news-text-primary) !important;
+}
+
+/* Firebase chat container dark mode */
+[data-bs-theme="dark"] #firebaseChatContainer {
+  background: var(--news-bg-card) !important;
+  border: 1px solid var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] #firebaseChatContainer .form-control {
+  background-color: #495057 !important;
+  border-color: var(--news-border) !important;
+  color: var(--news-text-primary) !important;
+}
+
+/* Dark Mode Toggle Button */
+#toggle-dark {
+  border-radius: 50% !important;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#toggle-dark:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+[data-bs-theme="dark"] #toggle-dark {
+  background-color: #ffd700 !important;
+  border-color: #ffd700 !important;
+  color: #222 !important;
+}
+
+[data-bs-theme="dark"] #toggle-dark:hover {
+  background-color: #ffed4e !important;
+  box-shadow: 0 4px 12px rgba(255,215,0,0.3);
+}
+
+/* Smooth transitions for theme changes */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, filter 0.2s ease !important;
+}
+
+/* Prevent transition on page load */
+.preload * {
+  transition: none !important;
+}
+
+/* Additional dark mode improvements */
+[data-bs-theme="dark"] .highlight {
+  color: #ff6b6b !important;
+}
+
+/* General text content in dark mode */
+[data-bs-theme="dark"] .container,
+[data-bs-theme="dark"] .container-fluid,
+[data-bs-theme="dark"] .container-lg,
+[data-bs-theme="dark"] .container-md,
+[data-bs-theme="dark"] .container-sm,
+[data-bs-theme="dark"] .container-xl,
+[data-bs-theme="dark"] .container-xxl {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] p,
+[data-bs-theme="dark"] div:not(.modal):not(.navbar):not(.card):not(.alert),
+[data-bs-theme="dark"] span:not(.badge):not(.btn),
+[data-bs-theme="dark"] article,
+[data-bs-theme="dark"] section {
+  color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] h2,
+[data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4,
+[data-bs-theme="dark"] h5,
+[data-bs-theme="dark"] h6 {
+  color: var(--news-text-primary) !important;
+}
+
+/* Highlighted text in search */
+[data-bs-theme="dark"] .highlighted {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+[data-bs-theme="dark"] .badge {
+  border: 1px solid var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-primary {
+  background-color: #0d6efd !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-info {
+  background-color: #0dcaf0 !important;
+  color: #000 !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-success {
+  background-color: #198754 !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+/* Admin page specific dark mode styles */
+[data-bs-theme="dark"] #admin .card-header {
+  background-color: #495057 !important;
+  color: var(--news-text-primary) !important;
+  border-bottom: 1px solid var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] #admin .list-group-item {
+  background-color: var(--news-bg-card) !important;
+  color: var(--news-text-primary) !important;
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] #admin .text-muted {
+  color: var(--news-text-secondary) !important;
+}
+
+/* Israeli flag and logo adjustments for dark mode */
+[data-bs-theme="dark"] .israeli-flag,
+[data-bs-theme="dark"] img[src*="flag"],
+[data-bs-theme="dark"] img[src*="israel"] {
+  filter: brightness(1.2) contrast(0.9);
+  border: 1px solid var(--news-border);
+  border-radius: 4px;
+}
+
+/* Logo adjustments for dark mode */
+[data-bs-theme="dark"] .navbar-brand img,
+[data-bs-theme="dark"] img.logo {
+  filter: brightness(1.1);
+}
+
+/* Text logo enhancement for dark mode */
+[data-bs-theme="dark"] .navbar-brand .text-primary {
+  color: #4dabf7 !important;
 }
 
 /* Hide scrollbars for pills on mobile */
@@ -238,17 +671,52 @@ footer.bg-body {
     scrollbar-color: #bbb transparent;
 }
 
-    .table-responsive::-webkit-scrollbar {
-        height: 8px;
-    }
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
 
-    .table-responsive::-webkit-scrollbar-thumb {
-        background-color: #bbb;
-        border-radius: 4px;
-    }
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 4px;
+}
+
+/* Dark mode admin styles */
+[data-bs-theme="dark"] #admin {
+    color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .table-responsive {
+    scrollbar-color: #6c757d #343a40;
+}
+
+[data-bs-theme="dark"] .table-responsive::-webkit-scrollbar-thumb {
+    background-color: #6c757d;
+}
+
+[data-bs-theme="dark"] .table-responsive::-webkit-scrollbar-track {
+    background-color: #343a40;
+}
+
+/* Statistics cards in admin */
+[data-bs-theme="dark"] .stats-card {
+    background: var(--news-bg-card) !important;
+    border: 1px solid var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .stats-card .card-body {
+    color: var(--news-text-primary) !important;
+}
+
 /* עיצוב ברירת מחדל בלבד, ללא הרחבות מיוחדות לצ'אט */
 .highlighted {
     background-color: yellow;
+    font-weight: bold;
+}
+
+/* Dark mode for highlighted text */
+[data-bs-theme="dark"] .highlighted {
+    background-color: #ffc107 !important;
+    color: #000 !important;
     font-weight: bold;
 }
 
@@ -282,6 +750,24 @@ footer.bg-body {
     margin-bottom: 14px;
     font-size: 1.08rem;
 }
+
+/* Dark mode for chat messages */
+[data-bs-theme="dark"] #messages {
+    background: var(--news-bg-card) !important;
+    border-color: var(--news-border) !important;
+    color: var(--news-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .other-message {
+    background-color: #495057 !important;
+    color: var(--news-text-primary) !important;
+}
+
 .highlight{
     color:indianred;
+}
+
+/* Dark mode for highlight class */
+[data-bs-theme="dark"] .highlight{
+    color: #ff6b6b !important;
 }

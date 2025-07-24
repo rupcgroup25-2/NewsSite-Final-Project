@@ -67,6 +67,7 @@ $(document).ready(function () {
 });
 
 // Render user-related actions (Login/Register buttons or greeting and Logout button)
+
 function renderUserActions() {
     const $actions = $("#user-actions");
     $actions.empty();

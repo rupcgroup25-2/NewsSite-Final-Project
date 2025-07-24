@@ -1,14 +1,11 @@
 ﻿//create register and login modals
-<<<<<<< Updated upstream
-function createAuthModals() {
-=======
 function createAuthModals() {
     // בדוק אם המודלים כבר קיימים
     if ($('#loginModal').length > 0 || $('#registerModal').length > 0) {
         return; // המודלים כבר קיימים, אל תיצור שוב
     }
     
->>>>>>> Stashed changes
+
     const modalsHtml = `
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">

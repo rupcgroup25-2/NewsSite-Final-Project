@@ -106,6 +106,9 @@ namespace Newsite_Server.BL
         {
             return dbs.UnfollowUser(followerId, followedEmail);
         }
-
+        public int TrackDailyLogin(int userId)
+        {
+            return dbs.TrackUserLogin(userId);
+        }
     }
 }

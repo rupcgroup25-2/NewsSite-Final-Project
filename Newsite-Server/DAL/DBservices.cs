@@ -1,5 +1,6 @@
 ﻿
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
@@ -239,6 +240,84 @@ namespace Newsite_Server.DAL
                     // close the db connection
                     con.Close();
                 }
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method count number of daily logins 
+        //--------------------------------------------------------------------------------------------------
+        public int TrackUserLogin(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_TrackDailyUserLoginFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method get the sum of the number of daily logins 
+        //--------------------------------------------------------------------------------------------------
+        public int TotalDailyUserLogins()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            // לא צריך פרמטרים לפונקציה הזו כי היא לא מקבלת userId אלא סופרת את כל המשתמשים להיום
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetTotalDailyLoginsByDateFinal", con, null);
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            int totalLoginCount = 0;
+            try
+            {
+                if (dataReader.Read())
+                {
+                    totalLoginCount = Convert.ToInt32(dataReader["TotalLogins"]);
+                }
+                return totalLoginCount;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                con.Close();
             }
         }
 

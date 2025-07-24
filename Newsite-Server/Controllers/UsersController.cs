@@ -19,6 +19,7 @@ namespace Newsite_Server.Controllers
             User NewUser = user.LoginUser();
             if (NewUser != null)
             {
+                NewUser.TrackDailyLogin(NewUser.Id);
                 string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@newshub.com" ? "Admin" : "User"); //Create Token
 
                 return Ok(new

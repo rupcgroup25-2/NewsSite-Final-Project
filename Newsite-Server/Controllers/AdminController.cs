@@ -66,6 +66,17 @@ namespace Newsite_Server.Controllers
                 return NotFound("No reports");
         }
 
+        [HttpGet("DailyLogins")]
+        public IActionResult GetDailyLoginsNumber()
+        {
+            Admin admin = new Admin();
+            int count = admin.GetTotalDailyUserLogins();
+            if (count > 0)
+                return Ok($"Number of Logins Today: {count}");
+            else
+                return NotFound("No Logins yet");
+        }
+
         [HttpPut("{id}/block")]
         public IActionResult ToggleBlockSharing(int id)
         {

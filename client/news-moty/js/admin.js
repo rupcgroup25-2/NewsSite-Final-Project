@@ -8,7 +8,8 @@ function renderAdminDashboard({
     blockedUsersCount,
     reportsCount,
     articles = [],
-    reports = []
+    reports = [],
+    dailyLoginsCount
 }) {
     const $tab = $('#admin');
 
@@ -36,6 +37,7 @@ function renderAdminDashboard({
     const totalArticles = savedArticlesCount;
     const totalShared = sharedArticlesCount;
     const totalReports = reportsCount;
+    const totalDailyLogins = dailyLoginsCount;
 
     let html = `
         <div class="container-fluid px-0">
@@ -103,8 +105,18 @@ function renderAdminDashboard({
                         </div>
                     </div>
                 </div>
-            </div>
+                 <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
+        <div class="card-body text-white text-center p-4">
+            <i class="bi bi-calendar-check mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
+            <h2 class="fw-bold mb-1">${totalDailyLogins}</h2>
+            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Daily Logins</small>
+        </div>
+    </div>
+</div>
 
+            </div>
+                  
             <!-- Users Management Table -->
             <div class="card border-0 shadow-lg mb-5" style="border-radius: 20px; overflow: hidden;">
                 <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
@@ -531,15 +543,18 @@ async function loadAdminDashboardData() {
             sharedArticlesText,
             blockedUsersText,
             reportsCountText,
+            dailyLoginsText,
             usersResponse,
             articlesResponse,
             reportsResponse
+
         ] = await Promise.all([
             getWithAuth("Admin/ActiveUsersCount"),
             getWithAuth("Admin/SavedArticlesCount"),
             getWithAuth("Admin/SharedArticlesCount"),
             getWithAuth("Admin/BlockedUsersCount"),
             getWithAuth("Admin/ReportsCount"),
+            getWithAuth("Admin/DailyLogins"),
             fetch(serverUrl + "Admin/GetAllUsers", {
                 headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
             }),
@@ -564,7 +579,8 @@ async function loadAdminDashboardData() {
             savedArticlesCount: parseCount(savedArticlesText),
             sharedArticlesCount: parseCount(sharedArticlesText),
             blockedUsersCount: parseCount(blockedUsersText),
-            reportsCount: parseCount(reportsCountText)
+            reportsCount: parseCount(reportsCountText),
+            dailyLoginsCount: parseCount(dailyLoginsText)
         };
 
         renderAdminDashboard({

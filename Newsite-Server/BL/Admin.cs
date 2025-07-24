@@ -27,5 +27,9 @@ namespace Newsite_Server.BL
         {
             return dbs.GetCountReports();
         }
+        public int GetTotalDailyUserLogins()
+        {
+            return dbs.TotalDailyUserLogins();
+        }
     }
 }

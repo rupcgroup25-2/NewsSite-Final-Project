@@ -145,7 +145,10 @@ function renderError(message) {
 $(document).ready(function () {
     renderUserActions();
     if (currentUser) {
-        loadSavedArticles(currentUser.id, ""); 
+        loadSavedArticles(currentUser.id, "");
+    }
+    else {
+        renderSavedTab();
     }
 });
 

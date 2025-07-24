@@ -1,4 +1,4 @@
-﻿function createModals() {
+﻿function createUserActionsModals() {
     const modalsHtml = `
     <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -56,7 +56,7 @@
 }
 
 $(document).ready(function () {
-    createModals();
+    createUserActionsModals();
 });
 
 //to save the article id on the other share button

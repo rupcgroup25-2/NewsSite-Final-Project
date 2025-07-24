@@ -1,5 +1,5 @@
 ﻿//create register and login modals
-function createModals() {
+function createAuthModals() {
     const modalsHtml = `
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
@@ -62,7 +62,7 @@ function createModals() {
 }
 
 $(document).ready(function () {
-    createModals();
+    createAuthModals();
     renderUserActions();
 });
 

@@ -49,8 +49,11 @@ footer.bg-body {
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
+/* Navigation active state styling */
 #navbarNav a.nav-link.active {
-    background-color: #93beff;
+    background-color: #93beff !important;
+    color: #fff !important;
+    border-radius: 1.5rem;
 }
 
 /* Category Pills/Tabs */
@@ -331,6 +334,41 @@ footer.bg-body {
   background-color: #6c757d !important;
   border-color: #6c757d !important;
   color: #fff !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-dark {
+  color: var(--news-text-primary) !important;
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-dark:hover {
+  background-color: var(--news-button-hover) !important;
+  color: var(--news-text-primary) !important;
+  border-color: var(--news-button-hover) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-danger {
+  color: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-danger:hover {
+  background-color: #ff6b6b !important;
+  color: white !important;
+  border-color: #ff6b6b !important;
+}
+
+/* Regular button styles for dark mode */
+[data-bs-theme="dark"] .btn-dark {
+  background-color: var(--news-surface-secondary) !important;
+  color: var(--news-text-primary) !important;
+  border-color: var(--news-border) !important;
+}
+
+[data-bs-theme="dark"] .btn-dark:hover {
+  background-color: var(--news-button-hover) !important;
+  color: var(--news-text-primary) !important;
+  border-color: var(--news-button-hover) !important;
 }
 
 [data-bs-theme="dark"] .border-top {

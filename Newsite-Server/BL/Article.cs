@@ -82,7 +82,7 @@ namespace Newsite_Server.BL
                 int insertResult = InsertArticleIfNotExists();
 
                 //  SharedArticles insert to the table
-                return dbs.ShareArticleForUser(userId, this.Id, comment);
+                return dbs.ShareArticleForUser(userId, insertResult, comment);
             }
             else return 0;
         }

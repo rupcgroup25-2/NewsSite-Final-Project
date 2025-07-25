@@ -274,7 +274,7 @@ function getArticleIdFromUrl() {
 
 // --- Share Article ---
 let shareArticleId = null;
-$(document).on('click', '.share-article-btn', function () {
+$(document).on('click', '.share-article-btn-from-view', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');
         return;
@@ -302,8 +302,8 @@ $('#shareForm').on('submit', function (e) {
 function shareSCB(responseText) {
     alert(responseText);
     sharedArticles.push(article.id);
-    $('.share-article-btn').text("Article Shared");
-    $('.share-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
+    $('.share-article-btn-from-view').text("Article Shared");
+    $('.share-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
 }
 
 function shareECB(xhr) {
@@ -314,14 +314,14 @@ function shareECB(xhr) {
 function saveSCB(responseText) {
     alert(responseText);
     savedArticles.push(article.id);
-    $('.save-article-btn').text("Article Saved");
-    $('.save-article-btn').removeClass('btn-outline-dark').addClass('btn-dark');
+    $('.save-article-btn-from-view').text("Article Saved");
+    $('.save-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
 }
 
 function saveECB() {
     alert("Failed to save article");
 }
-$(document).on('click', '.save-article-btn', function () {
+$(document).on('click', '.save-article-btn-from-view', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');
         return;
@@ -340,8 +340,8 @@ function reportSCB(responseText) {
     $('#reportModal').modal('hide');
     $("#reportComment").val("");
     $("#reportReason").val("");
-    $('.report-article-btn').text("Article Reported");
-    $('.report-article-btn').removeClass('btn-outline-danger').addClass('btn-danger');
+    $('.report-article-btn-from-view').text("Article Reported");
+    $('.report-article-btn-from-view').removeClass('btn-outline-danger').addClass('btn-danger');
 }
 
 function reportECB(xhr) {
@@ -468,16 +468,16 @@ $(document).ready(async function () {
     <div class="card mb-3 shadow-sm">
       <div class="card-body">
         <h6 class="fw-bold">Actions</h6>
-        <button class="btn btn-${savedArticles.includes(id) ? 'dark' : 'outline-dark'} btn-sm w-100 mb-2 save-article-btn" data-id="${id}">
+        <button class="btn btn-${savedArticles.includes(id) ? 'dark' : 'outline-dark'} btn-sm w-100 mb-2 save-article-btn-from-view" data-id="${id}">
           <i class="bi bi-bookmark${savedArticles.includes(id) ? '-fill' : ''}"></i> ${savedArticles.includes(id) ? 'Saved' : 'Save Article'}
         </button>
-        <button class="btn btn-outline-dark btn-sm w-100 share-article-btn" data-id="${id}">
+        <button class="btn btn-outline-dark btn-sm w-100 share-article-btn-from-view" data-id="${id}">
           <i class="bi bi-share"></i> Share Article
         </button>
         <a href="${window.article.url}" target="_blank" class="mt-2 btn btn-outline-dark btn-sm w-100">
           <i class="bi bi-box-arrow-up-right"></i> View Source
         </a>
-        <button class="btn btn-outline-danger btn-sm w-100 mt-2 report-article-btn" data-id="${id}">
+        <button class="btn btn-outline-danger btn-sm w-100 mt-2 report-article-btn-from-view" data-id="${id}">
           <i class="bi bi-flag"></i> Report Article
         </button>
       </div>

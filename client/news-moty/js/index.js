@@ -121,46 +121,6 @@ let fetchedArticles = [];
 let searchArticles = []; // Store search results articles
 let currentCategory = "all";
 
-function renderHomeTab() {
-    // Render the hero section placeholder
-    $("#home").html(`
-        <div id="hero-article"></div>
-        <div class="mb-4">
-            <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-category="all" type="button" role="tab">All</button>
-                </li>
-                ${availableTags.map(tag => `
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
-                    </li>
-                `).join("")}
-            </ul>
-        </div>
-        <div class="mb-4">
-            <div class="row">
-                <div class="col-md-6">
-                    <input type="text" id="archiveQuery" class="form-control" placeholder="Search articles by topic...">
-                </div>
-                <div class="col-md-2">
-                    <input type="date" id="fromDate" class="form-control">
-                </div>
-                <div class="col-md-2">
-                    <input type="date" id="toDate" class="form-control">
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-primary w-100" onclick="searchArchive()">
-                        <i class="bi bi-search"></i> Search
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div id="archiveResults" class="mb-4"></div>
-        <div class="row" id="articles-list"></div>`);
-    // Fetch and render hero + articles
-    renderArticlesWithHero("all");
-}
-
 function renderArticlesWithHero(category) {
     // Try cache first
     let articles = getCachedArticles();
@@ -356,38 +316,32 @@ function showError(message) {
         </div>
     `);
 }
-
-//Saving the clicked article to the user
-function saveSCB(responseText) {
-    alert(responseText);
-    renderArticles(currentCategory);
-}
-
-function saveECB() {
-    alert("Failed to save article");
-}
-
+// --- Save Article ---
+// --- Save Article ---
 $(document).on('click', '.save-article-btn', function () {
-    const articleId = $(this).data('id');
-    const article = getArticleById(articleId);
-    saveArticle(article, saveSCB, saveECB);
+    if (!currentUser) {
+        $('#loginModal').modal('show');
+        return;
+    }
+    const id = $(this).data('id');
+    if (savedArticles.includes(id)) {
+        savedArticles = savedArticles.filter(aid => aid !== id);
+    } else {
+        savedArticles.push(id);
+    }
+    renderHomeTab();
 });
 
-function getArticleById(id) {
-    // First try to find in regular articles
-    let article = fetchedArticles.find(a => a.id === id);
-    // If not found, try search articles
-    if (!article) {
-        article = searchArticles.find(a => a.id === id);
-    }
-    return article;
-}
-
-//Sharing
-//to save the article id on the other share button
+// --- Share Article ---
+let shareArticleId = null;
 $(document).on('click', '.share-article-btn', function () {
-    const articleId = $(this).data("id");
-    $('#btnShareArticle').data("id", articleId);
+    if (!currentUser) {
+        $('#loginModal').modal('show');
+        return;
+    }
+    shareArticleId = $(this).data('id');
+    $('#shareComment').val('');
+    $('#shareError').addClass('d-none');
     $('#shareModal').modal('show');
 });
 
@@ -400,7 +354,6 @@ function shareECB(xhr) {
     alert(xhr.responseText || "Failed to share article.");
 }
 
-//Sharing the clicked article to the user
 $(document).on('click', '#btnShareArticle', function () {
     const articleId = $(this).data("id");
     const comment = $("#shareComment").val()?.trim() || ""; 
@@ -408,28 +361,26 @@ $(document).on('click', '#btnShareArticle', function () {
     shareArticle(article, comment, shareSCB, shareECB);
 });
 
-//report the article by the user
-$(document).on('click', '.report-article-btn', function () {
+// --- Report Article ---
+$(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
     const articleId = $(this).data("id");
-    $('#btnReportArticle').data("id", articleId); // שמירת ID
+    $('#btnReportArticle').data("id", articleId);
     $('#reportModal').modal('show');
 });
 
+function reportSCB(responseText) {
+    alert("Report submitted successfully.");
+    $('#reportModal').modal('hide');
+    $("#reportComment").val("");
+    $("#reportReason").val("");
+}
+
+function reportECB(xhr) {
+    alert(xhr.responseText || "Failed to submit report.");
+}
+
 $(document).on('click', '#btnReportArticle', function () {
-    if (!currentUser) {
-        alert("Please login to report articles.");
-        return;
-    }
-
     const articleId = $(this).data("id"); 
-    const reason = $("#reportReason").val();
-    const comment = $("#reportComment").val()?.trim() || "";
-
-    if (!reason) {
-        alert("Please select a reason for reporting.");
-        return;
-    }
-
     const article = getArticleById(articleId);
     if (!article) {
         alert("Article not found.");

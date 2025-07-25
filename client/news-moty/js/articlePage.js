@@ -270,6 +270,29 @@ function getArticleIdFromUrl() {
     return params.get('id');
 }
 
+// --- Save Article ---
+function saveSCB(responseText) {
+    alert(responseText);
+    $('.save-article-btn-from-view').text("Article Saved");
+    $('.save-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
+}
+
+function saveECB() {
+    alert("Failed to save article");
+}
+$(document).on('click', '.save-article-btn-from-view', function () {
+    if (!currentUser) {
+        $('#loginModal').modal('show');
+        return;
+    }
+    const id = $(this).data('id');
+    if (savedArticles.includes(id)) {
+        savedArticles = savedArticles.filter(aid => aid !== id);
+    } else {
+        savedArticles.push(id);
+    }
+    saveArticle(article, saveSCB, saveECB);
+});
 
 
 // --- Share Article ---
@@ -300,28 +323,11 @@ $(document).on('click', '#btnShareArticle', function () {
     shareArticle(window.article, comment, shareSCB, shareECB);
 });
 
-// --- Save Article ---
-function saveSCB(responseText) {
-    alert(responseText);
-    $('.save-article-btn-from-view').text("Article Saved");
-    $('.save-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
-}
-
-function saveECB() {
-    alert("Failed to save article");
-}
-$(document).on('click', '.save-article-btn-from-view', function () {
-    if (!currentUser) {
-        $('#loginModal').modal('show');
-        return;
-    }
-    const id = $(this).data('id');
-    if (savedArticles.includes(id)) {
-        savedArticles = savedArticles.filter(aid => aid !== id);
-    } else {
-        savedArticles.push(id);
-    }
-    saveArticle(article, saveSCB, saveECB);
+// --- Report Article ---
+$(document).on('click', '.report-article-btn-from-view', function () { //inserting the article id to the modal report button
+    const articleId = $(this).data("id");
+    $('#btnReportArticle').data("id", articleId);
+    $('#reportModal').modal('show');
 });
 
 function reportSCB(responseText) {
@@ -336,6 +342,10 @@ function reportSCB(responseText) {
 function reportECB(xhr) {
     alert(xhr.responseText || "Failed to submit report.");
 }
+
+$(document).on('click', '#btnReportArticle', function () {
+    reportArticle(window.article, reportSCB, reportECB);
+});
 
 //to split the words in the body to spans
 function wrapWordsInSpans(text) {

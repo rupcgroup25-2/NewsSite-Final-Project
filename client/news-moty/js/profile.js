@@ -2,6 +2,7 @@
 
 let userProfile = null;
 let followingUsers = [];
+let allEmails = [];
 
 $(document).ready(function() {
     renderUserActions();
@@ -12,6 +13,7 @@ $(document).ready(function() {
     }
     
     loadUserProfile();
+    loadEmails();
 });
 
 function renderLoginRequired() {
@@ -46,7 +48,7 @@ function loadUserProfile() {
 function loadFollowingUsers() {
     ajaxCall(
         "GET",
-        serverUrl + `Users/GetFollowingUsers?userId=${currentUser.id}`,
+        serverUrl + `Users/GetFollowedUsers?userId=${currentUser.id}`,
         "",
         loadFollowingUsersSCB,
         loadFollowingUsersECB
@@ -55,7 +57,21 @@ function loadFollowingUsers() {
 
 function loadFollowingUsersSCB(response) {
     try {
-        followingUsers = typeof response === 'string' ? JSON.parse(response) : response;
+        const rawData = typeof response === 'string' ? JSON.parse(response) : response;
+        
+        // Server returns flat array: [name1, email1, name2, email2, ...]
+        // Convert to array of objects: [{name: name1, email: email1}, {name: name2, email: email2}, ...]
+        followingUsers = [];
+        for (let i = 0; i < rawData.length; i += 2) {
+            if (i + 1 < rawData.length) {
+                followingUsers.push({
+                    name: rawData[i],
+                    email: rawData[i + 1],
+                    id: i / 2 // Simple ID based on position, since server doesn't return user IDs
+                });
+            }
+        }
+        
         renderProfile();
     } catch (error) {
         console.error("Error parsing following users:", error);
@@ -110,15 +126,21 @@ function renderProfile() {
             <!-- Following Users -->
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="card-header">
                         <h5 class="mb-0">
                             <i class="bi bi-people me-2"></i>Following (${followingUsers.length})
                         </h5>
-                        <button class="btn btn-sm btn-outline-primary" id="findUsersBtn">
-                            <i class="bi bi-person-plus me-1"></i>Find Users
-                        </button>
                     </div>
                     <div class="card-body">
+                        <!-- Follow users section -->
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <label for="emailSearch" class="form-label">Follow users</label>
+                            <div class="position-relative">
+                                <input type="text" id="emailSearch" class="form-control" placeholder="Search by email..." autocomplete="off" />
+                                <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1050; top: 100%;"></ul>
+                            </div>
+                            <button class="btn btn-primary mt-2" id="follow-user-btn">Follow</button>
+                        </div>
                         ${renderFollowingUsers()}
                     </div>
                 </div>
@@ -155,7 +177,7 @@ function renderFollowingUsers() {
                             <h6 class="card-title">${user.name}</h6>
                             <p class="card-text text-muted small">${user.email}</p>
                             <div class="d-flex gap-2 justify-content-center">
-                                <button class="btn btn-sm btn-outline-danger unfollow-btn" data-user-id="${user.id}">
+                                <button class="btn btn-sm btn-outline-danger unfollow-btn" data-user-email="${user.email}">
                                     <i class="bi bi-person-dash me-1"></i>Unfollow
                                 </button>
                             </div>
@@ -173,15 +195,10 @@ function bindProfileEvents() {
         openEditProfileModal();
     });
 
-    // Find users button
-    $(document).off('click', '#findUsersBtn').on('click', '#findUsersBtn', function () {
-        window.location.href = 'interests.html';
-    });
-
     // Unfollow user
     $(document).off('click', '.unfollow-btn').on('click', '.unfollow-btn', function () {
-        const userId = $(this).data('user-id');
-        unfollowUser(userId);
+        const userEmail = $(this).data('user-email');
+        unfollowUser(userEmail);
     });
 
     // Save profile changes
@@ -243,17 +260,17 @@ function saveProfileECB(xhr) {
     alert(xhr.responseText || 'Failed to update profile. Please try again.');
 }
 
-function unfollowUser(userId) {
+function unfollowUser(userEmail) {
     if (!confirm('Are you sure you want to unfollow this user?')) {
         return;
     }
 
     ajaxCall(
         "DELETE",
-        serverUrl + `Users/UnfollowUser?userId=${currentUser.id}&followUserId=${userId}`,
+        serverUrl + `Users/Unfollow?followerId=${currentUser.id}&followedEmail=${encodeURIComponent(userEmail)}`,
         "",
         function (response) {
-            followingUsers = followingUsers.filter(user => user.id != userId);
+            followingUsers = followingUsers.filter(user => user.email !== userEmail);
             renderProfile();
             alert('User unfollowed successfully.');
         },
@@ -276,3 +293,70 @@ function renderProfileError() {
         </div>
     `);
 }
+
+//Searching user's for following
+function loadEmails() {
+    ajaxCall(
+        "GET",
+        serverUrl + "Users/AllEmails",
+        null, // No body for GET
+        function success(data) {
+            allEmails = data;
+        },
+        function error(xhr) {
+            console.log("Failed to fetch emails: " + (xhr.responseText || xhr.statusText));
+            $("#emailSearch").hide();
+        }
+    );
+}
+
+// Handle input event for the search bar
+$(document).on("input", "#emailSearch", function () {
+    const query = $(this).val().toLowerCase();
+    const $suggestions = $("#suggestions");
+    $suggestions.empty();
+
+    if (!query) return;
+
+    const matches = allEmails.filter(email => email.toLowerCase().includes(query)).slice(0, 10);
+
+    matches.forEach(email => {
+        const $li = $("<li>")
+            .text(email)
+            .addClass("list-group-item")
+            .css("cursor", "pointer")
+            .on("click", function () {
+                $("#emailSearch").val(email);
+                $suggestions.empty();
+            });
+
+        $suggestions.append($li);
+    });
+});
+
+//Follow and Unfollow events
+$(document).on('click', '#follow-user-btn', function () {
+    const email = $('#emailSearch').val().trim();
+    if (!email) {
+        alert("Please enter an email to follow.");
+        return;
+    }
+
+    const url = `${serverUrl}Users/Follow?followerId=${currentUser.id}&followedEmail=${email}`;
+
+    ajaxCall(
+        "POST",
+        url,
+        null,
+        function success() {
+            alert("Follow request sent.");
+            // Clear the search field and reload following users list
+            $('#emailSearch').val('');
+            $('#suggestions').empty();
+            loadFollowingUsers();
+        },
+        function error(xhr) {
+            alert((xhr.responseText || xhr.statusText));
+        }
+    );
+});

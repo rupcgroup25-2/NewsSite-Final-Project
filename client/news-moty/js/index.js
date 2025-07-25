@@ -100,6 +100,10 @@ $(document).ready(function () {
 // Category filter
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
+    // Clear search results and show regular articles again
+    $('#archiveResults').html('');
+    $('#articles-list').show();
+    $('#hero-article').show();
     renderArticles(cat);
 });
 
@@ -114,6 +118,7 @@ const categoryMapping = {
 };
 
 let fetchedArticles = [];
+let searchArticles = []; // Store search results articles
 let currentCategory = "all";
 
 function renderHomeTab() {
@@ -132,6 +137,25 @@ function renderHomeTab() {
                 `).join("")}
             </ul>
         </div>
+        <div class="mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" id="archiveQuery" class="form-control" placeholder="Search articles by topic...">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="searchArchive()">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="archiveResults" class="mb-4"></div>
         <div class="row" id="articles-list"></div>`);
     // Fetch and render hero + articles
     renderArticlesWithHero("all");
@@ -350,7 +374,13 @@ $(document).on('click', '.save-article-btn', function () {
 });
 
 function getArticleById(id) {
-    return fetchedArticles.find(a => a.id === id);
+    // First try to find in regular articles
+    let article = fetchedArticles.find(a => a.id === id);
+    // If not found, try search articles
+    if (!article) {
+        article = searchArticles.find(a => a.id === id);
+    }
+    return article;
 }
 
 //Sharing
@@ -449,3 +479,142 @@ $(document).on('click', '#btnReportArticle', function () {
         }
     );
 });
+
+// Guardian API search function
+async function searchArchive() {
+    const query = $('#archiveQuery').val().trim();
+    if (!query) {
+        alert('Please enter a search term');
+        return;
+    }
+    
+    const fromDate = $('#fromDate').val();
+    const toDate = $('#toDate').val();
+    
+    $('#archiveResults').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+    
+    try {
+        const results = await searchGuardianAPI(query, fromDate, toDate);
+        displayArchiveResults(results.articles);
+        // Hide regular articles when showing search results
+        $('#articles-list').hide();
+        $('#hero-article').hide();
+    } catch (error) {
+        $('#archiveResults').html('<div class="alert alert-danger">Search failed. Please try again.</div>');
+    }
+}
+
+async function searchGuardianAPI(query, fromDate = null, toDate = null) {
+    const baseUrl = 'https://newsapi.org/v2/everything';
+    
+    const params = new URLSearchParams({
+        'apiKey': NEWS_API_KEY,
+        'q': query,
+        'language': 'en',
+        'sortBy': 'relevancy',
+        'pageSize': 20
+    });
+    
+    if (fromDate) params.append('from', fromDate);
+    if (toDate) params.append('to', toDate);
+    
+    const response = await fetch(`${baseUrl}?${params}`);
+    return await response.json();
+}
+
+function displayArchiveResults(articles) {
+    if (!articles || articles.length === 0) {
+        $('#archiveResults').html('<div class="alert alert-info">No articles found.</div>');
+        return;
+    }
+    
+    // Clear previous search articles
+    searchArticles = [];
+    
+    let html = '<div class="d-flex justify-content-between align-items-center mb-3">';
+    html += '<h5 class="mb-0">Archive Search Results</h5>';
+    html += '<button class="btn btn-outline-secondary btn-sm" onclick="clearSearchResults()">Clear Search</button>';
+    html += '</div><div class="row">';
+    
+    articles.forEach((article, index) => {
+        const articleId = `search_${index}_${Date.now()}`;
+        const isSaved = savedArticles.includes(articleId);
+        const tag = { color: "secondary", name: "Archive" }; // Default tag for search results
+        
+        // Create article object for the action buttons
+        const articleObj = {
+            id: articleId,
+            title: article.title,
+            content: article.description,
+            preview: article.description,
+            description: article.description, // Add description field
+            imageUrl: article.urlToImage,
+            urlToImage: article.urlToImage, // Add urlToImage field  
+            publishedAt: article.publishedAt,
+            url: article.url,
+            source: article.source?.name || 'Unknown',
+            sourceName: article.source?.name || 'Unknown', // Add sourceName field
+            author: article.author || 'Unknown',
+            category: "Archive",
+            fullText: article.description || article.content || '' // Add fullText field
+        };
+        
+        // Store the article in searchArticles array
+        searchArticles.push(articleObj);
+        
+        html += `
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm rounded-4 h-100 border-0 overflow-hidden">
+                    <div class="position-relative">
+                        <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
+                        <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
+                            <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
+                            <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
+                        </div>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-2">${article.title}</h5>
+                        <p class="card-text text-muted flex-grow-1">${article.description || 'No description available'}</p>
+                        <div class="mb-2 text-end small text-secondary">Source: ${article.source?.name || 'Unknown'}</div>
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            
+                            <a href="article.html?id=${articleId}" class="btn btn-outline-primary flex-fill" style="text-decoration:none" target="_blank">View</a>
+                            
+                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} save-article-btn flex-fill" data-id="${articleId}">
+                                <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
+                            </button>
+                            <button class="btn btn-outline-info share-article-btn flex-fill" data-id="${articleId}">
+                                <i class="fas fa-share me-1"></i>Share
+                            </button>
+                            <button class="btn btn-outline-danger report-article-btn flex-fill" data-id="${articleId}">
+                                <i class="fas fa-flag me-1"></i>Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    // Store search articles in sessionStorage so articlePage can access them
+    sessionStorage.setItem('searchArticles', JSON.stringify(searchArticles));
+    // Also store in localStorage as backup
+    localStorage.setItem('searchArticles', JSON.stringify(searchArticles));
+    
+    console.log("Stored search articles:", searchArticles.length, "articles");
+    
+    $('#archiveResults').html(html);
+}
+
+function clearSearchResults() {
+    $('#archiveResults').html('');
+    $('#articles-list').show();
+    $('#hero-article').show();
+    $('#archiveQuery').val('');
+    $('#fromDate').val('');
+    $('#toDate').val('');
+    searchArticles = []; // Clear search articles array
+    sessionStorage.removeItem('searchArticles'); // Clear from sessionStorage
+    localStorage.removeItem('searchArticles'); // Clear from localStorage backup
+}

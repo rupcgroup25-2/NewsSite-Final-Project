@@ -285,23 +285,8 @@ $(document).on('click', '.share-article-btn-from-view', function () {
     $('#shareModal').modal('show');
 });
 
-$('#shareForm').on('submit', function (e) {
-    e.preventDefault();
-    if (!currentUser || !shareArticleId) return;
-    const comment = $('#shareComment').val();
-    sharedArticles.push({
-        id: String(sharedArticles.length + 1),
-        articleId: shareArticleId,
-        userName: currentUser.name,
-        comment,
-        sharedAt: new Date()
-    });
-    $('#shareModal').modal('hide');
-});
-
 function shareSCB(responseText) {
     alert(responseText);
-    sharedArticles.push(article.id);
     $('.share-article-btn-from-view').text("Article Shared");
     $('.share-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
 }
@@ -310,10 +295,14 @@ function shareECB(xhr) {
     alert(xhr.responseText || "Failed to share article.");
 }
 
+$(document).on('click', '#btnShareArticle', function () {
+    const comment = $('#shareComment').val();
+    shareArticle(window.article, comment, shareSCB, shareECB);
+});
+
 // --- Save Article ---
 function saveSCB(responseText) {
     alert(responseText);
-    savedArticles.push(article.id);
     $('.save-article-btn-from-view').text("Article Saved");
     $('.save-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
 }

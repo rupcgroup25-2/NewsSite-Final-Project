@@ -60,7 +60,7 @@ $(document).ready(function () {
 });
 
 //to save the article id on the other share button
-$(document).on('click', '.share-article-btn', function () {
+/*$(document).on('click', '.share-article-btn', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');
         return;
@@ -68,15 +68,55 @@ $(document).on('click', '.share-article-btn', function () {
     const articleId = $(this).data("id");
     $('#btnShareArticle').data("id", articleId);
     $('#shareModal').modal('show');
-});
+});*/
 
-//Sharing the clicked article to the user
+//handle UI on share submit 
 $(document).on('submit', '#shareForm', function (e) {
     e.preventDefault();
     $('#shareModal').modal('hide');
+    $('#shareComment').val('');
 });
 
-$(document).on('click', '#btnShareArticle', function (e) {
+// Sharing the clicked article to the user's feed
+function shareArticle(article, comment, successCB, errorCB) {
+    if (!currentUser) {
+        alert("Please login to share articles.");
+        return;
+    }
+
+    if (!article) {
+        alert("Article not found.");
+        return;
+    }
+
+    const articleToSend = {
+        comment: comment || "",
+        id: 0,
+        title: article.title || "",
+        description: article.preview || article.description || "",
+        url: article.url || "",
+        urlToImage: article.imageUrl || article.urlToImage || "",
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sourceName: article.source || article.sourceName || "",
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
+    };
+
+    ajaxCall(
+        "POST",
+        serverUrl + `Articles/ShareArticle?userId=${currentUser.id}`,
+        JSON.stringify(articleToSend),
+        function (responseText) {
+            sharedArticles.push(article.id);
+            successCB(responseText);
+        },
+        errorCB
+    );
+}
+
+
+/*$(document).on('click', '#btnShareArticle', function (e) {
     if (!currentUser) {
         alert("Please login to share articles.");
         return;
@@ -130,7 +170,7 @@ $(document).on('click', '#btnShareArticle', function (e) {
         shareSCB,
         shareECB
     );
-});
+});*/
 
 // Success and Error callbacks for sharing
 function shareSCB(responseText) {
@@ -180,7 +220,10 @@ function saveArticle(article, saveSCB, saveECB) {
         "POST",
         serverUrl + `Articles/SaveArticle?userId=${currentUser.id}`,
         JSON.stringify(articleToSend),
-        saveSCB,
+        function (responseText) {
+            savedArticles.push(article.id);
+            saveSCB(responseText);
+        },
         saveECB
     );
 }

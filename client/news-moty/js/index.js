@@ -334,16 +334,8 @@ function showError(message) {
 }
 
 //Saving the clicked article to the user
-$(document).on('click', '.save-article-btn', function () {
-    const articleId = $(this).data('id');
-    const article = getArticleById(articleId);
-    saveArticle(article);
-});
-
-
 function saveSCB(responseText) {
     alert(responseText);
-    savedArticles.push(article.id);
     renderArticles(currentCategory);
 }
 
@@ -351,10 +343,17 @@ function saveECB() {
     alert("Failed to save article");
 }
 
+$(document).on('click', '.save-article-btn', function () {
+    const articleId = $(this).data('id');
+    const article = getArticleById(articleId);
+    saveArticle(article, saveSCB, saveECB);
+});
+
 function getArticleById(id) {
     return fetchedArticles.find(a => a.id === id);
 }
 
+//Sharing
 //to save the article id on the other share button
 $(document).on('click', '.share-article-btn', function () {
     const articleId = $(this).data("id");
@@ -362,50 +361,21 @@ $(document).on('click', '.share-article-btn', function () {
     $('#shareModal').modal('show');
 });
 
+function shareSCB(responseText) {
+    alert(responseText);
+    renderArticles(currentCategory);
+}
+
+function shareECB(xhr) {
+    alert(xhr.responseText || "Failed to share article.");
+}
+
 //Sharing the clicked article to the user
-
 $(document).on('click', '#btnShareArticle', function () {
-    if (!currentUser) {
-        alert("Please login to share articles.");
-        return;
-    }
-
     const articleId = $(this).data("id");
     const comment = $("#shareComment").val()?.trim() || ""; 
     const article = getArticleById(articleId);
-
-    if (!article) {
-        alert("Article not found.");
-        return;
-    }
-
-    const articleToSend = {
-        comment: comment,
-        id: 0, 
-        title: article.title || "",
-        description: article.preview || "",
-        url: article.url || "",
-        urlToImage: article.imageUrl || "",
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        sourceName: article.source || "",
-        author: article.author || "",
-        sharedById: 0,
-        sharedByName: "string"
-    };
-
-    ajaxCall(
-        "POST",
-        serverUrl + `Articles/ShareArticle?userId=${currentUser.id}`,
-        JSON.stringify(articleToSend),
-        function success(responseText) {
-            alert(responseText);
-            sharedArticles.push(article.id);
-            renderArticles(currentCategory);
-        },
-        function error(xhr) {
-            alert(xhr.responseText || "Failed to share article.");
-        }
-    );
+    shareArticle(article, comment, shareSCB, shareECB);
 });
 
 //report the article by the user

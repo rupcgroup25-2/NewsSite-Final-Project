@@ -116,6 +116,63 @@ function shareArticle(article, comment, successCB, errorCB) {
     );
 }
 
+
+/*$(document).on('click', '#btnShareArticle', function (e) {
+    if (!currentUser) {
+        alert("Please login to share articles.");
+        return;
+    }
+
+    const articleId = $(this).data("id");
+    const comment = $("#shareComment").val()?.trim() || "";
+
+    // Get the article data - try different sources
+    let article = null;
+    
+    // Try to get from cached articles (for index page)
+    if (typeof getCachedArticles === 'function') {
+        const articles = getCachedArticles();
+        article = articles.find(a => a.id == articleId);
+    }
+    
+    // Try to get from sampleArticles (fallback)
+    if (!article && typeof sampleArticles !== 'undefined') {
+        article = sampleArticles.find(a => a.id == articleId);
+    }
+    
+    // Try to get from global article variable (for article page)
+    if (!article && typeof window.article !== 'undefined') {
+        article = window.article;
+    }
+
+    if (!article) {
+        alert("Article not found.");
+        return;
+    }
+
+    const articleToSend = {
+        comment: comment,
+        id: 0,
+        title: article.title || "",
+        description: article.preview || article.description || "",
+        url: article.url || "",
+        urlToImage: article.imageUrl || article.urlToImage || "",
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sourceName: article.source || article.sourceName || "",
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
+    };
+
+    ajaxCall(
+        "POST",
+        serverUrl + `Articles/ShareArticle?userId=${currentUser.id}`,
+        JSON.stringify(articleToSend),
+        shareSCB,
+        shareECB
+    );
+});*/
+
 // Success and Error callbacks for sharing
 function shareSCB(responseText) {
     alert("Article shared successfully!");

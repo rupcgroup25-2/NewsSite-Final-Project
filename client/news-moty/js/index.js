@@ -100,10 +100,6 @@ $(document).ready(function () {
 // Category filter
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
-    // Clear search results and show regular articles again
-    $('#archiveResults').html('');
-    $('#articles-list').show();
-    $('#hero-article').show();
     renderArticles(cat);
 });
 
@@ -121,6 +117,45 @@ let fetchedArticles = [];
 let searchArticles = []; // Store search results articles
 let currentCategory = "all";
 
+function renderHomeTab() {
+    // Render the hero section placeholder
+    $("#home").html(`
+        <div id="hero-article"></div>
+        <div class="mb-4">
+            <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-category="all" type="button" role="tab">All</button>
+                </li>
+                ${availableTags.map(tag => `
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
+                    </li>
+                `).join("")}
+            </ul>
+        </div>
+        <div class="mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" id="archiveQuery" class="form-control" placeholder="Search articles by topic...">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="searchArchive()">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="archiveResults" class="mb-4"></div>
+        <div class="row" id="articles-list"></div>`);
+    // Fetch and render hero + articles
+    renderArticlesWithHero("all");
+}
 function renderArticlesWithHero(category) {
     // Try cache first
     let articles = getCachedArticles();
@@ -332,6 +367,16 @@ $(document).on('click', '.save-article-btn', function () {
     renderHomeTab();
 });
 
+function getArticleById(id) {
+    // First try to find in regular articles
+    let article = fetchedArticles.find(a => a.id === id);
+    // If not found, try search articles
+    if (!article) {
+        article = searchArticles.find(a => a.id === id);
+    }
+    return article;
+}
+
 // --- Share Article ---
 let shareArticleId = null;
 $(document).on('click', '.share-article-btn', function () {
@@ -384,6 +429,14 @@ $(document).on('click', '#btnReportArticle', function () {
     const article = getArticleById(articleId);
     if (!article) {
         alert("Article not found.");
+        return;
+    }
+
+    const reason = $("#reportReason").val();
+    const comment = $("#reportComment").val()?.trim() || "";
+
+    if (!reason) {
+        alert("Please select a reason for reporting.");
         return;
     }
 

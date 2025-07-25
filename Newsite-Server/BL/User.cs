@@ -110,5 +110,9 @@ namespace Newsite_Server.BL
         {
             return dbs.TrackUserLogin(userId);
         }
+        public List<string> GetMyFollowedUsersDetails(int userId)
+        {
+            return dbs.GetFollowedUsersByUserId(userId);
+        }
     }
 }

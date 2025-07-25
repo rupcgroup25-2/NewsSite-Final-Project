@@ -58,6 +58,18 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Server error.");
         }
 
+        [HttpGet]
+        [Route("GetFollowedUsers")]
+        public IActionResult GetMyFollowedUsersDetails(int userId)
+        {
+            User user = new User();
+            List<string> details = user.GetMyFollowedUsersDetails(userId);
+
+            if (details.Any())
+                return Ok(details);
+            else
+                return BadRequest("Server error.");
+        }
 
         [HttpPost("Follow")]
         public IActionResult FollowUser(int followerId, string followedEmail)

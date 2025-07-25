@@ -1362,6 +1362,54 @@ namespace Newsite_Server.DAL
             finally { con.Close(); }
         }
         //--------------------------------------------------------------------------------------------------
+        // This method Get you followed users details
+        //--------------------------------------------------------------------------------------------------
+        public List<string> GetFollowedUsersByUserId(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@FollowerId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetFollowedUsersFinal", con, paramDic);
+
+            List<string> followedUsers = new List<string>();
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                while (reader.Read())
+                {
+                    string name = reader["Name"].ToString();
+                    string email = reader["Email"].ToString();
+                    followedUsers.Add(name);
+                    followedUsers.Add(email);
+
+                }
+
+                return followedUsers;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
         // This method delete shared articles for user
         //--------------------------------------------------------------------------------------------------
 

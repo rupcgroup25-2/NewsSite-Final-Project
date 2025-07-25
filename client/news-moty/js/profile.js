@@ -189,7 +189,6 @@ function renderProfile() {
                                 <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1050; top: 100%;"></ul>
                             </div>
                             <button class="btn btn-primary mt-2" id="follow-user-btn">Follow</button>
-                            ${allEmails.length === 0 ? '<small class="text-muted d-block mt-1">⚠️ Email search temporarily unavailable</small>' : ''}
                         </div>
                         ${renderFollowingUsers()}
                     </div>

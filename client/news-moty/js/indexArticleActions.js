@@ -1,16 +1,28 @@
 ﻿// --- Save Article ---
 $(document).on('click', '.save-article-btn', function () {
+    console.log('Save button clicked, currentUser:', currentUser);
     if (!currentUser) {
+        console.log('No current user, showing login modal');
         $('#loginModal').modal('show');
         return;
     }
     const id = $(this).data('id');
+    const $button = $(this);
+    console.log('Saving article with id:', id);
+    
     if (savedArticles.includes(id)) {
         savedArticles = savedArticles.filter(aid => aid !== id);
+        $button.removeClass('btn-success').addClass('btn-outline-success').html('<i class="fas fa-bookmark me-1"></i>Save');
+        console.log('Article removed from saved');
     } else {
         savedArticles.push(id);
+        $button.removeClass('btn-outline-success').addClass('btn-success').html('<i class="fas fa-bookmark me-1"></i>Saved');
+        console.log('Article added to saved');
     }
-    renderHomeTab();
+    
+    // Save to localStorage
+    localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+    console.log('Saved articles updated:', savedArticles);
 });
 
 // --- Share Article ---
@@ -37,17 +49,21 @@ $('#shareForm').on('submit', function (e) {
         sharedAt: new Date()
     });
     $('#shareModal').modal('hide');
-    renderHomeTab();
+    $('#shareComment').val(''); // Clear the form
+    alert('Article shared successfully!');
 });
 
 // --- Report Article ---
 let reportArticleId = null;
 $(document).on('click', '.report-article-btn', function () {
+    console.log('Report button clicked, currentUser:', currentUser);
     if (!currentUser) {
+        console.log('No current user, showing login modal');
         $('#loginModal').modal('show');
         return;
     }
     reportArticleId = $(this).data('id');
+    console.log('Opening report modal for article:', reportArticleId);
     $('#reportReason').val('');
     $('#reportComment').val('');
     $('#reportError').addClass('d-none');
@@ -70,5 +86,7 @@ $('#reportForm').on('submit', function (e) {
         date: new Date()
     });
     $('#reportModal').modal('hide');
-    renderHomeTab();
+    $('#reportReason').val(''); // Clear the form
+    $('#reportComment').val('');
+    alert('Report submitted successfully!');
 });

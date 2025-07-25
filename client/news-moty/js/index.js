@@ -351,21 +351,6 @@ function showError(message) {
         </div>
     `);
 }
-// --- Save Article ---
-// --- Save Article ---
-$(document).on('click', '.save-article-btn', function () {
-    if (!currentUser) {
-        $('#loginModal').modal('show');
-        return;
-    }
-    const id = $(this).data('id');
-    if (savedArticles.includes(id)) {
-        savedArticles = savedArticles.filter(aid => aid !== id);
-    } else {
-        savedArticles.push(id);
-    }
-    renderHomeTab();
-});
 
 function getArticleById(id) {
     // First try to find in regular articles
@@ -376,113 +361,6 @@ function getArticleById(id) {
     }
     return article;
 }
-
-// --- Share Article ---
-let shareArticleId = null;
-$(document).on('click', '.share-article-btn', function () {
-    if (!currentUser) {
-        $('#loginModal').modal('show');
-        return;
-    }
-    shareArticleId = $(this).data('id');
-    $('#shareComment').val('');
-    $('#shareError').addClass('d-none');
-    $('#shareModal').modal('show');
-});
-
-function shareSCB(responseText) {
-    alert(responseText);
-    renderArticles(currentCategory);
-}
-
-function shareECB(xhr) {
-    alert(xhr.responseText || "Failed to share article.");
-}
-
-$(document).on('click', '#btnShareArticle', function () {
-    const articleId = $(this).data("id");
-    const comment = $("#shareComment").val()?.trim() || ""; 
-    const article = getArticleById(articleId);
-    shareArticle(article, comment, shareSCB, shareECB);
-});
-
-// --- Report Article ---
-$(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
-    const articleId = $(this).data("id");
-    $('#btnReportArticle').data("id", articleId);
-    $('#reportModal').modal('show');
-});
-
-function reportSCB(responseText) {
-    alert("Report submitted successfully.");
-    $('#reportModal').modal('hide');
-    $("#reportComment").val("");
-    $("#reportReason").val("");
-}
-
-function reportECB(xhr) {
-    alert(xhr.responseText || "Failed to submit report.");
-}
-
-$(document).on('click', '#btnReportArticle', function () {
-    const articleId = $(this).data("id"); 
-    const article = getArticleById(articleId);
-    if (!article) {
-        alert("Article not found.");
-        return;
-    }
-
-    const reason = $("#reportReason").val();
-    const comment = $("#reportComment").val()?.trim() || "";
-
-    if (!reason) {
-        alert("Please select a reason for reporting.");
-        return;
-    }
-
-    const reportToSend = {
-        id: 0,
-        reporterId: currentUser.id,
-        articleId: 0,
-        sharedArticleId: null,
-        comment: reason + (comment ? ` - ${comment}` : ""),
-        reportedAt: new Date().toISOString()
-    };
-
-    const articleToSend = {
-        comment: "",
-        id: 0,
-        title: article.title || "",
-        description: article.preview || "",
-        url: article.url || "",
-        urlToImage: article.imageUrl || "",
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        sourceName: article.source || "",
-        author: article.author || "",
-        sharedById: 0,
-        sharedByName: "string"
-    };
-
-    const data = {
-        Report: reportToSend,
-        Article: articleToSend
-    };
-
-    ajaxCall(
-        "POST",
-        serverUrl + "Reports",
-        JSON.stringify(data),
-        function success(responseText) {
-            alert("Report submitted successfully.");
-            $('#reportModal').modal('hide');
-            $("#reportComment").val("");
-            $("#reportReason").val("");
-        },
-        function error(xhr) {
-            alert(xhr.responseText || "Failed to submit report.");
-        }
-    );
-});
 
 // Guardian API search function
 async function searchArchive() {

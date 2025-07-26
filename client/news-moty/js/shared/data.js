@@ -14,10 +14,24 @@ availableTags = [
     { id: "environment", name: "Environment", color: "secondary" },
 ];
 
-let currentUser = JSON.parse(localStorage.getItem('user'));
-let savedArticles = [];
+let currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('currentUser'));
+console.log('Initial currentUser loaded:', currentUser);
+let savedArticles = JSON.parse(localStorage.getItem('savedArticles')) || [];
 let sharedArticles = [];
 let userTags = [];
+
+// Function to update current user when it changes
+function updateCurrentUser() {
+    currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('currentUser'));
+    console.log('Current user updated:', currentUser);
+}
+
+// Listen for storage changes to update currentUser
+window.addEventListener('storage', function(e) {
+    if (e.key === 'user' || e.key === 'currentUser') {
+        updateCurrentUser();
+    }
+});
 let users = [/* ... */];
 let articleComments = {};
 let articleReports = [];

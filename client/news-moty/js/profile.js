@@ -30,6 +30,13 @@ function renderLoginRequired() {
 }
 
 function loadUserProfile() {
+    // Check if server is available first
+    if (!serverUrl) {
+        console.error("Server URL not configured");
+        renderProfileWithoutServer();
+        return;
+    }
+    
     // Show loading
     $('#profile').html(`
         <div class="text-center py-5">
@@ -43,6 +50,13 @@ function loadUserProfile() {
     // For now, use current user data and load following users
     userProfile = currentUser;
     loadFollowingUsers();
+}
+
+function renderProfileWithoutServer() {
+    console.warn("Rendering profile in offline mode");
+    userProfile = currentUser;
+    followingUsers = [];
+    renderProfile();
 }
 
 function loadFollowingUsers() {
@@ -72,18 +86,53 @@ function loadFollowingUsersSCB(response) {
             }
         }
         
+        // Cache the following users
+        localStorage.setItem('cachedFollowingUsers', JSON.stringify(followingUsers));
+        
         renderProfile();
     } catch (error) {
         console.error("Error parsing following users:", error);
-        followingUsers = [];
+        // Try to load from cache
+        const cached = localStorage.getItem('cachedFollowingUsers');
+        if (cached) {
+            try {
+                followingUsers = JSON.parse(cached);
+                console.log("Loaded following users from cache");
+            } catch (e) {
+                followingUsers = [];
+            }
+        } else {
+            followingUsers = [];
+        }
         renderProfile();
     }
 }
 
 function loadFollowingUsersECB(xhr) {
     console.error("Error loading following users:", xhr);
-    followingUsers = [];
+    
+    // Try to load from cache
+    const cached = localStorage.getItem('cachedFollowingUsers');
+    if (cached) {
+        try {
+            followingUsers = JSON.parse(cached);
+            console.log("Loaded following users from cache due to server error");
+        } catch (e) {
+            followingUsers = [];
+        }
+    } else {
+        followingUsers = [];
+    }
+    
+    // Show profile even if following users failed to load
     renderProfile();
+    
+    // Show a warning message about the service being unavailable
+    if (xhr.status === 500) {
+        console.warn("Server error - following users service unavailable");
+    } else if (xhr.status === 0) {
+        console.warn("Network error - server might be down");
+    }
 }
 
 function renderProfile() {
@@ -301,11 +350,24 @@ function loadEmails() {
         serverUrl + "Users/AllEmails",
         null, // No body for GET
         function success(data) {
-            allEmails = data;
+            try {
+                allEmails = Array.isArray(data) ? data : [];
+                console.log("Loaded emails:", allEmails.length);
+            } catch (error) {
+                console.error("Error processing emails data:", error);
+                allEmails = [];
+                $("#emailSearch").hide();
+            }
         },
         function error(xhr) {
             console.log("Failed to fetch emails: " + (xhr.responseText || xhr.statusText));
-            $("#emailSearch").hide();
+            allEmails = [];
+            // Don't hide the search, just show a message
+            if (xhr.status === 500) {
+                console.warn("Server error - email search service unavailable");
+            } else if (xhr.status === 0) {
+                console.warn("Network error - server might be down");
+            }
         }
     );
 }
@@ -341,6 +403,13 @@ $(document).on('click', '#follow-user-btn', function () {
         alert("Please enter an email to follow.");
         return;
     }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address.");
+        return;
+    }
 
     const url = `${serverUrl}Users/Follow?followerId=${currentUser.id}&followedEmail=${email}`;
 
@@ -356,7 +425,15 @@ $(document).on('click', '#follow-user-btn', function () {
             loadFollowingUsers();
         },
         function error(xhr) {
-            alert((xhr.responseText || xhr.statusText));
+            let errorMsg = "Failed to follow user.";
+            if (xhr.status === 500) {
+                errorMsg = "Server error. Please try again later.";
+            } else if (xhr.status === 0) {
+                errorMsg = "Network error. Please check your connection.";
+            } else if (xhr.responseText) {
+                errorMsg = xhr.responseText;
+            }
+            alert(errorMsg);
         }
     );
 });

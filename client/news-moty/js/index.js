@@ -100,10 +100,6 @@ $(document).ready(function () {
 // Category filter
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
-    // Clear search results and show regular articles again
-    $('#archiveResults').html('');
-    $('#articles-list').show();
-    $('#hero-article').show();
     renderArticles(cat);
 });
 
@@ -160,7 +156,6 @@ function renderHomeTab() {
     // Fetch and render hero + articles
     renderArticlesWithHero("all");
 }
-
 function renderArticlesWithHero(category) {
     // Try cache first
     let articles = getCachedArticles();

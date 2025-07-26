@@ -358,108 +358,19 @@ $(document).ready(async function () {
     const id = getArticleIdFromUrl();
     if (!id) return $('#articleContainer').html('<div class="alert alert-danger">No article ID provided.</div>');
 
-    console.log("Looking for article with ID:", id);
-    
     let articles;
-    window.article = null; // Initialize as null
+    window.article = {}; // הוסף את זה לגלובל scope
 
     if (isNaN(id)) {
-        console.log("ID is not a number, searching in cached and search articles...");
-        
-        // First try to find in cached articles (regular articles)
         articles = getCachedArticles();
-        if (articles) {
-            window.article = articles.find(a => a.id == id);
-            console.log("Found in cached articles:", !!window.article);
-        }
-        
-        // If not found and it's a search article, try to get from sessionStorage
-        if (!window.article && id.startsWith('search_')) {
-            console.log("Searching for search article in sessionStorage...");
-            const storedSearchArticles = sessionStorage.getItem('searchArticles');
-            console.log("SessionStorage content:", storedSearchArticles);
-            
-            if (storedSearchArticles) {
-                try {
-                    const searchArticles = JSON.parse(storedSearchArticles);
-                    console.log("Parsed search articles:", searchArticles);
-                    console.log("Search articles count:", searchArticles.length);
-                    
-                    window.article = searchArticles.find(a => a.id == id);
-                    console.log("Found article in sessionStorage:", !!window.article);
-                    
-                    if (window.article) {
-                        console.log("Article details:", {
-                            id: window.article.id,
-                            title: window.article.title,
-                            hasUrl: !!window.article.url,
-                            hasDescription: !!window.article.description
-                        });
-                    }
-                } catch (e) {
-                    console.error("Error parsing sessionStorage searchArticles:", e);
-                }
-            } else {
-                console.log("No searchArticles found in sessionStorage");
-                // Try to get from localStorage as backup
-                const localSearchArticles = localStorage.getItem('searchArticles');
-                if (localSearchArticles) {
-                    console.log("Trying localStorage backup...");
-                    try {
-                        const searchArticles = JSON.parse(localSearchArticles);
-                        window.article = searchArticles.find(a => a.id == id);
-                        console.log("Found in localStorage backup:", !!window.article);
-                    } catch (e) {
-                        console.error("Error parsing localStorage searchArticles:", e);
-                    }
-                }
-            }
-        }
+        window.article = articles.find(a => a.id == id);
     }
     else {
-        console.log("ID is a number, loading from server...");
         window.article = await loadSingleArticle(currentUser.id, id);
     }
 
     if (!window.article) {
-        console.error("Article not found for ID:", id);
-        
-        // Show more detailed error message
-        let errorMessage = `<div class="alert alert-warning">
-            <h5>Article not found</h5>
-            <p>We couldn't find the article you're looking for (ID: ${id}).</p>`;
-        
-        if (id.startsWith('search_')) {
-            errorMessage += `<p>This appears to be a search result article. Please try:</p>
-                <ul>
-                    <li>Going back to the search results and clicking the article again</li>
-                    <li>Performing a new search</li>
-                    <li>Refreshing the search results page</li>
-                </ul>`;
-        } else {
-            errorMessage += `<p>Please try going back and clicking the article link again.</p>`;
-        }
-        
-        errorMessage += `<a href="index.html" class="btn btn-primary">Go to Homepage</a></div>`;
-        
-        return $('#articleContainer').html(errorMessage);
-    }
-
-    console.log("Article found successfully:", window.article.title);
-
-    // Validate that the article has all required fields
-    if (!window.article.title) {
-        console.warn("Article missing title, using fallback");
-        window.article.title = "Untitled Article";
-    }
-    if (!window.article.description && !window.article.preview && !window.article.content) {
-        console.warn("Article missing content, using fallback");
-        window.article.description = "No description available";
-        window.article.preview = "No preview available";
-    }
-    if (!window.article.publishedAt) {
-        console.warn("Article missing publishedAt, using current date");
-        window.article.publishedAt = new Date().toISOString();
+        return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
     }
 
     let extractedContent;

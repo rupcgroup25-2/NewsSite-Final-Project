@@ -28,7 +28,7 @@ namespace Newsite_Server.Controllers
             if (resultSavingReport > 0)
                 return Ok("Report submitted successfully.");
             else
-                return BadRequest("Report submission failed.");
+                return BadRequest("Similar report has been sumbitted.");
         }
 
         [AllowAnonymous]

@@ -59,17 +59,7 @@ $(document).ready(function () {
     createUserActionsModals();
 });
 
-//to save the article id on the other share button
-/*$(document).on('click', '.share-article-btn', function () {
-    if (!currentUser) {
-        $('#loginModal').modal('show');
-        return;
-    }
-    const articleId = $(this).data("id");
-    $('#btnShareArticle').data("id", articleId);
-    $('#shareModal').modal('show');
-});*/
-
+// --- Share Article ---
 //handle UI on share submit 
 $(document).on('submit', '#shareForm', function (e) {
     e.preventDefault();
@@ -77,7 +67,7 @@ $(document).on('submit', '#shareForm', function (e) {
     $('#shareComment').val('');
 });
 
-// Sharing the clicked article to the user's feed
+// Sharing the clicked article by the user
 function shareArticle(article, comment, successCB, errorCB) {
     if (!currentUser) {
         alert("Please login to share articles.");
@@ -115,28 +105,7 @@ function shareArticle(article, comment, successCB, errorCB) {
     );
 }
 
-
-
-
-// Success and Error callbacks for sharing
-function shareSCB(responseText) {
-    alert("Article shared successfully!");
-    $('#shareModal').modal('hide');
-    $("#shareComment").val("");
-    // Refresh the current view if needed
-    if (typeof renderHomeTab === 'function') {
-        renderHomeTab();
-    }
-    if (typeof renderSharedTab === 'function') {
-        renderSharedTab();
-    }
-}
-
-function shareECB(xhr) {
-    alert(xhr.responseText || "Failed to share article. Please try again.");
-}
-
-//Saving the clicked article to the user
+//Saving the clicked article by the user
 function saveArticle(article, saveSCB, saveECB) {
     if (!currentUser) {
         alert("Please login to save articles.");
@@ -174,20 +143,16 @@ function saveArticle(article, saveSCB, saveECB) {
     );
 }
 
-
-//report the article by the user
+// --- Report Article ---
+//handle UI on share submit 
 $(document).on('submit', '#reportForm', function (e) {
     e.preventDefault();
     $('#reportModal').modal('hide');
+    $('#reportComment').val('');
 });
 
-$(document).on('click', '.report-article-btn', function () {
-    const articleId = $(this).data("id");
-    $('#btnReportArticle').data("id", articleId); // שמירת ID
-    $('#reportModal').modal('show');
-});
-
-$(document).on('click', '#btnReportArticle', function () {
+// Reporting the clicked article
+function reportArticle(article, successCB, errorCB) {
     if (!currentUser) {
         alert("Please login to report articles.");
         return;
@@ -209,8 +174,8 @@ $(document).on('click', '#btnReportArticle', function () {
     const reportToSend = {
         id: 0,
         reporterId: currentUser.id,
-        articleId: 0,
-        sharedArticleId: null,
+        articleId: 0, // Assuming 0 because it's an external article
+        sharedArticleId: null, // Add support if needed
         comment: reason + (comment ? ` - ${comment}` : ""),
         reportedAt: new Date().toISOString()
     };
@@ -219,12 +184,14 @@ $(document).on('click', '#btnReportArticle', function () {
         comment: "",
         id: 0,
         title: article.title || "",
-        description: article.preview || "",
+        description: article.preview || article.description || "",
         url: article.url || "",
-        urlToImage: article.imageUrl || "",
+        urlToImage: article.imageUrl || article.urlToImage || "",
         publishedAt: article.publishedAt || new Date().toISOString(),
-        sourceName: article.source || "",
-        author: article.author || ""
+        sourceName: article.source || article.sourceName || "",
+        author: article.author || "",
+        sharedById: 0,
+        sharedByName: "string"
     };
 
     const data = {
@@ -236,36 +203,7 @@ $(document).on('click', '#btnReportArticle', function () {
         "POST",
         serverUrl + "Reports",
         JSON.stringify(data),
-        reportSCB,
-        reportECB
+        successCB,
+        errorCB
     );
-});
-
-// Share callback functions
-function shareSCB(responseText) {
-    alert(responseText || "Article shared successfully!");
-    $('#shareModal').modal('hide');
-    $("#shareComment").val("");
-    // Refresh the current view if needed
-    if (typeof renderHomeTab === 'function') {
-        renderHomeTab();
-    } else if (typeof renderSharedTab === 'function') {
-        renderSharedTab();
-    }
-}
-
-function shareECB(xhr) {
-    alert(xhr.responseText || "Failed to share article.");
-}
-
-// Report callback functions  
-function reportSCB(responseText) {
-    alert(responseText || "Article reported successfully!");
-    $('#reportModal').modal('hide');
-    $("#reportReason").val("");
-    $("#reportComment").val("");
-}
-
-function reportECB(xhr) {
-    alert(xhr.responseText || "Failed to report article.");
 }

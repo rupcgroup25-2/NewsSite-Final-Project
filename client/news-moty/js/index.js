@@ -344,7 +344,6 @@ function renderExternalArticles(articles) {
     });
 }
 
-
 function showError(message) {
     const $list = $("#articles-list");
     $list.html(`
@@ -357,7 +356,17 @@ function showError(message) {
     `);
 }
 
-//Saving the clicked article to the user
+function getArticleById(id) {
+    // First try to find in regular articles
+    let article = fetchedArticles.find(a => a.id === id);
+    // If not found, try search articles
+    if (!article) {
+        article = searchArticles.find(a => a.id === id);
+    }
+    return article;
+}
+
+// --- Save Article ---
 function saveSCB(responseText) {
     alert(responseText);
     renderArticles(currentCategory);
@@ -373,19 +382,9 @@ $(document).on('click', '.save-article-btn', function () {
     saveArticle(article, saveSCB, saveECB);
 });
 
-function getArticleById(id) {
-    // First try to find in regular articles
-    let article = fetchedArticles.find(a => a.id === id);
-    // If not found, try search articles
-    if (!article) {
-        article = searchArticles.find(a => a.id === id);
-    }
-    return article;
-}
 
-//Sharing
-//to save the article id on the other share button
-$(document).on('click', '.share-article-btn', function () {
+// --- Share Article ---
+$(document).on('click', '.share-article-btn', function () { //inserting the article id to the modal share button
     const articleId = $(this).data("id");
     $('#btnShareArticle').data("id", articleId);
     $('#shareModal').modal('show');
@@ -400,84 +399,35 @@ function shareECB(xhr) {
     alert(xhr.responseText || "Failed to share article.");
 }
 
-//Sharing the clicked article to the user
 $(document).on('click', '#btnShareArticle', function () {
     const articleId = $(this).data("id");
-    const comment = $("#shareComment").val()?.trim() || ""; 
+    const comment = $("#shareComment").val()?.trim() || "";
     const article = getArticleById(articleId);
     shareArticle(article, comment, shareSCB, shareECB);
 });
 
-//report the article by the user
-$(document).on('click', '.report-article-btn', function () {
+// --- Report Article ---
+$(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
     const articleId = $(this).data("id");
-    $('#btnReportArticle').data("id", articleId); // שמירת ID
+    $('#btnReportArticle').data("id", articleId);
     $('#reportModal').modal('show');
 });
 
+function reportSCB(responseText) {
+    alert("Report submitted successfully.");
+    $('#reportModal').modal('hide');
+    $("#reportComment").val("");
+    $("#reportReason").val("");
+}
+
+function reportECB(xhr) {
+    alert(xhr.responseText || "Failed to submit report.");
+}
+
 $(document).on('click', '#btnReportArticle', function () {
-    if (!currentUser) {
-        alert("Please login to report articles.");
-        return;
-    }
-
-    const articleId = $(this).data("id"); 
-    const reason = $("#reportReason").val();
-    const comment = $("#reportComment").val()?.trim() || "";
-
-    if (!reason) {
-        alert("Please select a reason for reporting.");
-        return;
-    }
-
+    const articleId = $(this).data("id");
     const article = getArticleById(articleId);
-    if (!article) {
-        alert("Article not found.");
-        return;
-    }
-
-    const reportToSend = {
-        id: 0,
-        reporterId: currentUser.id,
-        articleId: 0,
-        sharedArticleId: null,
-        comment: reason + (comment ? ` - ${comment}` : ""),
-        reportedAt: new Date().toISOString()
-    };
-
-    const articleToSend = {
-        comment: "",
-        id: 0,
-        title: article.title || "",
-        description: article.preview || "",
-        url: article.url || "",
-        urlToImage: article.imageUrl || "",
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        sourceName: article.source || "",
-        author: article.author || "",
-        sharedById: 0,
-        sharedByName: "string"
-    };
-
-    const data = {
-        Report: reportToSend,
-        Article: articleToSend
-    };
-
-    ajaxCall(
-        "POST",
-        serverUrl + "Reports",
-        JSON.stringify(data),
-        function success(responseText) {
-            alert("Report submitted successfully.");
-            $('#reportModal').modal('hide');
-            $("#reportComment").val("");
-            $("#reportReason").val("");
-        },
-        function error(xhr) {
-            alert(xhr.responseText || "Failed to submit report.");
-        }
-    );
+    reportArticle(article, reportSCB, reportECB);
 });
 
 // Guardian API search function

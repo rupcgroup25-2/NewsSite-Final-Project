@@ -294,7 +294,6 @@ $(document).on('click', '.save-article-btn-from-view', function () {
     saveArticle(article, saveSCB, saveECB);
 });
 
-
 // --- Share Article ---
 let shareArticleId = null;
 $(document).on('click', '.share-article-btn-from-view', function () {

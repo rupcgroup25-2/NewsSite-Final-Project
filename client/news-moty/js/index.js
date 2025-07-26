@@ -339,7 +339,6 @@ function renderExternalArticles(articles) {
     });
 }
 
-
 function showError(message) {
     const $list = $("#articles-list");
     $list.html(`
@@ -361,6 +360,70 @@ function getArticleById(id) {
     }
     return article;
 }
+
+// --- Save Article ---
+function saveSCB(responseText) {
+    alert(responseText);
+    renderArticles(currentCategory);
+}
+
+function saveECB() {
+    alert("Failed to save article");
+}
+
+$(document).on('click', '.save-article-btn', function () {
+    const articleId = $(this).data('id');
+    const article = getArticleById(articleId);
+    saveArticle(article, saveSCB, saveECB);
+});
+
+
+// --- Share Article ---
+$(document).on('click', '.share-article-btn', function () { //inserting the article id to the modal share button
+    const articleId = $(this).data("id");
+    $('#btnShareArticle').data("id", articleId);
+    $('#shareModal').modal('show');
+});
+
+function shareSCB(responseText) {
+    alert(responseText);
+    renderArticles(currentCategory);
+}
+
+function shareECB(xhr) {
+    alert(xhr.responseText || "Failed to share article.");
+}
+
+$(document).on('click', '#btnShareArticle', function () {
+    const articleId = $(this).data("id");
+    const comment = $("#shareComment").val()?.trim() || "";
+    const article = getArticleById(articleId);
+    shareArticle(article, comment, shareSCB, shareECB);
+});
+
+// --- Report Article ---
+$(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
+    const articleId = $(this).data("id");
+    $('#btnReportArticle').data("id", articleId);
+    $('#reportModal').modal('show');
+});
+
+function reportSCB(responseText) {
+    alert("Report submitted successfully.");
+    $('#reportModal').modal('hide');
+    $("#reportComment").val("");
+    $("#reportReason").val("");
+}
+
+function reportECB(xhr) {
+    alert(xhr.responseText || "Failed to submit report.");
+}
+
+$(document).on('click', '#btnReportArticle', function () {
+    const articleId = $(this).data("id");
+    const article = getArticleById(articleId);
+    reportArticle(article, reportSCB, reportECB);
+});
 
 // Guardian API search function
 async function searchArchive() {

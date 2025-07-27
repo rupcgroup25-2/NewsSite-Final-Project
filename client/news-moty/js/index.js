@@ -548,9 +548,7 @@ function displayArchiveResults(articles) {
     });
     html += '</div>';
     
-    // Store search articles in sessionStorage so articlePage can access them
-    sessionStorage.setItem('searchArticles', JSON.stringify(searchArticles));
-    // Also store in localStorage as backup
+    // Store search articles in localStorage so articlePage can access them
     localStorage.setItem('searchArticles', JSON.stringify(searchArticles));
     
     console.log("Stored search articles:", searchArticles.length, "articles");
@@ -566,8 +564,7 @@ function clearSearchResults() {
     $('#fromDate').val('');
     $('#toDate').val('');
     searchArticles = []; // Clear search articles array
-    sessionStorage.removeItem('searchArticles'); // Clear from sessionStorage
-    localStorage.removeItem('searchArticles'); // Clear from localStorage backup
+    localStorage.removeItem('searchArticles'); // Clear from localStorage
     
     // Reset category pills to show "All" as active
     $('#category-pills .nav-link').removeClass('active');

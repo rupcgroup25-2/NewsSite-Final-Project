@@ -360,9 +360,14 @@ $(document).ready(async function () {
     window.article = {}; // הוסף את זה לגלובל scope
 
     if (isNaN(id)) {
-        articles = getCachedArticles();
-        window.article = articles.find(a => a.id == id);
+        const cached = getCachedArticles() || [];
+        const fromLocalStorage = JSON.parse(localStorage.getItem('searchArticles') || '[]');
+
+        const combined = [...cached, ...fromLocalStorage];
+
+        window.article = combined.find(a => a.id == id);
     }
+
     else {
         window.article = await loadSingleArticle(currentUser.id, id);
     }

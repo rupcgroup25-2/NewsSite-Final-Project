@@ -9,18 +9,7 @@
     <link href="css/custom.css" rel="stylesheet">
     
     <!-- Prevent flash of unstyled content - Load theme IMMEDIATELY -->
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('newsHubTheme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            if (document.body) {
-                document.body.setAttribute('data-bs-theme', savedTheme);
-            }
-        })();
-    </script>
-
- 
-
+    <script src="js/shared/loadThemeImmediatly.js"></script>
 </head>
 <body class="bg-light" data-bs-theme="light">
     <!-- Navigation -->

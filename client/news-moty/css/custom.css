@@ -550,11 +550,6 @@ footer.bg-body {
   transition: none !important;
 }
 
-/* Additional dark mode improvements */
-[data-bs-theme="dark"] .highlight {
-  color: #ff6b6b !important;
-}
-
 /* General text content in dark mode */
 [data-bs-theme="dark"] .container,
 [data-bs-theme="dark"] .container-fluid,
@@ -581,12 +576,6 @@ footer.bg-body {
 [data-bs-theme="dark"] h5,
 [data-bs-theme="dark"] h6 {
   color: var(--news-text-primary) !important;
-}
-
-/* Highlighted text in search */
-[data-bs-theme="dark"] .highlighted {
-  background-color: #ffc107 !important;
-  color: #000 !important;
 }
 
 [data-bs-theme="dark"] .badge {
@@ -745,10 +734,13 @@ footer.bg-body {
     color: var(--news-text-primary) !important;
 }
 
-/* עיצוב ברירת מחדל בלבד, ללא הרחבות מיוחדות לצ'אט */
+/* עיצוב ברירת מחדל בלבן, ללא הרחבות מיוחדות לצ'אט */
 .highlighted {
-    background-color: yellow;
+    background-color: #ffff99;
+    color: #000;
     font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
 }
 
 /* Dark mode for highlighted text */
@@ -756,6 +748,8 @@ footer.bg-body {
     background-color: #ffc107 !important;
     color: #000 !important;
     font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
 }
 
 .my-message {
@@ -802,10 +796,16 @@ footer.bg-body {
 }
 
 .highlight{
-    color:indianred;
+    color: indianred;
+    background-color: #fff2f2;
+    padding: 2px 4px;
+    border-radius: 3px;
 }
 
 /* Dark mode for highlight class */
 [data-bs-theme="dark"] .highlight{
     color: #ff6b6b !important;
+    background-color: rgba(255, 107, 107, 0.2) !important;
+    padding: 2px 4px;
+    border-radius: 3px;
 }

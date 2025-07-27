@@ -6,15 +6,30 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-// Your web app's Firebase configuration
-// הוסף כאן את ה-firebaseConfig שלך
-
-
+// Import Firebase configuration
+// Firebase configuration will be imported from firebaseConfig.js
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
-const auth = getAuth(app);
+let app, analytics, db, auth;
+
+// Function to initialize Firebase with config from external script
+function initializeFirebase() {
+    if (typeof firebaseConfig !== 'undefined') {
+        try {
+            app = initializeApp(firebaseConfig);
+            analytics = getAnalytics(app);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase initialized successfully");
+            return true;
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            return false;
+        }
+    } else {
+        console.error("Firebase config not found. Make sure firebaseConfig.js is loaded.");
+        return false;
+    }
+}
 
 // Firebase Auth Setup - התחברות אנונימית לצורך הצ'אט
 function initializeFirebaseAuth() {
@@ -41,6 +56,12 @@ function initializeFirebaseAuth() {
 
 // פונקציה לאתחול הצ'אט של כתבה
 async function initChat(articleData, userName) {
+    // אתחל Firebase אם עדיין לא אותחל
+    if (!app && !initializeFirebase()) {
+        console.error("Failed to initialize Firebase");
+        return;
+    }
+
     // במקום לקבל articleId, נקבל את כל נתוני הכתבה
     const unifiedId = generateUnifiedArticleId(articleData);
 
@@ -170,76 +191,53 @@ function generateUnifiedArticleId(article) {
     return null;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // המתן עד שה-article נטען
-    const waitForArticle = () => {
-        return new Promise((resolve) => {
-            const checkArticle = () => {
-                if (window.article) {
-                    resolve();
-                } else {
-                    setTimeout(checkArticle, 100);
-                }
-            };
-            checkArticle();
-        });
-    };
-
-    await waitForArticle();
-
-    const userName = currentUser ?
-        currentUser.name :
-        `Guest_${Math.random().toString(36).substr(2, 5)}`;
-
-    // העבר את כל נתוני הכתבה במקום רק ה-ID
-    await initChat(window.article, userName);
-});
+// הסר את ה-DOMContentLoaded listener הישן - הצ'אט יאותחל בסוף הטעינה
 
 
-// פתרון 4: אלטרנטיבה - השתמש בהאש של הכתבה
-function generateArticleHash(article) {
-    // יצור hash פשוט מהכותרת והתאריך
-    let text = '';
-    if (article.title) text += article.title;
-    if (article.url) text += article.url;
+//// פתרון 4: אלטרנטיבה - השתמש בהאש של הכתבה
+//function generateArticleHash(article) {
+//    // יצור hash פשוט מהכותרת והתאריך
+//    let text = '';
+//    if (article.title) text += article.title;
+//    if (article.url) text += article.url;
 
-    // Hash function פשוט
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-        const char = text.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
+//    // Hash function פשוט
+//    let hash = 0;
+//    for (let i = 0; i < text.length; i++) {
+//        const char = text.charCodeAt(i);
+//        hash = ((hash << 5) - hash) + char;
+//        hash = hash & hash; // Convert to 32-bit integer
+//    }
 
-    return `article_${Math.abs(hash)}`;
-}
+//    return `article_${Math.abs(hash)}`;
+//}
 
-// שימוש בפונקציה החדשה
-async function initChatWithHash(articleData, userName) {
-    const chatId = generateArticleHash(articleData);
-    console.log("Using hashed chat ID:", chatId);
+//// שימוש בפונקציה החדשה
+//async function initChatWithHash(articleData, userName) {
+//    const chatId = generateArticleHash(articleData);
+//    console.log("Using hashed chat ID:", chatId);
 
-    // יתר הקוד זהה לפונקציה המקורית, רק עם chatId במקום unifiedId
-    // ...
-}
+//    // יתר הקוד זהה לפונקציה המקורית, רק עם chatId במקום unifiedId
+//    // ...
+//}
 
 // שאר הפונקציות נשארות אותו דבר...
 
-//Load all saved articles for current user
-function loadSavedArticles(userId) {
-    return new Promise((resolve, reject) => {
-        ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
-            function (articles) {
-                savedArticles = articles;
-                resolve(articles);
-            },
-            function () {
-                $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved articles.</div>');
-                reject("Failed to load");
-            }
-        );
-    });
-}
+////Load all saved articles for current user
+//function loadSavedArticles(userId) {
+//    return new Promise((resolve, reject) => {
+//        ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
+//            function (articles) {
+//                savedArticles = articles;
+//                resolve(articles);
+//            },
+//            function () {
+//                $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved articles.</div>');
+//                reject("Failed to load");
+//            }
+//        );
+//    });
+//}
 
 function loadSingleArticle(userId, articleId) {
     return new Promise((resolve, reject) => {
@@ -548,6 +546,16 @@ $(document).ready(async function () {
             $('#commentInput').val('');
         }
     });
+
+    // אתחל את הצ'אט אחרי שכל ה-HTML נוצר
+    const userName = currentUser ?
+        currentUser.name :
+        `Guest_${Math.random().toString(36).substr(2, 5)}`;
+
+    // וודא שכל האלמנטים קיימים לפני אתחול הצ'אט
+    setTimeout(async () => {
+        await initChat(window.article, userName);
+    }, 500); // המתנה קצרה לוודא שהכל נטען
 });
 
 //TTS READER

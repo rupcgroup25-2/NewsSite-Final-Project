@@ -480,6 +480,10 @@ function getWithAuth(endpoint) {
             "Content-Type": "application/json"
         }
     }).then(res => {
+        if (res.status === 404) {
+            // אם קיבלנו 404, זה אומר שאין נתונים - נחזיר "0"
+            return "0";
+        }
         if (!res.ok) throw new Error("Network response was not ok");
         return res.text();
     });

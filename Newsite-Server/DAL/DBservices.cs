@@ -306,7 +306,16 @@ namespace Newsite_Server.DAL
             {
                 if (dataReader.Read())
                 {
-                    totalLoginCount = Convert.ToInt32(dataReader["TotalLogins"]);
+                    // בדיקה אם הערך הוא DBNull לפני ההמרה
+                    object totalLoginsValue = dataReader["TotalLogins"];
+                    if (totalLoginsValue != DBNull.Value)
+                    {
+                        totalLoginCount = Convert.ToInt32(totalLoginsValue);
+                    }
+                    else
+                    {
+                        totalLoginCount = 0; // ברירת מחדל אם הערך הוא NULL
+                    }
                 }
                 return totalLoginCount;
             }
@@ -1672,7 +1681,11 @@ namespace Newsite_Server.DAL
             {
                 if (reader.Read())
                 {
-                    count = Convert.ToInt32(reader["CountActiveUsers"]);
+                    object countValue = reader["CountActiveUsers"];
+                    if (countValue != DBNull.Value)
+                    {
+                        count = Convert.ToInt32(countValue);
+                    }
                 }
                 return count;
             }
@@ -1710,7 +1723,11 @@ namespace Newsite_Server.DAL
             {
                 if (reader.Read())
                 {
-                    count = Convert.ToInt32(reader["Count"]);
+                    object countValue = reader["Count"];
+                    if (countValue != DBNull.Value)
+                    {
+                        count = Convert.ToInt32(countValue);
+                    }
                 }
                 return count;
             }
@@ -1750,7 +1767,11 @@ namespace Newsite_Server.DAL
             {
                 if (reader.Read())
                 {
-                    count = Convert.ToInt32(reader["Count"]);
+                    object countValue = reader["Count"];
+                    if (countValue != DBNull.Value)
+                    {
+                        count = Convert.ToInt32(countValue);
+                    }
                 }
                 return count;
             }
@@ -1788,7 +1809,11 @@ namespace Newsite_Server.DAL
             {
                 if (reader.Read())
                 {
-                    count = Convert.ToInt32(reader["BlockedUsersCount"]);
+                    object countValue = reader["BlockedUsersCount"];
+                    if (countValue != DBNull.Value)
+                    {
+                        count = Convert.ToInt32(countValue);
+                    }
                 }
                 return count;
             }
@@ -1825,7 +1850,11 @@ namespace Newsite_Server.DAL
             {
                 if (reader.Read())
                 {
-                    count = Convert.ToInt32(reader["CountReports"]);
+                    object countValue = reader["CountReports"];
+                    if (countValue != DBNull.Value)
+                    {
+                        count = Convert.ToInt32(countValue);
+                    }
                 }
                 return count;
             }

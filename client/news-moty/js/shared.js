@@ -50,7 +50,7 @@
                 <i class="fas fa-trash-alt me-1"></i>Remove
            </button>`
                 : ''
-    }
+            }
 </div>
                 </div>
             </div>

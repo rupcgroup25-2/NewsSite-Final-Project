@@ -211,12 +211,7 @@ namespace Newsite_Server.DAL
                 SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 if (dr.Read())
                 {
-                    bool isActive = Convert.ToBoolean(dr["Active"]);
-                    if (!isActive)
-                    {
-                        return -1;
-                    }
-
+                  
                     string hashedPassword = dr["password"].ToString();
 
                     if (Verify(pass, hashedPassword))

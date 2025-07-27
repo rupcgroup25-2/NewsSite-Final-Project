@@ -65,9 +65,25 @@
     html += '</div>';
     $tab.html(html);
 }
+function getArticleById(id) {
+    // First try to find in shared articles (since we're in shared tab)
+    let article = sharedArticles.find(a => a.id == id);
 
+    // If not found, try regular articles as fallback
+    if (!article && fetchedArticles) {
+        article = fetchedArticles.find(a => a.id == id);
+    }
+
+    // If not found, try search articles as fallback
+    if (!article && searchArticles) {
+        article = searchArticles.find(a => a.id == id);
+    }
+
+    return article;
+}
 function loadSharedArticles(userId) {
     ajaxCall("GET", serverUrl + `Articles/shared/${userId}`, null,
+
         function (articles) {
             sharedArticles = articles;
             renderSharedTab();
@@ -77,6 +93,47 @@ function loadSharedArticles(userId) {
         }
     );
 }
+$(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
+    const articleId = $(this).data("id");
+    // Store the article ID globally so the submit handler can access it
+    window.currentReportArticleId = articleId;
+    $('#btnReportArticle').data("id", articleId);
+    $('#reportModal').modal('show');
+});
+
+function reportSCB(responseText) {
+    console.log("2");
+    alert("Report submitted successfully.");
+    $('#reportModal').modal('hide');
+    $("#reportComment").val("");
+    $("#reportReason").val("");
+}
+
+function reportECB(xhr) {
+    alert(xhr.responseText || "Failed to submit report.");
+}
+
+// Handle the submit button click from the modal
+$(document).on('submit', '#reportForm', function (e) {
+    e.preventDefault();    
+    // Get article ID from the stored global variable
+    const articleId = window.currentReportArticleId;
+    
+    if (!articleId) {
+        alert("No article selected for reporting");
+        return;
+    }
+    
+    const article = getArticleById(articleId);
+    console.log("Found article:", article);
+    
+    if (!article) {
+        alert("Article not found");
+        return;
+    }
+    console.log("Calling reportArticle function");
+    reportArticle(article, reportSCB, reportECB, true); // true = isFromShared
+});
 
 $(document).on('click', '.unshare-btn', function () {
     const articleId = $(this).data('id');

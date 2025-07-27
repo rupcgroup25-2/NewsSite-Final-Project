@@ -144,15 +144,15 @@ function saveArticle(article, saveSCB, saveECB) {
 }
 
 // --- Report Article ---
-//handle UI on share submit 
-$(document).on('submit', '#reportForm', function (e) {
-    e.preventDefault();
-    $('#reportModal').modal('hide');
-    $('#reportComment').val('');
-});
+//handle UI on report submit - DISABLED for shared.js
+// $(document).on('submit', '#reportForm', function (e) {
+//     e.preventDefault();
+//     $('#reportModal').modal('hide');
+//     $('#reportComment').val('');
+// });
 
 // Reporting the clicked article
-function reportArticle(article, successCB, errorCB) {
+function reportArticle(article, successCB, errorCB, isFromShared = false) {
     if (!currentUser) {
         alert("Please login to report articles.");
         return;
@@ -175,7 +175,7 @@ function reportArticle(article, successCB, errorCB) {
         id: 0,
         reporterId: currentUser.id,
         articleId: 0, // Assuming 0 because it's an external article
-        sharedArticleId: null, // Add support if needed
+        sharedArticleId: isFromShared ? article.id : null, // Use article ID if from shared page
         comment: reason + (comment ? ` - ${comment}` : ""),
         reportedAt: new Date().toISOString()
     };

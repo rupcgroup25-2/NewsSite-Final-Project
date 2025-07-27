@@ -230,6 +230,7 @@ function checkValidation() {
 $(document).on('click', '#logout-btn', function () {
     currentUser = null;
     localStorage.removeItem('user');
+    localStorage.removeItem('cachedFollowingUsers');
     renderUserActions();
     location.reload();
     //renderTabs();

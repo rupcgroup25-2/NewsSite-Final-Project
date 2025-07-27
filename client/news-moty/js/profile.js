@@ -409,6 +409,7 @@ function unfollowUser(userEmail) {
         function (response) {
             followingUsers = followingUsers.filter(user => user.email !== userEmail);
             renderProfile();
+            loadFollowingUsers();
             alert('User unfollowed successfully.');
         },
         function (xhr) {

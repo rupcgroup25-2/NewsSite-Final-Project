@@ -20,7 +20,6 @@
                     <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="saved.html">Saved</a></li>
                     <li class="nav-item"><a class="nav-link" href="shared.html">Shared</a></li>
-                    <li class="nav-item"><a class="nav-link" href="interests.html">Interests</a></li>
                     <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
                 </ul>

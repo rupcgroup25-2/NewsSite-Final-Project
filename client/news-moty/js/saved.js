@@ -11,23 +11,34 @@
         return;
     }
 
-    let html = `
-        <div class="container px-2 px-md-4">
-            <div class="mb-3">
-                <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${searchTerm}">
+    // אם תיבת החיפוש כבר קיימת, עדכן רק את התוכן
+    let $articlesContainer = $('#articles-container');
+    if ($articlesContainer.length === 0) {
+        // יצירת המבנה הראשוני רק פעם אחת
+        let html = `
+            <div class="container px-2 px-md-4">
+                <div class="mb-3">
+                    <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${searchTerm}">
+                </div>
+                <div id="articles-container"></div>
             </div>
-    `;
+        `;
+        $tab.html(html);
+        $articlesContainer = $('#articles-container');
+    }
 
+    // עדכון רק תוכן הכרטיסיות
     const highlight = (text) => {
         if (!searchTerm) return text;
         const regex = new RegExp(`(${searchTerm})`, 'gi');
         return text.replace(regex, '<span class="highlight">$1</span>');
     };
 
+    let articlesHtml = '';
     savedArticles.forEach(article => {
         const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
 
-        html += `
+        articlesHtml += `
         <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-secondary-subtle">
             <div class="row g-0">
                 <div class="col-md-5">
@@ -56,8 +67,7 @@
         </div>`;
     });
 
-    html += '</div>';
-    $tab.html(html);
+    $articlesContainer.html(articlesHtml);
 }
 
 
@@ -125,18 +135,24 @@ function loadSavedArticles(userId, searchTerm = "") {
 }
 function renderError(message) {
     const $tab = $('#saved');
-    const currentSearchTerm = $('#savedSearchInput').val() || "";
-
-    let html = `
-        <div class="container px-2 px-md-4">
-            <div class="mb-3">
-                <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${currentSearchTerm}">
+    
+    // אם תיבת החיפוש כבר קיימת, עדכן רק את התוכן
+    let $articlesContainer = $('#articles-container');
+    if ($articlesContainer.length === 0) {
+        const currentSearchTerm = "";
+        let html = `
+            <div class="container px-2 px-md-4">
+                <div class="mb-3">
+                    <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${currentSearchTerm}">
+                </div>
+                <div id="articles-container"></div>
             </div>
-            <div class="alert alert-danger text-center">${message}</div>
-        </div>
-    `;
-
-    $tab.html(html);
+        `;
+        $tab.html(html);
+        $articlesContainer = $('#articles-container');
+    }
+    
+    $articlesContainer.html(`<div class="alert alert-danger text-center">${message}</div>`);
 }
 
 

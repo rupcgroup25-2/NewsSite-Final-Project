@@ -65,7 +65,7 @@ function renderAdminDashboard({
                         <div class="card-body text-white text-center p-4">
                             <i class="bi bi-people-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
                             <h2 class="fw-bold mb-1">${totalUsers}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Active Users</small>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Active Users</small>
                         </div>
                     </div>
                 </div>
@@ -74,7 +74,7 @@ function renderAdminDashboard({
                         <div class="card-body text-white text-center p-4">
                             <i class="bi bi-journal-text mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
                             <h2 class="fw-bold mb-1">${totalArticles}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Saved Articles</small>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Saved Articles</small>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ function renderAdminDashboard({
                         <div class="card-body text-white text-center p-4">
                             <i class="bi bi-share-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
                             <h2 class="fw-bold mb-1">${totalShared}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Shared Items</small>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Shared Items</small>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@ function renderAdminDashboard({
                         <div class="card-body text-white text-center p-4">
                             <i class="bi bi-person-x-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
                             <h2 class="fw-bold mb-1">${totalBlocked}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Blocked Users</small>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Blocked Users</small>
                         </div>
                     </div>
                 </div>
@@ -101,7 +101,7 @@ function renderAdminDashboard({
                         <div class="card-body text-dark text-center p-4">
                             <i class="bi bi-flag-fill mb-3" style="font-size: 2.5rem; opacity: 0.8;"></i>
                             <h2 class="fw-bold mb-1">${totalReports}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Total Reports</small>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Total Reports</small>
                         </div>
                     </div>
                 </div>
@@ -110,7 +110,7 @@ function renderAdminDashboard({
         <div class="card-body text-white text-center p-4">
             <i class="bi bi-calendar-check mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
             <h2 class="fw-bold mb-1">${totalDailyLogins}</h2>
-            <small class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">Daily Logins</small>
+            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Daily Logins</small>
         </div>
     </div>
 </div>
@@ -126,16 +126,31 @@ function renderAdminDashboard({
                             <h4 class="text-white mb-0 fw-bold">User Management</h4>
                         </div>
                         <div class="text-white">
-                            <span class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">
+                            <span class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">
                                 <i class="bi bi-people me-1"></i>${totalUsers} users
                             </span>
                         </div>
                     </div>
                 </div>
+                <!-- Search Bar for Users -->
+                <div class="card-body border-bottom bg-light py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text" id="userSearchInput" class="form-control border-start-0" 
+                                       placeholder="Search users by name or email..." 
+                                       style="box-shadow: none; border-color: #dee2e6;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 modern-table">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-hover mb-0 modern-table" id="usersTable">
+                            <thead class="table-light sticky-top">
                                 <tr>
                                     <th class="fw-bold py-3 px-4">
                                         <i class="bi bi-person me-2 text-primary"></i>User Details
@@ -158,12 +173,12 @@ function renderAdminDashboard({
 
     users.forEach((user, index) => {
         const statusBadge = user.active
-            ? '<span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Active</span>'
-            : '<span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i>Blocked</span>';
+            ? '<span class="badge bg-success-subtle text-success px-2 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Active</span>'
+            : '<span class="badge bg-danger-subtle text-danger px-2 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i>Blocked</span>';
 
         const sharingBadge = !user.blockSharing
-            ? '<span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill"><i class="bi bi-share-fill me-1"></i>Allowed</span>'
-            : '<span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill"><i class="bi bi-ban me-1"></i>Blocked</span>';
+            ? '<span class="badge bg-info-subtle text-info px-2 py-2 rounded-pill"><i class="bi bi-share-fill me-1"></i>Allowed</span>'
+            : '<span class="badge bg-secondary-subtle text-secondary px-2 py-2 rounded-pill"><i class="bi bi-ban me-1"></i>Blocked</span>';
 
         const statusBtnClass = user.active ? 'danger' : 'success';
         const statusBtnIcon = user.active ? 'person-x-fill' : 'person-check-fill';
@@ -226,7 +241,7 @@ function renderAdminDashboard({
                             <h4 class="text-white mb-0 fw-bold">Reports Management</h4>
                         </div>
                         <div class="text-white">
-                            <span class="badge bg-white bg-opacity-25 px-3 py-2 rounded-pill">
+                            <span class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">
                                 <i class="bi bi-exclamation-triangle me-1"></i>${totalReports} reports
                             </span>
                         </div>
@@ -321,7 +336,7 @@ function renderAdminDashboard({
                         ` : '<span class="text-muted fst-italic">Not shared</span>'}
                     </td>
                     <td class="py-3 text-center">
-                        <span class="badge bg-dark text-white rounded-pill px-3 py-2">
+                        <span class="badge bg-dark text-white rounded-pill px-2 py-2">
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             ${r.TotalReportsOnThisItem || 0}
                         </span>
@@ -452,6 +467,47 @@ function renderAdminDashboard({
             border-radius: 1.2rem;
             padding: 0.15em 0.9em;
             margin-top: 0.2em;
+        }
+
+        /* Scroll bar styling for users table */
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Sticky header for users table */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa !important;
+        }
+
+        /* Search input styling */
+        #userSearchInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+        }
+
+        /* Dark mode styling for search icon */
+        [data-bs-theme="dark"] .input-group-text .bi-search {
+            color: #6c757d !important;
+        }
+        
+        /* Ensure search icon is visible in light mode */
+        [data-bs-theme="light"] .input-group-text .bi-search,
+        .input-group-text .bi-search {
+            color: #6c757d !important;
         }
 
         @media (max-width: 768px) {
@@ -651,4 +707,28 @@ $(document).on('click', '.toggle-block-btn', async function () {
 $(document).ready(function () {
     renderUserActions?.(); // אם יש לך פונקציה כזו
     loadAdminDashboardData();
+
+    // הוספת פונקציית חיפוש למשתמשים
+    $(document).on('input', '#userSearchInput', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        const $table = $('#usersTable tbody');
+        const $rows = $table.find('tr');
+        let visibleCount = 0;
+
+        $rows.each(function() {
+            const $row = $(this);
+            const name = $row.find('td:first .fw-semibold').text().toLowerCase();
+            const email = $row.find('td:nth-child(2)').text().toLowerCase();
+            
+            if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                $row.show();
+                visibleCount++;
+            } else {
+                $row.hide();
+            }
+        });
+
+        // עדכון מונה התוצאות
+        $('#userSearchResults').text(`${visibleCount} users found`);
+    });
 });

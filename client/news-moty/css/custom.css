@@ -809,3 +809,55 @@ footer.bg-body {
     padding: 2px 4px;
     border-radius: 3px;
 }
+
+/* Fix image height in article cards - make images take full available height */
+.card .row .col-md-5 > div[style*="aspect-ratio"] {
+    aspect-ratio: unset !important;
+    height: 100% !important;
+    min-height: 200px;
+}
+
+.card .row .col-md-5 {
+    display: flex !important;
+    align-items: stretch !important;
+}
+
+.card .row .col-md-5 > div {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.card .row {
+    height: 100% !important;
+    align-items: stretch !important;
+}
+
+.card .row .col-md-7 {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Ensure images fill the entire container height */
+.card .row .col-md-5 img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    min-height: 200px !important;
+}
+
+/* Prevent height jumping when switching categories */
+#articles-list {
+    min-height: 400px;
+    transition: all 0.3s ease;
+}
+
+#archiveResults {
+    min-height: 0px;
+}
+
+/* Fix hero section height jumping */
+#hero-article {
+    min-height: 300px;
+    transition: all 0.3s ease;
+}

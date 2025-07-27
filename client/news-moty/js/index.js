@@ -100,6 +100,11 @@ $(document).ready(function () {
 // Category filter
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
+    
+    // Clear search results when switching categories
+    clearSearchResults();
+    
+    // Render articles for the selected category
     renderArticles(cat);
 });
 
@@ -204,8 +209,8 @@ function renderHeroArticle(article) {
                         </a>
                     </div>
                 </div>
-                <div class="col-md-5 bg-dark d-flex align-items-center justify-content-center" style="min-height:260px;">
-                    <img src="${article.imageUrl}" class="img-fluid w-100 h-100 object-fit-cover" alt="${article.title}" style="max-height:340px; object-fit:cover;">
+                <div class="col-md-5 d-flex align-items-stretch">
+                    <img src="${article.imageUrl}" class="img-fluid w-100 object-fit-cover" alt="${article.title}" style="min-height: 280px;">
                 </div>
             </div>
         </div>
@@ -479,7 +484,8 @@ function displayArchiveResults(articles) {
     let html = '<div class="d-flex justify-content-between align-items-center mb-3">';
     html += '<h5 class="mb-0">Archive Search Results</h5>';
     html += '<button class="btn btn-outline-secondary btn-sm" onclick="clearSearchResults()">Clear Search</button>';
-    html += '</div><div class="row">';
+    html += '</div>';
+    html += '<div class="row">';
     
     articles.forEach((article, index) => {
         const articleId = `search_${index}_${Date.now()}`;
@@ -562,4 +568,9 @@ function clearSearchResults() {
     searchArticles = []; // Clear search articles array
     sessionStorage.removeItem('searchArticles'); // Clear from sessionStorage
     localStorage.removeItem('searchArticles'); // Clear from localStorage backup
+    
+    // Reset category pills to show "All" as active
+    $('#category-pills .nav-link').removeClass('active');
+    $('#category-pills .nav-link[data-category="all"]').addClass('active');
+    currentCategory = "all";
 }

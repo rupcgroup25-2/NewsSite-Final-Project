@@ -174,6 +174,26 @@ function renderProfile() {
             
             <!-- Following Users -->
             <div class="col-12">
+                <!-- Interests Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-heart me-2"></i>Your Interests
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">Your interests:</div>
+                        <div class="mb-3" id="interests-container">
+                            ${renderInterestsButtons()}
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-interest" class="form-label">Add new interest</label>
+                            <input type="text" id="new-interest" class="form-control" placeholder="Type a new interest and press Add">
+                            <button class="btn btn-primary mt-2" id="add-interest-btn">Add</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="card shadow-sm">
                     <div class="card-header">
                         <h5 class="mb-0">
@@ -238,6 +258,18 @@ function renderFollowingUsers() {
     `;
 }
 
+function renderInterestsButtons() {
+    if (!currentUser || !currentUser.tags || currentUser.tags.length === 0) {
+        return '<div class="text-muted">No interests added yet.</div>';
+    }
+
+    return currentUser.tags.map(tag => `
+        <button type="button" class="btn btn-outline-primary btn-sm me-1 mb-1 interest-tag" data-id="${tag.id}">
+            ${tag.name} <span aria-hidden="true">&times;</span>
+        </button>
+    `).join('');
+}
+
 function bindProfileEvents() {
     // Edit profile button - simple modal
     $(document).off('click', '#editProfileBtn').on('click', '#editProfileBtn', function () {
@@ -253,6 +285,62 @@ function bindProfileEvents() {
     // Save profile changes
     $(document).off('click', '#saveProfileBtn').on('click', '#saveProfileBtn', function () {
         saveProfileChanges();
+    });
+
+    // Adding new interest
+    $(document).off('click', '#add-interest-btn').on('click', '#add-interest-btn', function () {
+        const newTagName = $('#new-interest').val().trim();
+
+        if (!newTagName) {
+            alert("Please enter a valid interest.");
+            return;
+        }
+
+        const apiUrl = `${serverUrl}Tags/assign/userId/${currentUser.id}/tagName/${newTagName}`;
+
+        ajaxCall(
+            "POST",
+            apiUrl,
+            null,
+            function success(response) {
+                const newTag = {
+                    id: response.tagId,
+                    name: newTagName
+                };
+                currentUser.tags.push(newTag);
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                $('#new-interest').val('');
+                $('#interests-container').html(renderInterestsButtons());
+            },
+            function error(xhr) {
+                alert("Failed to add interest: " + (xhr.responseText || xhr.statusText));
+            }
+        );
+    });
+
+    // Removing interest
+    $(document).off('click', '.interest-tag').on('click', '.interest-tag', function () {
+        const tagId = $(this).data('id');
+        const tagName = $(this).clone().find('span').remove().end().text().trim();
+
+        if (!confirm(`Are you sure you want to remove interest "${tagName}" ?`)) return;
+
+        const url = `${serverUrl}Tags/RemoveFromUser/userId/${currentUser.id}/tagId/${tagId}`;
+
+        ajaxCall(
+            "DELETE",
+            url,
+            null, // No body needed
+            function success() {
+                // Update local user object
+                currentUser.tags = currentUser.tags.filter(t => t.id !== tagId);
+                localStorage.setItem("user", JSON.stringify(currentUser));
+                $('#interests-container').html(renderInterestsButtons());
+            },
+            function error(xhr) {
+                alert("Failed to remove interest: " + (xhr.responseText || xhr.statusText));
+            }
+        );
     });
 }
 

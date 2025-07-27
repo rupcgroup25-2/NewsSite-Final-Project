@@ -84,7 +84,7 @@ namespace Newsite_Server.BL
                 //  SharedArticles insert to the table
                 return dbs.ShareArticleForUser(userId, insertResult, comment);
             }
-            else return 0;
+            else return -1;
         }
 
         public List<Article> GetSavedArticlesForUser(int userId)

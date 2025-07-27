@@ -137,8 +137,16 @@ $(document).on('submit', '#loginForm', function (e) {
             }, 1000);
         },
         function error(xhr, status, error) {
-            console.error("Login failed:", xhr.responseText || error);
-            showMessage('#loginMessage', 'Login failed. Please try again.', 'danger');
+            try {
+                const response = JSON.parse(xhr.responseText);
+                message = response.message || message;
+                console.error("Server error:", response);
+            } catch (e) {
+                console.warn("Response is not valid JSON:", xhr.responseText);
+                message = xhr.responseText || message;
+            }
+
+            showMessage('#loginMessage', message, 'danger');
         }
     );
 });

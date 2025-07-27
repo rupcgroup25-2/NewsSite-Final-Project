@@ -17,21 +17,28 @@ namespace Newsite_Server.Controllers
         public IActionResult Login([FromBody] User user)
         {
             User NewUser = user.LoginUser();
-            if (NewUser != null)
-            {
-                NewUser.TrackDailyLogin(NewUser.Id);
-                string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@newshub.com" ? "Admin" : "User"); //Create Token
 
-                return Ok(new
-                {
-                    token,
-                    NewUser.Name,
-                    NewUser.Id,
-                    NewUser.Email,
-                    NewUser.Tags
-                });
+            if (NewUser == null)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
             }
-            return (Unauthorized("Invalid email or password"));
+
+            if (!NewUser.Active)
+            {
+                return Unauthorized(new { message = "The user is blocked because of violations of the site!" });
+            }
+
+            NewUser.TrackDailyLogin(NewUser.Id);
+            string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@newshub.com" ? "Admin" : "User");
+
+            return Ok(new
+            {
+                token,
+                NewUser.Name,
+                NewUser.Id,
+                NewUser.Email,
+                NewUser.Tags
+            });
         }
 
         // POST api/<UsersController>

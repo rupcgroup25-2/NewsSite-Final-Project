@@ -147,6 +147,8 @@ namespace Newsite_Server.Controllers
 
             if (result > 0)
                 return Ok("Article shared successfully");
+            else if (result == -1) 
+                return Ok("The user is blocked sharing");
             else
                 return Ok("Article already shared");
         }

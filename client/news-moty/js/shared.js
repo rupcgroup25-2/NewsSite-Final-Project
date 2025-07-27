@@ -23,7 +23,7 @@
                         <img src="${article.urlToImage}" alt="${article.title}" class="img-fluid w-100 h-100 object-fit-cover">
                     </div>
                 </div>
-                <div class="col-md-7 d-flex flex-column p-3">
+                <div class="col-md-7 d-flex flex-column p-3 position-relative">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="badge bg-${tag.color}">${tag.name}</span>
                         <span class="text-muted small">${formatDate(article.publishedAt)}</span>
@@ -43,14 +43,19 @@
                         ${article.comment || '(No comment provided)'}
                     </div>
 
- <div class="mt-auto d-flex gap-2">
-    <a href="article.html?id=${article.id}&collection=Shared" class="btn btn-outline-primary" data-id="${article.id}" style="text-decoration:none" target="_blank">View</a>
-    ${article.sharedById === currentUser.id
+ <div class="mt-auto d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-2">
+        <a href="article.html?id=${article.id}&collection=Shared" class="btn btn-outline-primary" data-id="${article.id}" style="text-decoration:none" target="_blank">View</a>
+        ${article.sharedById === currentUser.id
                 ? `<button class="btn btn-outline-danger unshare-btn" data-id="${article.id}">
                 <i class="fas fa-trash-alt me-1"></i>Remove
            </button>`
                 : ''
             }
+    </div>
+    <button class="btn btn-danger report-article-btn" data-id="${article.id}" style="min-width: 50px;">
+        <i class="bi bi-flag-fill" style="font-size: 16px;"></i>
+    </button>
 </div>
                 </div>
             </div>

@@ -152,8 +152,13 @@ $(document).on('submit', '#loginForm', function (e) {
 });
 
 // Handle Register form submission - AJAX
+$(document).on("input", "#registerName, #registerEmail, #registerPassword", function () {
+    this.setCustomValidity(""); // clears any custom error
+});
+
 
 $(document).on('submit', '#registerForm', function (e) {
+    console.log("submit clicked");
     e.preventDefault();
     if (!checkValidation()) return;
 
@@ -204,7 +209,7 @@ function checkValidation() {
     let valid = true;
 
     // Validate name
-    if (name.length < 2 || !/^[A-Za-z]+$/.test(name)) {
+    if (name.length < 2 || !/^[A-Za-z\s]+$/.test(name)) {
         nameInput[0].setCustomValidity("Name must be at least 2 characters and contain only English letters.");
         nameInput[0].reportValidity();
         valid = false;
@@ -223,8 +228,12 @@ function checkValidation() {
     }
 
     // Validate password
-    if (password.length < 8 || !/\d/.test(password) || !/[A-Z]/.test(password)) {
-        passInput[0].setCustomValidity("Password must be at least 8 characters long, with at least one number and one uppercase letter.");
+    if (password.length < 8 ||
+        !/\d/.test(password) ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/[^\w\d\s]/.test(password)) {
+        passInput[0].setCustomValidity("Password must be 8+ chars with uppercase, lowercase, number, and symbol.");
         passInput[0].reportValidity();
         valid = false;
     } else {

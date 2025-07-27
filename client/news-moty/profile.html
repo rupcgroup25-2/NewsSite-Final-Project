@@ -13,44 +13,7 @@
 </head>
 <body class="bg-light" data-bs-theme="light">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg sticky-top bg-body shadow-sm py-2" id="main-navbar">
-        <div class="container-fluid px-3">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
-                <i class="bi bi-newspaper me-2 fs-3 text-primary"></i>
-                <span class="fs-4">News Hub</span>
-            </a>
-            <div class="d-flex align-items-center gap-2 order-lg-2 ms-auto p-2">
-                <button class="btn btn-outline-secondary btn-sm" id="toggle-dark" type="button" aria-label="Toggle dark mode">
-                    <i class="bi bi-moon-stars-fill"></i>
-                </button>
-            </div>
-            <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse order-lg-1" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 nav-pills gap-1">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="saved.html">Saved</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="shared.html">Shared</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="profile.html">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin.html">Admin</a>
-                    </li>
-
-                </ul>
-                <div id="user-actions" class="d-flex align-items-center ms-lg-3"></div>
-            </div>
-        </div>
-    </nav>
-
+    <script src="js/shared/navbar.js"></script>
     <!-- Main Content -->
     <main class="container-lg py-4 min-vh-100">
         <div id="profile">
@@ -85,14 +48,8 @@
             </div>
         </div>
     </div>
-
     <!-- Footer -->
-    <footer class="bg-body border-top mt-5 py-3">
-        <div class="container text-center small text-muted">
-            &copy; 2024 News Hub. All rights reserved.
-        </div>
-    </footer>
-
+    <script src="js/shared/footer.js"></script>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

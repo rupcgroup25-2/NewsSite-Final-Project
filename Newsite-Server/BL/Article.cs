@@ -100,7 +100,7 @@ namespace Newsite_Server.BL
         public List<Article> GetSharedArticlesForUser(int userId)
         {
             int watchSharedPermission = dbs.GetWatchSharedPermission(userId);
-            if (watchSharedPermission == 0)// blockSharing is 0 
+            if (watchSharedPermission == 0 || watchSharedPermission == 1)
             {
                 return dbs.GetSharedArticlesForUser(userId);
             }

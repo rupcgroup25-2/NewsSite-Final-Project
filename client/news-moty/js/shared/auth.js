@@ -135,6 +135,7 @@ $(document).on('submit', '#loginForm', function (e) {
                 hideMessage('#loginMessage');
                 location.reload();
             }, 1000);
+
         },
         function error(xhr, status, error) {
             try {

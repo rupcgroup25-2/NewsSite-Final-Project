@@ -222,6 +222,7 @@ function renderArticles(category) {
 }
 
 async function fetchAllArticlesOncePerDay() {
+
     // Check cache
     const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
     if (cacheRaw) {
@@ -230,23 +231,27 @@ async function fetchAllArticlesOncePerDay() {
             if (cache.articles && isToday(cache.date)) {
                 return cache.articles;
             }
-        } catch (e) { /* ignore */ }
+        } catch (e) {
+            // ignore cache parse errors
+        }
     }
 
-    // Fetch all categories
-    let allArticles = [];
-    for (const cat of NEWS_CATEGORIES) {
-        let url = `https://newsapi.org/v2/top-headlines?apiKey=${NEWS_API_KEY}&pageSize=12&language=en&country=us`;
+    const timestamp = Date.now();
+
+    const ajaxPromises = NEWS_CATEGORIES.map(cat => {
         const apiCategory = categoryMapping[cat];
-        if (apiCategory) url += `&category=${apiCategory}`;
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            const response = await $.ajax({ url, method: "GET" });
-            if (response.status === "ok" && response.articles) {
-                const articles = response.articles
-                    .filter(article => article.title && article.description && article.urlToImage)
-                    .map((article, index) => ({
-                        id: `api_${cat}_${Date.now()}_${index}`,
+        let url = serverUrl + `Articles/top-headlines/pageSize/12/language/en/country/us`;
+        if (apiCategory) {
+            url += `/category/${apiCategory}`;
+        }
+
+        return $.ajax({ url, method: "GET" })
+            .then(response => {
+                if (response.articles && Array.isArray(response.articles)) {
+                    const rawArticles = response.articles;
+                    const filtered = rawArticles.filter(article => article.title && article.description && article.urlToImage);
+                    let output = filtered.map((article, index) => ({
+                        id: `api_${cat}_${timestamp}_${index}`,
                         title: article.title,
                         content: article.content || article.description,
                         preview: article.description,
@@ -256,17 +261,34 @@ async function fetchAllArticlesOncePerDay() {
                         url: article.url,
                         source: article.source.name
                     }));
-                allArticles = allArticles.concat(articles);
-            }
-        } catch (e) {
-            // Optionally handle per-category error
-        }
+                    return output;
+                }
+
+                return [];
+            })
+            .catch(e => {
+                console.error(`Failed to fetch articles for category: ${cat}`, e);
+                return [];
+            });
+    });
+
+    const results = await Promise.all(ajaxPromises);
+    const allArticles = results.flat();
+    // Only save to cache if articles exist
+    if (allArticles.length > 0) {
+        const cacheValue = {
+            date: new Date().toISOString(),
+            articles: allArticles
+        };
+        localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(cacheValue));
+    } else {
+        console.log("No articles were fetched — skipping localStorage caching.");
     }
-    // Save to cache
+
     fetchedArticles = allArticles;
-    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({ date: new Date().toISOString(), articles: allArticles }));
     return allArticles;
 }
+
 
 // Replace fetchArticlesByCategory to use cache
 function fetchArticlesByCategory(category) {

@@ -398,3 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 Newsite-Server/huggingface-key.txt
 client/news-moty/js/firebaseConfig.js
+Newsite-Server/newsapi-key.txt

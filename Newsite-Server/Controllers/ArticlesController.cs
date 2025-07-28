@@ -260,6 +260,63 @@ namespace Newsite_Server.Controllers
             return Ok(new { summary = firstSummary });
         }
 
+        [HttpGet("top-headlines/pageSize/{pageSize}/language/{language}/country/{country}/category/{category?}")]
+        public async Task<IActionResult> GetTopHeadlines(int pageSize, string language, string country, string? category = null)
+        {
+            string newsApiKey;
+            try
+            {
+                newsApiKey = System.IO.File.ReadAllText("newsapi-key.txt").Trim();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
+            }
+
+            string url = $"https://newsapi.org/v2/top-headlines?apiKey={newsApiKey}&pageSize={pageSize}&language={language}&country={country}";
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                url += $"&category={category}";
+            }
+
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
+
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.GetAsync(url);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error calling NewsAPI: " + ex.Message);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, error);
+            }
+
+            string jsonResponse = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(jsonResponse);
+            var root = doc.RootElement;
+
+            if (!root.TryGetProperty("articles", out JsonElement articlesElement))
+            {
+                return BadRequest("No articles returned from NewsAPI.");
+            }
+
+            var articles = JsonSerializer.Deserialize<List<object>>(articlesElement.GetRawText());
+
+            return Ok(new { articles });
+
+        }
+
     }
 
 }

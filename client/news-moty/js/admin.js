@@ -266,7 +266,7 @@ function renderAdminDashboard({
                                     <th class="fw-bold py-3">Reporter Info</th>
                                     <th class="fw-bold py-3">Report Details</th>
                                     <th class="fw-bold py-3">Article Info</th>
-                                    <th class="fw-bold py-3 text-center">Shared Content</th>
+                                    <th class="fw-bold py-3 text-center">Share Comment</th>
                                     <th class="fw-bold py-3 text-center">Reports Count</th>
                                     <th class="fw-bold py-3">Date</th>
                                 </tr>
@@ -325,13 +325,19 @@ function renderAdminDashboard({
                     </td>
                     <td class="py-3 text-center">
                         ${r.SharedArticleId !== null ? `
-                            <div class="shared-info">
-                                <div class="fw-semibold">
-                                    <i class="bi bi-share me-1"></i>
-                                    ${r.SharedArticleTitle || 'Untitled'}
-                                </div>
-                                <small class="text-muted">Shared by: ${r.SharedByName || 'Unknown'}</small>
-                                <br><small class="text-muted">ID: ${r.SharerId}</small>
+                            <div class="shared-comment-info">
+                                ${r.SharerComment ? `
+                                    <div class="share-comment p-2 bg-info-subtle border border-info rounded mb-2">
+                                        <i class="bi bi-chat-quote text-info me-1"></i>
+                                        <span class="text-dark fw-semibold">"${r.SharerComment}"</span>
+                                    </div>
+                                ` : `
+                                    <div class="text-muted fst-italic mb-2">
+                                        <i class="bi bi-chat-x me-1"></i>
+                                        No comment attached
+                                    </div>
+                                `}
+                                <br><small class="text-muted"> ${r.SharerId != null ? "Sharer ID:" + r.SharerId : ''}</small>
                             </div>
                         ` : '<span class="text-muted fst-italic">Not shared</span>'}
                     </td>
@@ -430,12 +436,18 @@ function renderAdminDashboard({
             border-left: 3px solid #007bff;
         }
 
+        .share-comment {
+            border-left: 3px solid #0dcaf0;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
         .reports-table td {
             max-width: 200px;
             word-wrap: break-word;
         }
 
-        .reporter-info, .article-info, .shared-info, .report-details {
+        .reporter-info, .article-info, .shared-comment-info, .report-details {
             line-height: 1.3;
         }
 

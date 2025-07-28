@@ -1498,7 +1498,7 @@ namespace Newsite_Server.DAL
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@ReporterId", reporterId);
             paramDic.Add("@ArticleId", (object?)articleId ?? DBNull.Value);
-            paramDic.Add("@SharedArticleId", (object?)sharedArticleId ?? DBNull.Value);
+            paramDic.Add("@SharerId", (object?)sharedArticleId ?? DBNull.Value);
             paramDic.Add("@Comment", comment);
 
             cmd = CreateCommandWithStoredProcedureGeneral("sp_ReportArticleFinal", con, paramDic);

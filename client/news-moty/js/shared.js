@@ -53,9 +53,12 @@
                 : ''
             }
     </div>
-    <button class="btn btn-danger report-article-btn" data-id="${article.id}" style="min-width: 50px;">
-        <i class="bi bi-flag-fill" style="font-size: 16px;"></i>
-    </button>
+    ${article.sharedById !== currentUser.id
+            ? `<button class="btn btn-danger report-article-btn" data-id="${article.id}" data-sharerId="${article.sharedById}" style="min-width: 50px;">
+                <i class="bi bi-flag-fill" style="font-size: 16px;"></i>
+            </button>`
+            : ''
+        }
 </div>
                 </div>
             </div>

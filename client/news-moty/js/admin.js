@@ -331,7 +331,7 @@ function renderAdminDashboard({
                                     ${r.SharedArticleTitle || 'Untitled'}
                                 </div>
                                 <small class="text-muted">Shared by: ${r.SharedByName || 'Unknown'}</small>
-                                <br><small class="text-muted">ID: ${r.SharedArticleId}</small>
+                                <br><small class="text-muted">ID: ${r.SharerId}</small>
                             </div>
                         ` : '<span class="text-muted fst-italic">Not shared</span>'}
                     </td>

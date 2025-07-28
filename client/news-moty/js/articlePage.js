@@ -508,36 +508,41 @@ $(document).ready(async function () {
         if (commentsCountEl) {
             commentsCountEl.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
         }
+        const commentsHeader = document.querySelector("h5.mb-3 i.bi-chat-dots")?.parentElement;
+        if (commentsHeader) {
+            commentsHeader.innerHTML = `<i class="bi bi-chat-dots"></i> Comments (${comments.length})`;
+        }
     }
 
-
     //add comment
-    $('#commentForm').on('submit', function (e) {
+    $(document).on('submit', '#commentForm', function (e) {
         e.preventDefault();
 
         const commentText = $('#commentInput').val().trim();
+
         if (commentText.length === 0) {
             alert('Comment text cannot be empty.');
             return;
         }
 
         const data = {
-            articleId: window.article.id,  
-            userId: currentUser.id,        
-            commentText: commentText     
+            articleId: window.article.id,
+            userId: currentUser.id,
+            username: currentUser.name,
+            commentText: commentText
         };
 
-        ajaxCall("POST", "/api/comments", JSON.stringify(data),
-            function () {
-                $('#commentInput').val('');       
-                loadComments(window.article.id); 
+        ajaxCall("POST", serverUrl + "Comments/Addcomment", JSON.stringify(data),
+            function (response) {
+                $(e.target).find('#commentInput').val('');
+                alert(response);
+                loadComments(window.article.id);
             },
             function (xhr) {
-                alert(xhr.responseText || "Failed to add comment.");
+                alert(xhr.responseText);
             });
     });
 
-    console.log("Calling loadComments")
 
     $(document).ready(function () {
         loadComments(window.article.id);
@@ -569,16 +574,6 @@ $(document).ready(async function () {
         $('.article-body').html(wrapWordsInSpans(window.article.fullText));
         window.extractedContent = window.article.fullText; // שמור גלובלית לצורך TTS
     }
-
-    $('#commentForm').off('submit').on('submit', function (e) {
-        e.preventDefault();
-        const text = $('#commentInput').val();
-        if (text && currentUser) {
-            if (!articleComments[id]) articleComments[id] = [];
-            articleComments[id].push({ user: currentUser.name, text, date: new Date() });
-            $('#commentInput').val('');
-        }
-    });
 
     // אתחל את הצ'אט אחרי שכל ה-HTML נוצר
     const userName = currentUser ?

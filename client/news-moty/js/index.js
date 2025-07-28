@@ -467,7 +467,7 @@ async function searchArchive() {
     
     try {
         const results = await searchGuardianAPI(query, fromDate, toDate);
-        displayArchiveResults(results.articles);
+        displayArchiveResults(results);
         // Hide regular articles when showing search results
         $('#articles-list').hide();
         $('#hero-article').hide();
@@ -477,21 +477,20 @@ async function searchArchive() {
 }
 
 async function searchGuardianAPI(query, fromDate = null, toDate = null) {
-    const baseUrl = 'https://newsapi.org/v2/everything';
-    
-    const params = new URLSearchParams({
-        'apiKey': NEWS_API_KEY,
-        'q': query,
-        'language': 'en',
-        'sortBy': 'relevancy',
-        'pageSize': 20
-    });
-    
-    if (fromDate) params.append('from', fromDate);
-    if (toDate) params.append('to', toDate);
-    
-    const response = await fetch(`${baseUrl}?${params}`);
-    return await response.json();
+    const encodedQuery = encodeURIComponent(query);
+    const fromSegment = fromDate ? `/${encodeURIComponent(fromDate)}` : "";
+    const toSegment = toDate ? `/${encodeURIComponent(toDate)}` : "";
+    const url = `${serverUrl}Articles/searchArticles/${encodedQuery}${fromSegment}${toSegment}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Search failed.");
+        const articles = await response.json();
+        return articles;
+    } catch (error) {
+        console.error("Error searching articles:", error);
+        return [];
+    }
 }
 
 function displayArchiveResults(articles) {

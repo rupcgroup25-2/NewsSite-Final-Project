@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using System.Net.Http;
 
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -315,6 +316,61 @@ namespace Newsite_Server.Controllers
 
             return Ok(new { articles });
 
+        }
+
+        [HttpGet("searchArticles/{query}/{from?}/{to?}")]
+        public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query is required.");
+
+            string newsApiKey;
+            try
+            {
+                newsApiKey = System.IO.File.ReadAllText("newsapi-key.txt").Trim();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
+            }
+
+            var baseUrl = "https://newsapi.org/v2/everything";
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
+
+            var urlBuilder = new StringBuilder($"{baseUrl}?apiKey={newsApiKey}&q={Uri.EscapeDataString(query)}&language=en&sortBy=relevancy&pageSize=20");
+
+            if (!string.IsNullOrEmpty(from))
+                urlBuilder.Append($"&from={Uri.EscapeDataString(from)}");
+            if (!string.IsNullOrEmpty(to))
+                urlBuilder.Append($"&to={Uri.EscapeDataString(to)}");
+
+            var response = await httpClient.GetAsync(urlBuilder.ToString());
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, "Failed to fetch articles.");
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(jsonString);
+            var rawArticles = json.RootElement.GetProperty("articles");
+
+            var articles = rawArticles.EnumerateArray()
+                .Where(a =>
+                    a.TryGetProperty("title", out _) &&
+                    (a.TryGetProperty("description", out _) || a.TryGetProperty("content", out _)) &&
+                    a.TryGetProperty("urlToImage", out _))
+                .Select((a, index) => new
+                {
+                    id = $"search_{query}_{index}",
+                    title = a.GetProperty("title").GetString(),
+                    content = a.TryGetProperty("content", out var content) ? content.GetString() : null,
+                    description = a.TryGetProperty("description", out var desc) ? desc.GetString() : null,
+                    publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
+                    urlToImage = a.GetProperty("urlToImage").GetString(),
+                    url = a.GetProperty("url").GetString(),
+                    source = a.GetProperty("source").GetProperty("name").GetString()
+                }).ToList();
+
+            return Ok(articles);
         }
 
     }

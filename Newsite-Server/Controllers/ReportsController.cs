@@ -22,11 +22,7 @@ namespace Newsite_Server.Controllers
         public IActionResult SubmitReport([FromBody] ReportWithArticleDto dto)
         {
             int resultSavingArticle = dto.Article.InsertArticleIfNotExists();
-            if (dto.Report.SharerId == null)
-            {
-                dto.Report.ArticleId = resultSavingArticle;
-
-            }
+            dto.Report.ArticleId = resultSavingArticle;
             int resultSavingReport = dto.Report.SubmitReport();
 
             if (resultSavingReport > 0)

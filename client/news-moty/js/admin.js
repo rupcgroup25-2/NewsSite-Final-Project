@@ -52,7 +52,7 @@ function renderAdminDashboard({
                             <p class="lead text-muted mb-0">Manage users, monitor activity, and review reports</p>
                         </div>
                         <div class="text-end">
-                            <span class="text-primary fw-bold" style="font-size:1.15rem;">Last updated: ${new Date().toLocaleString()}</span>
+                            <span class="text-primary fw-bold" style="font-size:1.15rem;">Last updated: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString()}</span>
                         </div>
                     </div>
                 </div>
@@ -150,7 +150,7 @@ function renderAdminDashboard({
                 <div class="card-body p-0">
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                         <table class="table table-hover mb-0 modern-table" id="usersTable">
-                            <thead class="table-light sticky-top">
+                            <thead class="table-light">
                                 <tr>
                                     <th class="fw-bold py-3 px-4">
                                         <i class="bi bi-person me-2 text-primary"></i>User Details
@@ -276,7 +276,7 @@ function renderAdminDashboard({
 
         reports.forEach((r, index) => {
             const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
-            const reportDate = r.ReportedAt ? new Date(r.ReportedAt).toLocaleDateString() : '-';
+            const reportDate = r.ReportedAt ? new Date(r.ReportedAt).toLocaleDateString('en-GB') : '-';
             const reportTime = r.ReportedAt ? new Date(r.ReportedAt).toLocaleTimeString() : '';
 
             html += `
@@ -513,7 +513,7 @@ function renderAdminDashboard({
         .sticky-top {
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 1;
             background-color: #f8f9fa !important;
         }
 

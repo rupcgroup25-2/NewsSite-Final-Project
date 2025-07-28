@@ -174,7 +174,7 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
     const reportToSend = {
         id: 0,
         reporterId: currentUser.id,
-        articleId: article.id, // Assuming 0 because it's an external article
+        articleId: 0, // Assuming 0 because it's an external article
         sharerId: isFromShared ? article.sharedById : null, // Use article ID if from shared page
         comment: reason + (comment ? ` - ${comment}` : ""),
         reportedAt: new Date().toISOString()

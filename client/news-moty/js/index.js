@@ -437,19 +437,25 @@ $(document).on('click', '.report-article-btn', function () { //inserting the art
 
 function reportSCB(responseText) {
     alert("Report submitted successfully.");
-    $('#reportModal').modal('hide');
-    $("#reportComment").val("");
-    $("#reportReason").val("");
+    // המודל והשדות יתנקו ב-articleActions.js
 }
 
 function reportECB(xhr) {
     alert(xhr.responseText || "Failed to submit report.");
+    // המודל והשדות יתנקו ב-articleActions.js
 }
 
-$(document).on('click', '#btnReportArticle', function () {
+$(document).on('click', '#btnReportArticle', function (e) {
+    e.preventDefault(); // מנע submit רגיל של הטופס
     const articleId = $(this).data("id");
     const article = getArticleById(articleId);
     reportArticle(article, reportSCB, reportECB);
+});
+
+// מנע submit רגיל של טופס הדיווח
+$(document).on('submit', '#reportForm', function (e) {
+    e.preventDefault();
+    $('#btnReportArticle').click();
 });
 
 // Guardian API search function

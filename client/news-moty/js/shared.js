@@ -105,7 +105,6 @@ $(document).on('click', '.report-article-btn', function () { //inserting the art
 });
 
 function reportSCB(responseText) {
-    console.log("2");
     alert("Report submitted successfully.");
     $('#reportModal').modal('hide');
     $("#reportComment").val("");

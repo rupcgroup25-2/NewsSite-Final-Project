@@ -1,7 +1,7 @@
 ﻿    document.addEventListener("DOMContentLoaded", function () {
     // יוצרים HTML עבור הניווט
     const navbarHTML = `
-    <nav class="navbar navbar-expand-lg sticky-top bg-body shadow-sm py-2" id="main-navbar">
+    <nav class="navbar navbar-expand-lg sticky-top bg-body shadow-sm py-2" id="main-navbar" style="z-index: 9999;">
         <div class="container-fluid px-3">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
                 <img src="public/newsSite.png" alt="News Hub Logo" class="me-2" style="width: 40px; height: 40px;">

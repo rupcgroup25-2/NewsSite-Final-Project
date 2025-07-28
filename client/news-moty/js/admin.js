@@ -9,7 +9,8 @@ function renderAdminDashboard({
     reportsCount,
     articles = [],
     reports = [],
-    dailyLoginsCount
+    dailyLoginsCount,
+    ArticlePullRequestsCount
 }) {
     const $tab = $('#admin');
 
@@ -38,6 +39,7 @@ function renderAdminDashboard({
     const totalShared = sharedArticlesCount;
     const totalReports = reportsCount;
     const totalDailyLogins = dailyLoginsCount;
+    const totalArticlePullRequestsCount = ArticlePullRequestsCount;
 
     let html = `
         <div class="container-fluid px-0">
@@ -59,62 +61,70 @@ function renderAdminDashboard({
             </div>
 
             <!-- Statistics Cards -->
-            <div class="row g-4 mb-5">
-                <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="row g-3 mb-5">
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
                     <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <div class="card-body text-white text-center p-4">
-                            <i class="bi bi-people-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
-                            <h2 class="fw-bold mb-1">${totalUsers}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Active Users</small>
+                        <div class="card-body text-white text-center p-3">
+                            <i class="bi bi-people-fill mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <h3 class="fw-bold mb-1">${totalUsers}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Active Users</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
                     <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="card-body text-white text-center p-4">
-                            <i class="bi bi-journal-text mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
-                            <h2 class="fw-bold mb-1">${totalArticles}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Saved Articles</small>
+                        <div class="card-body text-white text-center p-3">
+                            <i class="bi bi-journal-text mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <h3 class="fw-bold mb-1">${totalArticles}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Saved Articles</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
                     <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #3a8dde 0%, #00d4ff 100%);">
-                        <div class="card-body text-white text-center p-4">
-                            <i class="bi bi-share-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
-                            <h2 class="fw-bold mb-1">${totalShared}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Shared Items</small>
+                        <div class="card-body text-white text-center p-3">
+                            <i class="bi bi-share-fill mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <h3 class="fw-bold mb-1">${totalShared}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Shared Items</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
                     <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                        <div class="card-body text-white text-center p-4">
-                            <i class="bi bi-person-x-fill mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
-                            <h2 class="fw-bold mb-1">${totalBlocked}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Blocked Users</small>
+                        <div class="card-body text-white text-center p-3">
+                            <i class="bi bi-person-x-fill mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <h3 class="fw-bold mb-1">${totalBlocked}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Blocked Users</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
                     <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
-                        <div class="card-body text-dark text-center p-4">
-                            <i class="bi bi-flag-fill mb-3" style="font-size: 2.5rem; opacity: 0.8;"></i>
-                            <h2 class="fw-bold mb-1">${totalReports}</h2>
-                            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Total Reports</small>
+                        <div class="card-body text-dark text-center p-3">
+                            <i class="bi bi-flag-fill mb-2" style="font-size: 2rem; opacity: 0.8;"></i>
+                            <h3 class="fw-bold mb-1">${totalReports}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Total Reports</small>
                         </div>
                     </div>
                 </div>
-                 <div class="col-lg-2 col-md-4 col-sm-6">
-    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
-        <div class="card-body text-white text-center p-4">
-            <i class="bi bi-calendar-check mb-3" style="font-size: 2.5rem; opacity: 0.9;"></i>
-            <h2 class="fw-bold mb-1">${totalDailyLogins}</h2>
-            <small class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">Daily Logins</small>
-        </div>
-    </div>
-</div>
-
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
+                        <div class="card-body text-white text-center p-3">
+                            <i class="bi bi-calendar-check mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <h3 class="fw-bold mb-1">${totalDailyLogins}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Daily Logins</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <div class="card-body text-white text-center p-3">
+                            <i class="bi bi-cloud-download mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <h3 class="fw-bold mb-1">${totalArticlePullRequestsCount}</h3>
+                            <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">API Calls</small>
+                        </div>
+                    </div>
+                </div>
             </div>
                   
             <!-- Users Management Table -->
@@ -534,6 +544,30 @@ function renderAdminDashboard({
             color: #6c757d !important;
         }
 
+        /* Custom grid for 7 columns */
+        .col-xl-1-7 {
+            flex: 0 0 auto;
+            width: 14.285714%; /* 100% / 7 = 14.285714% */
+        }
+
+        @media (max-width: 1399px) {
+            .col-xl-1-7 {
+                width: 33.333333%; /* 3 columns on large screens */
+            }
+        }
+
+        @media (max-width: 991px) {
+            .col-xl-1-7 {
+                width: 50%; /* 2 columns on medium screens */
+            }
+        }
+
+        @media (max-width: 575px) {
+            .col-xl-1-7 {
+                width: 100%; /* 1 column on small screens */
+            }
+        }
+
         @media (max-width: 768px) {
             .modern-table {
                 font-size: 0.85rem;
@@ -628,6 +662,7 @@ async function loadAdminDashboardData() {
             blockedUsersText,
             reportsCountText,
             dailyLoginsText,
+            ArticlePullRequestsCount,
             usersResponse,
             articlesResponse,
             reportsResponse
@@ -639,6 +674,7 @@ async function loadAdminDashboardData() {
             getWithAuth("Admin/BlockedUsersCount"),
             getWithAuth("Admin/ReportsCount"),
             getWithAuth("Admin/DailyLogins"),
+            getWithAuth("Admin/ArticlePullRequestsCount?apiName=NewsApiCalls"),
             fetch(serverUrl + "Admin/GetAllUsers", {
                 headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
             }),
@@ -664,7 +700,9 @@ async function loadAdminDashboardData() {
             sharedArticlesCount: parseCount(sharedArticlesText),
             blockedUsersCount: parseCount(blockedUsersText),
             reportsCount: parseCount(reportsCountText),
-            dailyLoginsCount: parseCount(dailyLoginsText)
+            dailyLoginsCount: parseCount(dailyLoginsText),
+            ArticlePullRequestsCount: parseCount(ArticlePullRequestsCount)
+
         };
 
         renderAdminDashboard({

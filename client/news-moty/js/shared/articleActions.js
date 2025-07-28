@@ -144,12 +144,11 @@ function saveArticle(article, saveSCB, saveECB) {
 }
 
 // --- Report Article ---
-//handle UI on report submit - DISABLED for shared.js
-// $(document).on('submit', '#reportForm', function (e) {
-//     e.preventDefault();
-//     $('#reportModal').modal('hide');
-//     $('#reportComment').val('');
-// });
+//handle UI on report submit
+$(document).on('submit', '#reportForm', function (e) {
+    e.preventDefault();
+    // לא נסגור את המודל כאן - רק במקרה של הצלחה או שגיאה
+});
 
 // Reporting the clicked article
 function reportArticle(article, successCB, errorCB, isFromShared = false) {
@@ -170,6 +169,9 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
         alert("Article not found.");
         return;
     }
+
+    // הכוון את הכפתור כדי למנוע לחיצות מרובות
+    $('#btnReportArticle').prop('disabled', true).text('Sending...');
 
     const reportToSend = {
         id: 0,
@@ -203,7 +205,27 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
         "POST",
         serverUrl + "Reports",
         JSON.stringify(data),
-        successCB,
-        errorCB
+        function(response) {
+            // הצלחה - קרא ל-callback והבטח שהמודל ייסגר
+            if (successCB) successCB(response);
+            setTimeout(() => {
+                $('#reportModal').modal('hide');
+                // נקה את השדות והחזר את הכפתור למצב רגיל
+                $("#reportComment").val("");
+                $("#reportReason").val("");
+                $('#btnReportArticle').prop('disabled', false).text('Report');
+            }, 100);
+        },
+        function(xhr) {
+            // שגיאה - קרא ל-callback והבטח שהמודל ייסגר
+            if (errorCB) errorCB(xhr);
+            setTimeout(() => {
+                $('#reportModal').modal('hide');
+                // גם במקרה של שגיאה נקה את השדות והחזר את הכפתור למצב רגיל
+                $("#reportComment").val("");
+                $("#reportReason").val("");
+                $('#btnReportArticle').prop('disabled', false).text('Report');
+            }, 100);
+        }
     );
 }

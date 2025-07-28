@@ -293,7 +293,7 @@ function reportECB(xhr) {
 }
 
 $(document).on('click', '#btnReportArticle', function () {
-    reportArticle(window.article, reportSCB, reportECB);
+    reportArticle(window.article, reportSCB, reportECB, true);
 });
 
 //to split the words in the body to spans
@@ -306,7 +306,6 @@ function wrapWordsInSpans(text) {
 
 $(document).ready(async function () {
     const id = getArticleIdFromUrl();
-    if (!id) return $('#articleContainer').html('<div class="alert alert-danger">No article ID provided.</div>');
 
     let articles;
     window.article = {}; // הוסף את זה לגלובל scope

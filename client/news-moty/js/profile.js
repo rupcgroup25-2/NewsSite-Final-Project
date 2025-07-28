@@ -383,6 +383,7 @@ function saveProfileChanges() {
     // Update current user data
     if (currentUser) {
         currentUser.name = $('#editProfileName').val().trim();
+        localStorage.setItem('user', JSON.stringify(currentUser));
     }
 
     // Reload profile

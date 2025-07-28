@@ -810,9 +810,9 @@ namespace Newsite_Server.DAL
             }
         }
 
-        //--------------------------------------------------------------------------------------------------
-        // This method to get all comments by article id
-        //--------------------------------------------------------------------------------------------------
+        ////--------------------------------------------------------------------------------------------------
+        //// This method to get all comments by article id
+        ////--------------------------------------------------------------------------------------------------
 
         public List<Comment> GetCommentsByArticle(int articleId)
         {
@@ -837,7 +837,7 @@ namespace Newsite_Server.DAL
                         c.Username = reader["Username"].ToString();
                         c.CommentText = reader["CommentText"].ToString();
                         c.CreatedAt = Convert.ToDateTime(reader["CreatedAt"]);
-                        }
+                    }
                     ;
                     comments.Add(c);
                 }
@@ -1734,6 +1734,100 @@ namespace Newsite_Server.DAL
             {
                 int numEffected = cmd.ExecuteNonQuery();
                 return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method increase the api counter
+        //--------------------------------------------------------------------------------------------------
+        public int IncreaseApiCounter(string apiName)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת החיבור
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ApiName", apiName);
+
+            // כאן קוראים לפרוצדורה המאחסנת או מגדילה את המונה
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_IncreaseApiCounterFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // This method select the count of pull requests
+        //--------------------------------------------------------------------------------------------------
+        public int SelectPullRequestsCount(string apiName)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+            int count = 0;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת החיבור
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ApiName", apiName);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_SelectApiCounterValueFinal", con, paramDic);
+
+            try
+            {
+                using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                {
+                    if (reader.Read())
+                    {
+                        object countValue = reader["CounterValue"]; // שם השדה שפרוצדורה מחזירה
+                        if (countValue != DBNull.Value)
+                        {
+                            count = Convert.ToInt32(countValue);
+                        }
+                    }
+                }
+                return count;
             }
             catch (Exception ex)
             {

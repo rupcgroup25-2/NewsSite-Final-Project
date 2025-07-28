@@ -65,6 +65,16 @@ namespace Newsite_Server.Controllers
             else
                 return NotFound("No reports");
         }
+        [HttpGet("ArticlePullRequestsCount")]
+        public IActionResult ArticlePullRequestsCount(string apiName)
+        {
+            Admin admin = new Admin();
+            int count = admin.GetPullRequestsCount(apiName);
+            if (count > 0)
+                return Ok($"Number of Reports: {count}");
+            else
+                return NotFound("No reports");
+        }
 
         [HttpGet("DailyLogins")]
         public IActionResult GetDailyLoginsNumber()

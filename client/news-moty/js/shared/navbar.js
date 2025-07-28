@@ -4,7 +4,7 @@
     <nav class="navbar navbar-expand-lg sticky-top bg-body shadow-sm py-2" id="main-navbar">
         <div class="container-fluid px-3">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
-                <i class="bi bi-newspaper me-2 fs-3 text-primary"></i>
+                <img src="public/newsSite.png" alt="News Hub Logo" class="me-2" style="width: 40px; height: 40px;">
                 <span class="fs-4">News Hub</span>
             </a>
             <div class="d-flex align-items-center gap-2 order-lg-2 ms-auto p-2">

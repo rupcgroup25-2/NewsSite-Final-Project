@@ -147,5 +147,9 @@ namespace Newsite_Server.BL
             return dbs.SearchSavedArticles(userId, word);
         }
 
+        public int increaseNewsApiCounter()
+        {
+            return dbs.IncreaseApiCounter("NewsApiCalls");
+        }
     }
 }

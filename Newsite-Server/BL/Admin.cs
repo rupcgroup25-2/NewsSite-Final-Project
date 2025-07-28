@@ -31,10 +31,7 @@ namespace Newsite_Server.BL
         {
             return dbs.TotalDailyUserLogins();
         }
-        public int increaseApiCounter(string apiName)
-        {
-            return dbs.IncreaseApiCounter(apiName);
-        }
+
         public int GetPullRequestsCount(string apiName)
         {
             return dbs.SelectPullRequestsCount(apiName);

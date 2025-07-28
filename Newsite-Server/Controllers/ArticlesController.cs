@@ -313,6 +313,9 @@ namespace Newsite_Server.Controllers
             }
 
             var articles = JsonSerializer.Deserialize<List<object>>(articlesElement.GetRawText());
+            
+            Article temp = new Article();//in order to increase the api calls counter of NewsAPI
+            temp.increaseNewsApiCounter();
 
             return Ok(new { articles });
 
@@ -369,6 +372,9 @@ namespace Newsite_Server.Controllers
                     url = a.GetProperty("url").GetString(),
                     source = a.GetProperty("source").GetProperty("name").GetString()
                 }).ToList();
+
+            Article temp = new Article();//in order to increase the api calls counter of NewsAPI
+            temp.increaseNewsApiCounter();
 
             return Ok(articles);
         }

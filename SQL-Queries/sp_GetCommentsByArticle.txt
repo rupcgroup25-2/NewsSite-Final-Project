@@ -1,0 +1,25 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE sp_GetCommentsByArticleFinal
+	-- Add the parameters for the stored procedure here
+    @ArticleId INT
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+
+    SELECT c.Id, c.ArticleId, c.UserId, u.Name AS UserName, c.CommentText, c.CreatedAt
+    FROM CommentsTableFinal c
+    INNER JOIN UsersTableFinal u ON c.UserId = u.Id
+    WHERE c.ArticleId = @ArticleId
+    ORDER BY c.CreatedAt DESC;
+END
+GO
+

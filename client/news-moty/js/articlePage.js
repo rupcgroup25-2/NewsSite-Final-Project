@@ -191,54 +191,6 @@ function generateUnifiedArticleId(article) {
     return null;
 }
 
-// הסר את ה-DOMContentLoaded listener הישן - הצ'אט יאותחל בסוף הטעינה
-
-
-//// פתרון 4: אלטרנטיבה - השתמש בהאש של הכתבה
-//function generateArticleHash(article) {
-//    // יצור hash פשוט מהכותרת והתאריך
-//    let text = '';
-//    if (article.title) text += article.title;
-//    if (article.url) text += article.url;
-
-//    // Hash function פשוט
-//    let hash = 0;
-//    for (let i = 0; i < text.length; i++) {
-//        const char = text.charCodeAt(i);
-//        hash = ((hash << 5) - hash) + char;
-//        hash = hash & hash; // Convert to 32-bit integer
-//    }
-
-//    return `article_${Math.abs(hash)}`;
-//}
-
-//// שימוש בפונקציה החדשה
-//async function initChatWithHash(articleData, userName) {
-//    const chatId = generateArticleHash(articleData);
-//    console.log("Using hashed chat ID:", chatId);
-
-//    // יתר הקוד זהה לפונקציה המקורית, רק עם chatId במקום unifiedId
-//    // ...
-//}
-
-// שאר הפונקציות נשארות אותו דבר...
-
-////Load all saved articles for current user
-//function loadSavedArticles(userId) {
-//    return new Promise((resolve, reject) => {
-//        ajaxCall("GET", serverUrl + `Articles/saved/${userId}`, null,
-//            function (articles) {
-//                savedArticles = articles;
-//                resolve(articles);
-//            },
-//            function () {
-//                $("#saved").html('<div class="alert alert-danger text-center">Failed to load saved articles.</div>');
-//                reject("Failed to load");
-//            }
-//        );
-//    });
-//}
-
 function loadSingleArticle(userId, articleId) {
     return new Promise((resolve, reject) => {
         const params = new URLSearchParams(window.location.search);
@@ -457,7 +409,7 @@ $(document).ready(async function () {
         ${currentUser ? `
           <form id="commentForm" class="mb-3">
             <textarea class="form-control mb-2" id="commentInput" rows="3" placeholder="Share your thoughts on this article..." required></textarea>
-            <button class="btn btn-secondary" type="submit">Post Comment</button>
+            <button id="postCommentBtn" class="btn btn-secondary" type="submit">Post Comment</button>
           </form>` : `<div class="alert alert-info">Login to comment.</div>`}
         <div id="comments-list"></div>
       </div>
@@ -493,7 +445,7 @@ $(document).ready(async function () {
         </div>
         <div class="mb-2"><strong>Published</strong><br>${formatDate(window.article.publishedAt)}</div>
         <div class="mb-2"><strong>Source</strong><br>${window.article.source || window.article.sourceName || 'Unknown'}</div>
-        <div><strong>Comments</strong><br>${comments.length} comment${comments.length === 1 ? '' : 's'}</div>
+        <div><strong>Comments</strong><br><span id="comments-count">0 comments</span></div>
       </div>
     </div>
 
@@ -515,6 +467,82 @@ $(document).ready(async function () {
   </div>
 </div>
 `;
+    //load comments from server
+    function loadComments(articleId) {
+        const url = serverUrl + `comments/article/${articleId}`;
+        console.log("in");
+        ajaxCall("GET", url, null,
+            function (response) {
+                const comments = response;
+                renderComments(comments);
+                updateCommentsCount(comments);
+            },
+            function (xhr) {
+                console.error("Failed to load comments:", xhr.status, xhr.responseText);
+            });
+    }
+
+    //render comments
+    function renderComments(comments) {
+        const container = $('#comments-list');
+        container.empty();
+
+        if (!comments || comments.length === 0) {
+            container.append('<p>No comments yet.</p>');
+            return;
+        }
+
+        comments.forEach(function (c) {
+            const commentHtml = `
+            <div class="border p-2 mb-2">
+                <strong> ${c.username}</strong><br>
+                <span>${c.commentText}</span><br>
+                <small class="text-muted">${new Date(c.createdAt).toLocaleString()}</small>
+            </div>
+        `;
+            container.append(commentHtml);
+        });
+    }
+    function updateCommentsCount(comments) {
+        const commentsCountEl = document.getElementById("comments-count");
+        if (commentsCountEl) {
+            commentsCountEl.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
+        }
+    }
+
+
+    //add comment
+    $('#commentForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const commentText = $('#commentInput').val().trim();
+        if (commentText.length === 0) {
+            alert('Comment text cannot be empty.');
+            return;
+        }
+
+        const data = {
+            articleId: window.article.id,  
+            userId: currentUser.id,        
+            commentText: commentText     
+        };
+
+        ajaxCall("POST", "/api/comments", JSON.stringify(data),
+            function () {
+                $('#commentInput').val('');       
+                loadComments(window.article.id); 
+            },
+            function (xhr) {
+                alert(xhr.responseText || "Failed to add comment.");
+            });
+    });
+
+    console.log("Calling loadComments")
+
+    $(document).ready(function () {
+        loadComments(window.article.id);
+    });
+
 
 //extract text scraper
     function extractArticleContent(url) {

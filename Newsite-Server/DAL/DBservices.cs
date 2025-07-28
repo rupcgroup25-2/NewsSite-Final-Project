@@ -834,6 +834,7 @@ namespace Newsite_Server.DAL
                         c.Id = Convert.ToInt32(reader["Id"]);
                         c.ArticleId = Convert.ToInt32(reader["ArticleId"]);
                         c.UserId = Convert.ToInt32(reader["UserId"]);
+                        c.Username = reader["Username"].ToString();
                         c.CommentText = reader["CommentText"].ToString();
                         c.CreatedAt = Convert.ToDateTime(reader["CreatedAt"]);
                         }

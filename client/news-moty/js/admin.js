@@ -268,6 +268,7 @@ function renderAdminDashboard({
                                     <th class="fw-bold py-3">Article Info</th>
                                     <th class="fw-bold py-3 text-center">Share Comment</th>
                                     <th class="fw-bold py-3 text-center">Reports Count</th>
+                                    <th class="fw-bold py-3 text-center">Actions</th>
                                     <th class="fw-bold py-3">Date</th>
                                 </tr>
                             </thead>
@@ -346,6 +347,17 @@ function renderAdminDashboard({
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             ${r.TotalReportsOnThisItem || 0}
                         </span>
+                    </td>
+                    <td class="py-3 text-center">
+                        ${r.ArticleId !== null ? `
+                            <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}" class="btn btn-outline-primary btn-sm" target="_blank" title="View Article">
+                                <i class="bi bi-eye me-1"></i>
+                            </a>
+                        ` : `
+                            <span class="text-muted fst-italic">
+                                <i class="bi bi-x-circle me-1"></i>N/A
+                            </span>
+                        `}
                     </td>
                     <td class="py-3">
                         <div class="date-info">

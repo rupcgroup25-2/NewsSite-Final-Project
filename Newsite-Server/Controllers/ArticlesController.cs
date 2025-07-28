@@ -74,6 +74,16 @@ namespace Newsite_Server.Controllers
 
             return Ok(article);
         }
+        [HttpGet("singleReported/userId/{userId}/articleId/{articleId}")]
+        public IActionResult GetSingleReportedArticles(int userId, int articleId)
+        {
+            Article article = new Article().GetSingleReportedArticlesForUser(userId, articleId);
+
+            if (article == null)
+                return NotFound("Article not found for this user");
+
+            return Ok(article);
+        }
 
         [HttpGet("singleShared/articleId/{articleId}")]
         public IActionResult GetSharedArticleById(int articleId)

@@ -526,10 +526,12 @@ $(document).ready(async function () {
         }
 
         const data = {
+            id: 0,
             articleId: window.article.id,
             userId: currentUser.id,
             username: currentUser.name,
-            commentText: commentText
+            commentText: commentText,
+            createdAt: new Date().toISOString()
         };
 
         ajaxCall("POST", serverUrl + "Comments/Addcomment", JSON.stringify(data),

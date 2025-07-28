@@ -1,0 +1,21 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE sp_UpdateUserNameFinal
+    @UserId INT,
+    @NewName NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE [UsersTableFinal]
+    SET Name = @NewName
+    WHERE Id = @UserId
+END
+GO

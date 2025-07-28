@@ -366,13 +366,13 @@ function saveProfileChanges() {
     $('#saveProfileBtn').prop('disabled', true).text('Saving...');
     
     const profileData = {
-        name: name
+        newName: name
     };
     
     ajaxCall(
         "PUT",
         serverUrl + `Users/UpdateProfile?userId=${currentUser.id}`,
-        JSON.stringify(profileData),
+        JSON.stringify(name), // שולח רק "שם"
         saveProfileSCB,
         saveProfileECB
     );

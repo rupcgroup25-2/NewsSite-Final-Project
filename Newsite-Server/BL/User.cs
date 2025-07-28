@@ -114,5 +114,12 @@ namespace Newsite_Server.BL
         {
             return dbs.GetFollowedUsersByUserId(userId);
         }
+
+        public int ChangeUserName(int userId, string newName)
+        {
+            int rowsAffected = dbs.UpdateUserName(userId, newName);
+            return rowsAffected;
+        }
+
     }
 }

@@ -102,5 +102,18 @@ namespace Newsite_Server.Controllers
             else
                 return BadRequest("Failed to unfollow");
         }
+
+        [HttpPut("UpdateProfile")]
+        public IActionResult UpdateProfile(int userId, [FromBody] string newName)
+        {
+            User user = new User();
+            int result = user.ChangeUserName(userId, newName);
+
+            if (result == 1)
+                return BadRequest("Failed to update username.");
+
+            return Ok(new { message = "Profile updated successfully." });
+        }
+
     }
 }

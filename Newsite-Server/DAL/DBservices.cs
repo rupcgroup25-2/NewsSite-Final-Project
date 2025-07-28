@@ -2,7 +2,6 @@
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Net;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 using Newsite_Server.BL;
@@ -184,6 +183,31 @@ namespace Newsite_Server.DAL
         }
 
         //--------------------------------------------------------------------------------------------------
+        // This method updates username in UsersTable 
+        //--------------------------------------------------------------------------------------------------
+
+        public int UpdateUserName(int userId, string newName)
+        {
+            SqlConnection con = connect("myProjDB");
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@NewName", newName);
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_UpdateUserNameFinal", con, paramDic);
+
+            try
+            {
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected; // 0 = לא עודכן, >0 = עודכן בהצלחה
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+
+        //--------------------------------------------------------------------------------------------------
         // This method Login a User 
         //--------------------------------------------------------------------------------------------------
         public User LoginUser(string email, string pass)
@@ -211,7 +235,6 @@ namespace Newsite_Server.DAL
                 SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 if (dr.Read())
                 {
-                  
                     string hashedPassword = dr["password"].ToString();
 
                     if (Verify(pass, hashedPassword))
@@ -762,6 +785,69 @@ namespace Newsite_Server.DAL
         }
 
         //===============Article===============================================================================
+
+        //--------------------------------------------------------------------------------------------------
+        // This method adds comment to article
+        //--------------------------------------------------------------------------------------------------
+        public int AddComment(int articleId, int userId, string commentText)
+        {
+            SqlConnection con = connect("myProjDB");
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@CommentText", commentText);
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_AddCommentFinal", con, paramDic);
+
+            try
+            {
+                object result = cmd.ExecuteScalar();
+                return Convert.ToInt32(result); // 0 = כבר הגיב, 1 = הצלחה
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method to get all comments by article id
+        //--------------------------------------------------------------------------------------------------
+
+        public List<Comment> GetCommentsByArticle(int articleId)
+        {
+            SqlConnection con = connect("myProjDB");
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_GetCommentsByArticleFinal", con, paramDic);
+
+            List<Comment> comments = new List<Comment>();
+            SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+            try
+            {
+                while (reader.Read())
+                {
+                    Comment c = new Comment();
+                    {
+                        c.Id = Convert.ToInt32(reader["Id"]);
+                        c.ArticleId = Convert.ToInt32(reader["ArticleId"]);
+                        c.UserId = Convert.ToInt32(reader["UserId"]);
+                        c.CommentText = reader["CommentText"].ToString();
+                        c.CreatedAt = Convert.ToDateTime(reader["CreatedAt"]);
+                        }
+                    ;
+                    comments.Add(c);
+                }
+                return comments;
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
 
         //--------------------------------------------------------------------------------------------------
         // This method to get all articles 

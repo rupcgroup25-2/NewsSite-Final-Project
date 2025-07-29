@@ -68,9 +68,9 @@ namespace Newsite_Server.BL
                 articleId = newId;
             }
 
-            if (tags != null && tags.Count > 0)
+            if (Tags != null && Tags.Count > 0)
             {
-                AssignTagsToArticle(articleId, tags);
+                AssignTagsToArticle(articleId, Tags);
             }
 
             return articleId;

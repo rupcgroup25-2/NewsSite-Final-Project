@@ -293,7 +293,7 @@ function reportECB(xhr) {
 }
 
 $(document).on('click', '#btnReportArticle', function () {
-    reportArticle(window.article, reportSCB, reportECB, true);
+    reportArticle(window.article, reportSCB, reportECB);
 });
 
 //to split the words in the body to spans
@@ -371,6 +371,37 @@ $(document).ready(async function () {
           </div>
         </div>
 
+        <!-- Audio Controls - Moved to top of article content -->
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-headphones text-primary me-2" style="font-size: 1.2rem;"></i>
+              <span class="fw-semibold text-dark">Audio Controls</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <div class="voice-selector-container">
+                <label for="voiceSelect" class="form-label small text-muted mb-1">
+                  <i class="bi bi-mic me-1"></i>Voice Selection
+                </label>
+                <select id="voiceSelect" class="form-select form-select-sm voice-dropdown" style="min-width: 180px; max-width: 220px;">
+                  <option value="">🎙️ Default Voice</option>
+                </select>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <button id="readArticleBtn" class="btn btn-primary btn-sm px-3 py-2 rounded-pill shadow-sm">
+                  <i class="bi bi-play-fill me-1"></i> Play
+                </button>
+                <button id="stopReadArticleBtn" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill shadow-sm">
+                  <i class="bi bi-pause-fill me-1"></i> Pause
+                </button>
+                <button id="resumeReadArticleBtn" class="btn btn-outline-success btn-sm px-3 py-2 rounded-pill shadow-sm">
+                  <i class="bi bi-play-circle me-1"></i> Resume
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="article-body" style="
           font-size: 1.4rem;
           line-height: 1.9;
@@ -379,19 +410,6 @@ $(document).ready(async function () {
           white-space: pre-line;
           text-align: justify;
           margin-top: 1rem;">
-        </div>
-
-        <!-- Playback Buttons Moved Here -->
-        <div class="mt-4 d-flex flex-wrap gap-2 justify-content-start">
-          <button id="readArticleBtn" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-volume-up"></i> Read Article
-          </button>
-          <button id="stopReadArticleBtn" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-stop-circle"></i> Stop Reading
-          </button>
-          <button id="resumeReadArticleBtn" class="btn btn-outline-success btn-sm">
-            <i class="bi bi-play-circle"></i> Resume Reading
-          </button>
         </div>
 
         ${window.article.sourceUrl ? `
@@ -581,6 +599,11 @@ $(document).ready(async function () {
         currentUser.name :
         `Guest_${Math.random().toString(36).substr(2, 5)}`;
 
+    // אתחול בחירת קולות TTS
+    setTimeout(() => {
+        loadVoices();
+    }, 100);
+
     // וודא שכל האלמנטים קיימים לפני אתחול הצ'אט
     setTimeout(async () => {
         await initChat(window.article, userName);
@@ -590,6 +613,97 @@ $(document).ready(async function () {
 //TTS READER
 let speechUtterance = null;
 let isPaused = false;
+let availableVoices = [];
+
+// פונקציה לטעינת קולות זמינים
+function loadVoices() {
+    availableVoices = window.speechSynthesis.getVoices();
+    const voiceSelect = document.getElementById('voiceSelect');
+    
+    if (!voiceSelect) return;
+
+    // נקה את הרשימה הקיימת
+    voiceSelect.innerHTML = '<option value="">🎙️ Default Voice</option>';
+    
+    // סנן רק קולות באנגלית
+    const englishVoices = availableVoices.filter(voice => 
+        voice.lang.startsWith('en') || voice.lang.includes('US') || voice.lang.includes('GB')
+    );
+    
+    // הוסף את הקולות הבאנגלית בלבד
+    englishVoices.forEach((voice, index) => {
+        const option = document.createElement('option');
+        option.value = availableVoices.indexOf(voice); // שמור את האינדקס המקורי
+        
+        // הוסף אייקונים לפי סוג הקול
+        let voiceIcon = '🎵';
+        if (voice.name.toLowerCase().includes('google')) voiceIcon = '🤖';
+        else if (voice.name.toLowerCase().includes('microsoft')) voiceIcon = '💻';
+        else if (voice.name.toLowerCase().includes('male')) voiceIcon = '👨';
+        else if (voice.name.toLowerCase().includes('female')) voiceIcon = '👩';
+        
+        // יצירת שם נקי יותר
+        let cleanName = voice.name.replace(/Microsoft|Google|Apple/gi, '').trim();
+        let region = '';
+        if (voice.lang.includes('US')) region = '🇺🇸';
+        else if (voice.lang.includes('GB')) region = '🇬🇧';
+        else if (voice.lang.includes('AU')) region = '🇦🇺';
+        else region = '🌍';
+        
+        option.textContent = `${voiceIcon} ${cleanName} ${region}`;
+        voiceSelect.appendChild(option);
+    });
+    
+    // הוסף CSS לדropdown
+    if (!document.getElementById('voice-dropdown-styles')) {
+        const style = document.createElement('style');
+        style.id = 'voice-dropdown-styles';
+        style.textContent = `
+            .voice-selector-container {
+                background: rgba(40, 44, 52, 0.95);
+                padding: 8px 12px;
+                border-radius: 12px;
+                border: 1px solid #495057;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            }
+            .voice-selector-container label {
+                color: #e9ecef !important;
+                font-weight: 500;
+            }
+            .voice-dropdown {
+                border: 1px solid #6c757d !important;
+                border-radius: 8px !important;
+                background: #343a40 !important;
+                color: #f8f9fa !important;
+                font-size: 0.85rem !important;
+                padding: 6px 10px !important;
+                transition: all 0.2s ease !important;
+            }
+            .voice-dropdown:focus {
+                border-color: #0d6efd !important;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+                background: #495057 !important;
+            }
+            .voice-dropdown option {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                background: #343a40;
+                color: #f8f9fa;
+            }
+            .voice-dropdown option:hover,
+            .voice-dropdown option:checked {
+                background: #495057 !important;
+                color: #ffffff !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// טען קולות כשהם מוכנים
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 
 function startSpeaking(text) {
     if (!text || text.trim() === '') {
@@ -608,10 +722,19 @@ function startSpeaking(text) {
     speechUtterance.pitch = 0.9;
     speechUtterance.rate = 0.9;
 
-    const voices = window.speechSynthesis.getVoices();
-    let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
-    if (!voice && voices.length > 0) voice = voices[0];
-    if (voice) speechUtterance.voice = voice;
+    // בחירת קול לפי הבחירה של המשתמש
+    const voiceSelect = document.getElementById('voiceSelect');
+    const selectedVoiceIndex = voiceSelect ? voiceSelect.value : '';
+    
+    if (selectedVoiceIndex !== '' && availableVoices[selectedVoiceIndex]) {
+        speechUtterance.voice = availableVoices[selectedVoiceIndex];
+    } else {
+        // ברירת מחדל - מצא קול באנגלית
+        const voices = window.speechSynthesis.getVoices();
+        let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
+        if (!voice && voices.length > 0) voice = voices[0];
+        if (voice) speechUtterance.voice = voice;
+    }
 
     speechUtterance.onboundary = function (event) {
         if (event.name === 'word') {

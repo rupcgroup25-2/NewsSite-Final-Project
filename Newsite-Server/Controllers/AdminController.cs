@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Newsite_Server.BL;
+using System.Security.Claims;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Admin")] // All methods restricted only for admin
-
+    [Authorize(Roles = "Admin")] // All methods restricted only for admin
     public class AdminController : ControllerBase
     {
         [HttpGet("ActiveUsersCount")]

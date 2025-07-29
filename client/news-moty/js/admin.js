@@ -588,31 +588,61 @@ function renderAdminDashboard({
 
 // פונקציות עזר לטעינת נתונים עם אימות Token
 function getWithAuth(endpoint) {
-    return fetch(serverUrl + endpoint, {
-        headers: {
-            "Authorization": "Bearer " + localStorage.getItem("token"),
-            "Content-Type": "application/json"
-        }
-    }).then(res => {
-        if (res.status === 404) {
-            // אם קיבלנו 404, זה אומר שאין נתונים - נחזיר "0"
-            return "0";
-        }
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.text();
+    return new Promise((resolve, reject) => {
+        ajaxCall(
+            "GET", 
+            serverUrl + endpoint, 
+            null,
+            function(response) {
+                resolve(response);
+            },
+            function(xhr, status, error) {
+                if (xhr.status === 404) {
+                    resolve("0");
+                } else {
+                    reject(new Error(`Network response was not ok: ${xhr.status} ${error}`));
+                }
+            }
+        );
+    });
+}
+
+function getWithAuthJson(endpoint) {
+    return new Promise((resolve, reject) => {
+        ajaxCall(
+            "GET", 
+            serverUrl + endpoint, 
+            null,
+            function(response) {
+                // אם response הוא כבר object, נחזיר אותו כמו שהוא
+                // אם זה string, ננסה לעשות parse
+                try {
+                    const jsonResponse = typeof response === 'string' ? JSON.parse(response) : response;
+                    resolve(jsonResponse);
+                } catch (e) {
+                    resolve(response); // נחזיר את הresponse כמו שהוא
+                }
+            },
+            function(xhr, status, error) {
+                reject(new Error(`Network response was not ok: ${xhr.status} ${error}`));
+            }
+        );
     });
 }
 
 function putWithAuth(endpoint) {
-    return fetch(serverUrl + endpoint, {
-        method: "PUT",
-        headers: {
-            "Authorization": "Bearer " + localStorage.getItem("token"),
-            "Content-Type": "application/json"
-        }
-    }).then(res => {
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.text();
+    return new Promise((resolve, reject) => {
+        ajaxCall(
+            "PUT", 
+            serverUrl + endpoint, 
+            null,
+            function(response) {
+                resolve(response);
+            },
+            function(xhr, status, error) {
+                reject(new Error(`Network response was not ok: ${xhr.status} ${error}`));
+            }
+        );
     });
 }
 
@@ -675,24 +705,15 @@ async function loadAdminDashboardData() {
             getWithAuth("Admin/ReportsCount"),
             getWithAuth("Admin/DailyLogins"),
             getWithAuth("Admin/ArticlePullRequestsCount?apiName=NewsApiCalls"),
-            fetch(serverUrl + "Admin/GetAllUsers", {
-                headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
-            }),
-            fetch(serverUrl + "Articles", {
-                headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
-            }),
-            fetch(serverUrl + "Reports", {
-                headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
-            })
+            getWithAuthJson("Admin/GetAllUsers"),
+            getWithAuthJson("Articles"),
+            getWithAuthJson("Reports")
         ]);
 
-        if (!usersResponse.ok || !articlesResponse.ok || !reportsResponse.ok) {
-            throw new Error("Failed to load one or more data sets.");
-        }
-
-        const users = await usersResponse.json();
-        const articles = await articlesResponse.json();
-        const reports = await reportsResponse.json();
+        // הנתונים כבר מוכנים - לא צריך להמיר אותם
+        const users = usersResponse;
+        const articles = articlesResponse;
+        const reports = reportsResponse;
 
         const summaryData = {
             activeUsersCount: parseCount(activeUsersText),
@@ -742,7 +763,7 @@ $(document).on('click', '.toggle-deactivate-btn', async function () {
     try {
         await putWithAuth(`Admin/${userId}/deactivate`);
         await loadAdminDashboardData();
-    } catch {
+    } catch (err) {
         alert("Failed to toggle user status. Please try again.");
         $btn.html(originalHtml).prop('disabled', false);
     }
@@ -759,7 +780,7 @@ $(document).on('click', '.toggle-block-btn', async function () {
     try {
         await putWithAuth(`Admin/${userId}/block`);
         await loadAdminDashboardData();
-    } catch {
+    } catch (err) {
         alert("Failed to toggle sharing permission. Please try again.");
         $btn.html(originalHtml).prop('disabled', false);
     }

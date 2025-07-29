@@ -4,6 +4,7 @@ using Newsite_Server.BL;
 using Newsite_Server.Services;
 using System.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
@@ -12,15 +13,23 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private TokenService _tokenService;
+
+        public UsersController()
+        {
+            _tokenService = new TokenService();
+        }
 
         [HttpPost("Login")]
+        [AllowAnonymous]
         public IActionResult Login([FromBody] User user)
         {
+
             User NewUser = user.LoginUser();
 
             if (NewUser == null)
             {
-                return Unauthorized(new { message = "Invalid email or password" });
+                return BadRequest(new { message = "Invalid email or password" });
             }
 
             if (!NewUser.Active)
@@ -29,7 +38,8 @@ namespace Newsite_Server.Controllers
             }
 
             NewUser.TrackDailyLogin(NewUser.Id);
-            string token = TokenService.GenerateToken(NewUser.Email, NewUser.Email == "admin@newshub.com" ? "Admin" : "User");
+            string role = NewUser.Email == "admin@newshub.com" ? "Admin" : "User";
+            string token = _tokenService.GenerateToken(NewUser.Email, role);
 
             return Ok(new
             {
@@ -43,6 +53,7 @@ namespace Newsite_Server.Controllers
 
         // POST api/<UsersController>
         [HttpPost("Register")]
+        [AllowAnonymous]
         public IActionResult Register([FromBody] User user)
         {
             if (user.Register() == 0)
@@ -81,6 +92,24 @@ namespace Newsite_Server.Controllers
         [HttpPost("Follow")]
         public IActionResult FollowUser(int followerId, string followedEmail)
         {
+            var userClaims = User.Claims.ToList();
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            Console.WriteLine($"🔍 Debug - User Email: {userEmail}");
+            Console.WriteLine($"🔍 Debug - User Role: {userRole}");
+            Console.WriteLine($"🔍 Debug - All Claims:");
+
+            foreach(var claim in userClaims)
+    {
+                Console.WriteLine($"   - {claim.Type}: {claim.Value}");
+            }
+
+            // בדיקה אם זה Admin
+            bool isAdmin = User.IsInRole("Admin");
+            Console.WriteLine($"🔍 Debug - Is Admin: {isAdmin}");
+
+
             User user = new User();
 
             int result = user.FollowUser(followerId, followedEmail);
@@ -114,6 +143,7 @@ namespace Newsite_Server.Controllers
 
             return Ok(new { message = "Profile updated successfully." });
         }
+
         [HttpPut("ChangePassword")]
         public IActionResult UpdatePassword(int userId, [FromBody] string newPass)
         {

@@ -333,8 +333,10 @@ $(document).ready(async function () {
 
         try {
             let articleInDB = await findArticleInDB(window.article.url);
-            if (articleInDB)
+            if (articleInDB) {
+                console.log("hi");
                 window.article.id = articleInDB.id;
+            }
         }
         catch (err) {
             

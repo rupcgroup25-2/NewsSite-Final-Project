@@ -10,14 +10,6 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class ReportsController : ControllerBase
     {
-        //// GET: api/<ReportsController>
-        //[HttpGet]
-        //public IEnumerable<string> Get()
-        //{
-        //    return new string[] { "value1", "value2" };
-        //}
-
-        // POST api/<ReportsController>
         [HttpPost]
         public IActionResult SubmitReport([FromBody] ReportWithArticleDto dto)
         {
@@ -32,9 +24,8 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Similar report has been already sumbitted.");
         }
 
-        [AllowAnonymous]
         [HttpGet]
-        //[Authorize(Roles = "Admin")] // All methods restricted only for admin
+        [Authorize(Roles = "Admin")] // All methods restricted only for admin
         public IEnumerable<Object> GetAllReportAndArticles()
         {
             Report report = new Report();

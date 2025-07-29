@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using System.Net.Http;
 
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -16,6 +12,7 @@ namespace Newsite_Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class ArticlesController : ControllerBase
     {
 
@@ -23,9 +20,8 @@ namespace Newsite_Server.Controllers
         const int MAX_SUMMARY_LENGTH = 200;
         const int MAX_TEXT_LENGTH = 3000;
 
-        [AllowAnonymous]
         [HttpGet]
-        //[Authorize(Roles = "Admin")] // All methods restricted only for admin
+        [Authorize(Roles = "Admin")] // All methods restricted only for admin
         public IEnumerable<Article> GetAllArticles()
         {
             Article article = new Article();
@@ -76,6 +72,7 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
         [HttpGet("singleReported/userId/{userId}/articleId/{articleId}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetSingleReportedArticles(int userId, int articleId)
         {
             Article article = new Article().GetSingleReportedArticlesForUser(userId, articleId);
@@ -98,6 +95,7 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpGet("singleArticleByUrl")]
+        [AllowAnonymous]
         public IActionResult GetSingleArticleByUrl([FromQuery] string url)
         {
             Article article = new Article().GetSingleArticleByUrl(url);
@@ -219,6 +217,7 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("summarize")]
+        [AllowAnonymous]
         public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
          {
             if (!requestBody.TryGetProperty("text", out JsonElement textElement) || string.IsNullOrWhiteSpace(textElement.GetString()))
@@ -274,6 +273,7 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpGet("top-headlines/pageSize/{pageSize}/language/{language}/country/{country}/category/{category?}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTopHeadlines(int pageSize, string language, string country, string? category = null)
         {
             string newsApiKey;
@@ -334,6 +334,8 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpGet("searchArticles/{query}/{from?}/{to?}")]
+        [AllowAnonymous]
+
         public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
         {
             if (string.IsNullOrWhiteSpace(query))

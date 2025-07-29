@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -9,13 +10,6 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-        // GET: api/<CommentsController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
         [HttpPost("Addcomment")]
         public IActionResult AddComment([FromBody] CommentWithArticleDto dto)
         {
@@ -41,6 +35,7 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpGet("article/{articleId}")]
+        [AllowAnonymous]
         public IActionResult GetCommentsByArticle(int articleId)
         {
             if (articleId <= 0)

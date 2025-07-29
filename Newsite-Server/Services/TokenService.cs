@@ -9,10 +9,10 @@ namespace Newsite_Server.Services
     public class TokenService
     {
         private const string SecretKey = "MotyNivYuvalSuperSecretKey123";
-        public static string GenerateToken(string userEmail, string role = "User")
+        public string GenerateToken(string userEmail, string role = "User")
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(SecretKey);
+            var key = Encoding.UTF8.GetBytes(SecretKey);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -26,8 +26,9 @@ namespace Newsite_Server.Services
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
 
-            return tokenHandler.WriteToken(token);
+            return tokenString;
         }
     }
 }

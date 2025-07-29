@@ -97,8 +97,8 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
 
-        [HttpGet("singleArticleByUrl/url/{url}")]
-        public IActionResult GetSingleArticleByUrl(string url)
+        [HttpGet("singleArticleByUrl")]
+        public IActionResult GetSingleArticleByUrl([FromQuery] string url)
         {
             Article article = new Article().GetSingleArticleByUrl(url);
 
@@ -107,6 +107,7 @@ namespace Newsite_Server.Controllers
 
             return Ok(article);
         }
+
 
         [HttpGet("search")]
         public IActionResult SearchSavedArticles([FromQuery] int userId, [FromQuery] string word)

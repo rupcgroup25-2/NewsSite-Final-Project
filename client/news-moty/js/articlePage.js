@@ -374,7 +374,7 @@ $(document).ready(async function () {
         <div class="text-muted small mb-2">
           <i class="bi bi-calendar-event"></i> ${formatDate(window.article.publishedAt)} &nbsp;
           <i class="bi bi-person"></i> ${window.article.source || window.article.sourceName || 'Unknown'} &nbsp;
-          <span class="badge bg-${availableTags.find(t => t.id === window.article.category)?.color || 'secondary'}">${window.article.category}</span>
+          <span class="badge bg-secondary">${window.article.tags?.[0] || window.article.category || "General"}</span>
         </div>
 
         ${window.article.sourceUrl ? `
@@ -481,7 +481,7 @@ $(document).ready(async function () {
         <h6 class="fw-bold">Article Information</h6>
         <div class="mb-2">
           <strong>Category</strong><br>
-          <span class="badge bg-${availableTags.find(t => t.id === window.article.category)?.color || 'secondary'}">${window.article.category}</span>
+          <span class="badge bg-secondary">${window.article.tags?.[0] || window.article.category || "General"}</span>
         </div>
         <div class="mb-2"><strong>Published</strong><br>${formatDate(window.article.publishedAt)}</div>
         <div class="mb-2"><strong>Source</strong><br>${window.article.source || window.article.sourceName || 'Unknown'}</div>
@@ -584,12 +584,13 @@ $(document).ready(async function () {
             sourceName: article.source || article.sourceName || "",
             author: article.author || "",
             sharedById: 0,
-            sharedByName: "string"
+            sharedByName: "string",
+            tags: [article.category]
         };
 
         const data = {
-            comment: commentToSend,
-            article: articleToSend
+            article: articleToSend,
+            comment: commentToSend
         };
 
         ajaxCall("POST", serverUrl + "Comments/Addcomment", JSON.stringify(data),

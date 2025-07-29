@@ -1199,19 +1199,39 @@ namespace Newsite_Server.DAL
             cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSingleSavedArticleForUserFinal", con, paramDic);
 
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
-                reader.Read();
-                Article a = new Article();
-                a.Id = Convert.ToInt32(reader["Id"]);
-                a.Title = reader["Title"].ToString();
-                a.Description = reader["Description"].ToString();
-                a.Url = reader["Url"].ToString();
-                a.UrlToImage = reader["UrlToImage"].ToString();
-                a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
-                a.SourceName = reader["SourceName"].ToString();
-                a.Author = reader["Author"].ToString();
-                return a;
+                Article article = null;
+
+                while (reader.Read())
+                {
+                    if (article == null)
+                    {
+                        article = new Article
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Title = reader["Title"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            Url = reader["Url"].ToString(),
+                            UrlToImage = reader["UrlToImage"].ToString(),
+                            PublishedAt = Convert.ToDateTime(reader["PublishedAt"]),
+                            SourceName = reader["SourceName"].ToString(),
+                            Author = reader["Author"].ToString(),
+                            Tags = new List<string>()
+                        };
+                    }
+
+                    string tagName = reader["TagName"] != null ? reader["TagName"].ToString() : null;
+
+                    if (string.IsNullOrWhiteSpace(tagName))
+                        tagName = "General";
+
+                    if (!article.Tags.Contains(tagName))
+                        article.Tags.Add(tagName);
+                }
+
+                return article;
             }
             catch (Exception ex)
             {
@@ -1245,19 +1265,38 @@ namespace Newsite_Server.DAL
             cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticleByIdFinal", con, paramDic);
 
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
-                reader.Read();
-                Article a = new Article();
-                a.Id = Convert.ToInt32(reader["Id"]);
-                a.Title = reader["Title"].ToString();
-                a.Description = reader["Description"].ToString();
-                a.Url = reader["Url"].ToString();
-                a.UrlToImage = reader["UrlToImage"].ToString();
-                a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
-                a.SourceName = reader["SourceName"].ToString();
-                a.Author = reader["Author"].ToString();
-                return a;
+                Article article = null;
+
+                while (reader.Read())
+                {
+                    if (article == null)
+                    {
+                        article = new Article
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Title = reader["Title"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            Url = reader["Url"].ToString(),
+                            UrlToImage = reader["UrlToImage"].ToString(),
+                            PublishedAt = Convert.ToDateTime(reader["PublishedAt"]),
+                            SourceName = reader["SourceName"].ToString(),
+                            Author = reader["Author"].ToString(),
+                            Tags = new List<string>(),
+                        };
+                    }
+
+                    string tagName = reader["TagName"] != null ? reader["TagName"].ToString() : null;
+                    if (string.IsNullOrWhiteSpace(tagName))
+                        tagName = "General";
+
+                    if (!article.Tags.Contains(tagName))
+                        article.Tags.Add(tagName);
+                }
+
+                return article;
             }
             catch (Exception ex)
             {
@@ -1466,19 +1505,39 @@ namespace Newsite_Server.DAL
             cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSingleSharedArticleForUserFinal", con, paramDic);
 
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
-                reader.Read();
-                Article a = new Article();
-                a.Id = Convert.ToInt32(reader["Id"]);
-                a.Title = reader["Title"].ToString();
-                a.Description = reader["Description"].ToString();
-                a.Url = reader["Url"].ToString();
-                a.UrlToImage = reader["UrlToImage"].ToString();
-                a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
-                a.SourceName = reader["SourceName"].ToString();
-                a.Author = reader["Author"].ToString();
-                return a;
+                Article article = null;
+
+                while (reader.Read())
+                {
+                    if (article == null)
+                    {
+                        article = new Article
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Title = reader["Title"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            Url = reader["Url"].ToString(),
+                            UrlToImage = reader["UrlToImage"].ToString(),
+                            PublishedAt = Convert.ToDateTime(reader["PublishedAt"]),
+                            SourceName = reader["SourceName"].ToString(),
+                            Author = reader["Author"].ToString(),
+                            Tags = new List<string>()
+                        };
+                    }
+
+                    string tagName = reader["TagName"] != DBNull.Value && reader["TagName"] != null ? reader["TagName"].ToString() : null;
+
+                    if (string.IsNullOrWhiteSpace(tagName))
+                        tagName = "General";
+
+                    if (!article.Tags.Contains(tagName))
+                        article.Tags.Add(tagName);
+                }
+
+                return article;
             }
             catch (Exception ex)
             {
@@ -1513,19 +1572,39 @@ namespace Newsite_Server.DAL
             cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSingleReportedArticleForUserFinal", con, paramDic);
 
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
-                reader.Read();
-                Article a = new Article();
-                a.Id = Convert.ToInt32(reader["Id"]);
-                a.Title = reader["Title"].ToString();
-                a.Description = reader["Description"].ToString();
-                a.Url = reader["Url"].ToString();
-                a.UrlToImage = reader["UrlToImage"].ToString();
-                a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
-                a.SourceName = reader["SourceName"].ToString();
-                a.Author = reader["Author"].ToString();
-                return a;
+                Article article = null;
+
+                while (reader.Read())
+                {
+                    if (article == null)
+                    {
+                        article = new Article
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Title = reader["Title"].ToString(),
+                            Description = reader["Description"].ToString(),
+                            Url = reader["Url"].ToString(),
+                            UrlToImage = reader["UrlToImage"].ToString(),
+                            PublishedAt = Convert.ToDateTime(reader["PublishedAt"]),
+                            SourceName = reader["SourceName"].ToString(),
+                            Author = reader["Author"].ToString(),
+                            Tags = new List<string>()
+                        };
+                    }
+
+                    string tagName = reader["TagName"] != null ? reader["TagName"].ToString() : null;
+
+                    if (string.IsNullOrWhiteSpace(tagName))
+                        tagName = "General";
+
+                    if (!article.Tags.Contains(tagName))
+                        article.Tags.Add(tagName);
+                }
+
+                return article;
             }
             catch (Exception ex)
             {

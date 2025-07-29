@@ -91,7 +91,8 @@ function shareArticle(article, comment, successCB, errorCB) {
         author: article.author || "",
         sharedById: 0,
         sharedByName: "string",
-        tags: [article.category]
+        tags: [article.category] 
+               
     };
 
     ajaxCall(
@@ -115,7 +116,9 @@ function saveArticle(article, saveSCB, saveECB) {
 
     // מניחה שיש פונקציה שמחזירה את כל הקטגוריות של הכתבה במערך (מספרים)
     //let articleCategories = getCategoriesFromLocalStorage(article.id); // מחזיר List<int>
-    let articleCategories = [article.category];
+    let articleCategories = Array.isArray(article.tags) ? article.tags : 
+                           (article.category ? [article.category] : 
+                           (article.tags?.[0] ? [article.tags[0]] : ["General"]));
     const articleToSend = {
         comment: "",
         id: 0,
@@ -220,7 +223,9 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
         sourceName: article.source || article.sourceName || "",
         author: article.author || "",
         sharedById: 0,
-        sharedByName: "string"
+        sharedByName: "string",
+        tags: [article.category]
+           
     };
 
     const data = {

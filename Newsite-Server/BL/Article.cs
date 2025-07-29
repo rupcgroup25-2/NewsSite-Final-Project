@@ -121,6 +121,11 @@ namespace Newsite_Server.BL
             return dbs.GetSingleSharedArticleByArticleId(articleId);
         }
 
+        public Article GetSingleArticleByUrl(string url)
+        {
+            return dbs.GetArticleByUrl(url);
+        }
+
 
         public int DeleteSavedForUser(int userId)
         {

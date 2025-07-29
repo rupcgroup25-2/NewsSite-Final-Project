@@ -97,6 +97,17 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
 
+        [HttpGet("singleArticleByUrl/url/{url}")]
+        public IActionResult GetSingleArticleByUrl(string url)
+        {
+            Article article = new Article().GetSingleArticleByUrl(url);
+
+            if (article == null)
+                return NotFound("Article not found in DB");
+
+            return Ok(article);
+        }
+
         [HttpGet("search")]
         public IActionResult SearchSavedArticles([FromQuery] int userId, [FromQuery] string word)
         {

@@ -304,6 +304,19 @@ function wrapWordsInSpans(text) {
     }).join('');
 }
 
+function findArticleInDB(url) {
+    const fullUrl = serverUrl + `Articles/singleArticleByUrl?url=${url}`;
+    return new Promise((resolve, reject) => {
+        ajaxCall("GET", fullUrl, null,
+            function (response) {
+                resolve(response);
+            },
+            function (xhr) {
+                reject(xhr);
+            });
+    });
+}
+
 $(document).ready(async function () {
     const id = getArticleIdFromUrl();
 
@@ -317,12 +330,20 @@ $(document).ready(async function () {
         const combined = [...cached, ...fromLocalStorage];
 
         window.article = combined.find(a => a.id == id);
+
+        try {
+            let articleInDB = await findArticleInDB(window.article.url);
+            if (articleInDB)
+                window.article.id = articleInDB.id;
+        }
+        catch (err) {
+            
+        }
     }
 
     else {
         window.article = await loadSingleArticle(currentUser.id, id);
     }
-
     if (!window.article) {
         return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
     }
@@ -487,7 +508,6 @@ $(document).ready(async function () {
     //load comments from server
     function loadComments(articleId) {
         const url = serverUrl + `comments/article/${articleId}`;
-        console.log("in");
         ajaxCall("GET", url, null,
             function (response) {
                 const comments = response;

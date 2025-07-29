@@ -84,6 +84,20 @@ namespace Newsite_Server.BL
 
             return true;
         }
+        public bool newPasswordValidation(string newPass)
+        {
+            if (string.IsNullOrWhiteSpace(newPass) ||
+              newPass.Length < 8 ||
+              !Regex.IsMatch(newPass, @"[A-Z]") ||         // Big letter
+              !Regex.IsMatch(newPass, @"[a-z]") ||         // small letter
+              !Regex.IsMatch(newPass, @"\d") ||            // number
+              !Regex.IsMatch(newPass, @"[^\w\d\s]"))       // speical char
+            {
+                return false;
+            }
+
+            return true;
+        }
         public int ToggleBlockSharing()
         {
             return dbs.ToggleBlockSharing(this.Id);
@@ -121,5 +135,15 @@ namespace Newsite_Server.BL
             return rowsAffected;
         }
 
+        public int ChangePassword(int userId, string newPass)
+        {
+            if (newPasswordValidation(newPass))
+            {
+                newPass = HashPassword(newPass);
+                int result = dbs.UpdateUserPassword(userId, newPass);
+                return result;
+            }
+            return 0;
+        }
     }
 }

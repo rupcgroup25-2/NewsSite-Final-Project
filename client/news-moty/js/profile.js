@@ -163,9 +163,14 @@ function renderProfile() {
                                         <small class="text-muted">Following</small>
                                     </div>
                                 </div>
-                                <button class="btn btn-outline-primary" id="editProfileBtn">
-                                    <i class="bi bi-pencil me-1"></i>Edit Profile
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary" id="editProfileBtn">
+                                        <i class="bi bi-pencil me-1"></i>Edit Profile
+                                    </button>
+                                    <button class="btn btn-outline-warning" id="changePasswordBtn">
+                                        <i class="bi bi-key me-1"></i>Change Password
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -274,6 +279,11 @@ function bindProfileEvents() {
     // Edit profile button - simple modal
     $(document).off('click', '#editProfileBtn').on('click', '#editProfileBtn', function () {
         openEditProfileModal();
+    });
+
+    // Change password button
+    $(document).off('click', '#changePasswordBtn').on('click', '#changePasswordBtn', function () {
+        openChangePasswordModal();
     });
 
     // Unfollow user
@@ -396,6 +406,162 @@ function saveProfileECB(xhr) {
     $('#saveProfileBtn').prop('disabled', false).text('Save Changes');
     console.error("Error saving profile:", xhr);
     alert(xhr.responseText || 'Failed to update profile. Please try again.');
+}
+
+function openChangePasswordModal() {
+    // Create the modal HTML if it doesn't exist
+    if ($('#changePasswordModal').length === 0) {
+        const modalHTML = `
+            <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="changePasswordModalLabel">
+                                <i class="bi bi-key me-2"></i>Change Password
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="changePasswordForm">
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="newPassword" required minlength="8">
+                                        <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Password must be 8+ characters with uppercase, lowercase, number, and symbol.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="confirmPassword" required>
+                                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="passwordError" class="alert alert-danger d-none"></div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" id="savePasswordBtn">
+                                <i class="bi bi-check-lg me-1"></i>Change Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('body').append(modalHTML);
+        
+        // Bind password visibility toggle events
+        bindPasswordToggleEvents();
+        
+        // Bind save password event
+        bindSavePasswordEvent();
+    }
+    
+    // Clear form and show modal
+    $('#changePasswordForm')[0].reset();
+    $('#passwordError').addClass('d-none');
+    $('#changePasswordModal').modal('show');
+}
+
+function bindPasswordToggleEvents() {
+    // Toggle password visibility
+    $('#toggleNewPassword').on('click', function() {
+        togglePasswordVisibility('newPassword', 'toggleNewPassword');
+    });
+    
+    $('#toggleConfirmPassword').on('click', function() {
+        togglePasswordVisibility('confirmPassword', 'toggleConfirmPassword');
+    });
+}
+
+function togglePasswordVisibility(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+function bindSavePasswordEvent() {
+    $('#savePasswordBtn').on('click', function() {
+        const newPassword = $('#newPassword').val().trim();
+        const confirmPassword = $('#confirmPassword').val().trim();
+        
+        // Clear previous errors
+        $('#passwordError').addClass('d-none');
+        
+        // Validation
+        if (!newPassword || !confirmPassword) {
+            showPasswordError('All fields are required.');
+            return;
+        }
+        
+        // Validate password according to registration requirements
+        if (newPassword.length < 8 ||
+            !/\d/.test(newPassword) ||
+            !/[A-Z]/.test(newPassword) ||
+            !/[a-z]/.test(newPassword) ||
+            !/[^\w\d\s]/.test(newPassword)) {
+            showPasswordError('Password must be 8+ chars with uppercase, lowercase, number, and symbol.');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            showPasswordError('New password and confirmation do not match.');
+            return;
+        }
+        
+        // Disable button and show loading
+        $('#savePasswordBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Changing...');
+        
+        // Call API to change password - send only the new password as string
+        ajaxCall(
+            "PUT",
+            serverUrl + `Users/ChangePassword?userId=${currentUser.id}`,
+            JSON.stringify(newPassword),
+            changePasswordSCB,
+            changePasswordECB
+        );
+    });
+}
+
+function showPasswordError(message) {
+    $('#passwordError').removeClass('d-none').text(message);
+}
+
+function changePasswordSCB(response) {
+    $('#savePasswordBtn').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Change Password');
+    $('#changePasswordModal').modal('hide');
+    alert('Password changed successfully!');
+}
+
+function changePasswordECB(xhr) {
+    $('#savePasswordBtn').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Change Password');
+    console.error("Error changing password:", xhr);
+    
+    let errorMessage = 'Failed to change password. Please try again.';
+    if (xhr.responseText) {
+        errorMessage = xhr.responseText;
+    } else if (xhr.status === 401) {
+        errorMessage = 'Current password is incorrect.';
+    } else if (xhr.status === 400) {
+        errorMessage = 'Invalid password format.';
+    }
+    
+    showPasswordError(errorMessage);
 }
 
 function unfollowUser(userEmail) {

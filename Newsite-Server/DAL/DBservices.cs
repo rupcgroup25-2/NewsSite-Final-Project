@@ -205,6 +205,29 @@ namespace Newsite_Server.DAL
                 con.Close();
             }
         }
+        //--------------------------------------------------------------------------------------------------
+        // This method updates user Password
+        //--------------------------------------------------------------------------------------------------
+
+        public int UpdateUserPassword(int userId, string newPassword)
+        {
+            SqlConnection con = connect("myProjDB");
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@NewPassword", newPassword);
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_UpdateUserPasswordFinal", con, paramDic);
+
+            try
+            {
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected; 
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
 
 
         //--------------------------------------------------------------------------------------------------

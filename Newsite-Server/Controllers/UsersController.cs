@@ -114,6 +114,17 @@ namespace Newsite_Server.Controllers
 
             return Ok(new { message = "Profile updated successfully." });
         }
+        [HttpPut("ChangePassword")]
+        public IActionResult UpdatePassword(int userId, [FromBody] string newPass)
+        {
+            User user = new User();
+            int result = user.ChangePassword(userId, newPass);
+
+            if (result == 1)
+                return BadRequest("Failed to update username.");
+
+            return Ok(new { message = "Profile updated successfully." });
+        }
 
     }
 }

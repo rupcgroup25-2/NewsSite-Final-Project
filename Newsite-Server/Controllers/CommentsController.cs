@@ -17,15 +17,17 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("Addcomment")]
-        public IActionResult AddComment([FromBody] Comment comment)
+        public IActionResult AddComment([FromBody] CommentWithArticleDto dto)
         {
-            if (comment == null || comment.CommentText == null || comment.CommentText.Trim().Length == 0)
+            if (dto.comment == null || dto.comment.CommentText == null || dto.comment.CommentText.Trim().Length == 0)
                 return BadRequest("Comment text cannot be empty.");
 
             try
             {
                 Comment c = new Comment();
-                int result = c.AddComment(comment.ArticleId, comment.UserId, comment.CommentText);
+                int articleId = dto.article.InsertArticleIfNotExists();
+
+                int result = c.AddComment(articleId, dto.comment.UserId, dto.comment.CommentText);
 
                 if (result == 0)
                     return Conflict("User has already commented on this article.");

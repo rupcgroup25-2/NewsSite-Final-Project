@@ -541,14 +541,33 @@ $(document).ready(async function () {
             alert('Comment text cannot be empty.');
             return;
         }
+        let article = window.article;
 
-        const data = {
+        const commentToSend = {
             id: 0,
-            articleId: window.article.id,
+            articleId: 0,
             userId: currentUser.id,
             username: currentUser.name,
             commentText: commentText,
             createdAt: new Date().toISOString()
+        };
+        const articleToSend = {
+            comment: "",
+            id: 0,
+            title: article.title || "",
+            description: article.preview || article.description || "",
+            url: article.url || "",
+            urlToImage: article.imageUrl || article.urlToImage || "",
+            publishedAt: article.publishedAt || new Date().toISOString(),
+            sourceName: article.source || article.sourceName || "",
+            author: article.author || "",
+            sharedById: 0,
+            sharedByName: "string"
+        };
+
+        const data = {
+            comment: commentToSend,
+            article: articleToSend
         };
 
         ajaxCall("POST", serverUrl + "Comments/Addcomment", JSON.stringify(data),
@@ -659,39 +678,105 @@ function loadVoices() {
         const style = document.createElement('style');
         style.id = 'voice-dropdown-styles';
         style.textContent = `
+            /* Light mode styles (default) */
             .voice-selector-container {
-                background: rgba(40, 44, 52, 0.95);
+                background: rgba(255, 255, 255, 0.9);
                 padding: 8px 12px;
                 border-radius: 12px;
-                border: 1px solid #495057;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                border: 1px solid #e0e0e0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             }
             .voice-selector-container label {
-                color: #e9ecef !important;
+                color: #6c757d !important;
                 font-weight: 500;
             }
             .voice-dropdown {
-                border: 1px solid #6c757d !important;
+                border: 1px solid #d0d0d0 !important;
                 border-radius: 8px !important;
-                background: #343a40 !important;
-                color: #f8f9fa !important;
+                background: white !important;
+                color: #333 !important;
                 font-size: 0.85rem !important;
                 padding: 6px 10px !important;
                 transition: all 0.2s ease !important;
             }
             .voice-dropdown:focus {
                 border-color: #0d6efd !important;
-                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
-                background: #495057 !important;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15) !important;
+                background: #f8f9fa !important;
             }
             .voice-dropdown option {
                 padding: 8px 12px;
                 font-size: 0.9rem;
-                background: #343a40;
-                color: #f8f9fa;
+                background: white;
+                color: #333;
             }
             .voice-dropdown option:hover,
             .voice-dropdown option:checked {
+                background: #f8f9fa !important;
+                color: #212529 !important;
+            }
+
+            /* Dark mode styles */
+            @media (prefers-color-scheme: dark) {
+                .voice-selector-container {
+                    background: rgba(40, 44, 52, 0.95);
+                    border: 1px solid #495057;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                }
+                .voice-selector-container label {
+                    color: #e9ecef !important;
+                }
+                .voice-dropdown {
+                    border: 1px solid #6c757d !important;
+                    background: #343a40 !important;
+                    color: #f8f9fa !important;
+                }
+                .voice-dropdown:focus {
+                    background: #495057 !important;
+                    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+                }
+                .voice-dropdown option {
+                    background: #343a40;
+                    color: #f8f9fa;
+                }
+                .voice-dropdown option:hover,
+                .voice-dropdown option:checked {
+                    background: #495057 !important;
+                    color: #ffffff !important;
+                }
+            }
+
+            /* Manual dark mode class support */
+            [data-bs-theme="dark"] .voice-selector-container,
+            .dark-mode .voice-selector-container {
+                background: rgba(40, 44, 52, 0.95);
+                border: 1px solid #495057;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            }
+            [data-bs-theme="dark"] .voice-selector-container label,
+            .dark-mode .voice-selector-container label {
+                color: #e9ecef !important;
+            }
+            [data-bs-theme="dark"] .voice-dropdown,
+            .dark-mode .voice-dropdown {
+                border: 1px solid #6c757d !important;
+                background: #343a40 !important;
+                color: #f8f9fa !important;
+            }
+            [data-bs-theme="dark"] .voice-dropdown:focus,
+            .dark-mode .voice-dropdown:focus {
+                background: #495057 !important;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+            }
+            [data-bs-theme="dark"] .voice-dropdown option,
+            .dark-mode .voice-dropdown option {
+                background: #343a40;
+                color: #f8f9fa;
+            }
+            [data-bs-theme="dark"] .voice-dropdown option:hover,
+            [data-bs-theme="dark"] .voice-dropdown option:checked,
+            .dark-mode .voice-dropdown option:hover,
+            .dark-mode .voice-dropdown option:checked {
                 background: #495057 !important;
                 color: #ffffff !important;
             }

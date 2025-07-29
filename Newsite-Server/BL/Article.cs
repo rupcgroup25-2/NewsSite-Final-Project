@@ -49,7 +49,7 @@ namespace Newsite_Server.BL
 
         DBservices dbs = new DBservices();
 
-        public int InsertArticleIfNotExists(List<string> tags = null)
+        public int InsertArticleIfNotExists()
         {
             Article existing = dbs.GetArticleByUrl(this.Url);
             int articleId;

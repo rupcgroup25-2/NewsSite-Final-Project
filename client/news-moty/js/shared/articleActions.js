@@ -90,7 +90,8 @@ function shareArticle(article, comment, successCB, errorCB) {
         sourceName: article.source || article.sourceName || "",
         author: article.author || "",
         sharedById: 0,
-        sharedByName: "string"
+        sharedByName: "string",
+        tags: [article.category]
     };
 
     ajaxCall(
@@ -113,8 +114,8 @@ function saveArticle(article, saveSCB, saveECB) {
     }
 
     // מניחה שיש פונקציה שמחזירה את כל הקטגוריות של הכתבה במערך (מספרים)
-    let articleCategories = getCategoriesFromLocalStorage(article.id); // מחזיר List<int>
-
+    //let articleCategories = getCategoriesFromLocalStorage(article.id); // מחזיר List<int>
+    let articleCategories = [article.category];
     const articleToSend = {
         comment: "",
         id: 0,

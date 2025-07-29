@@ -36,7 +36,7 @@
 
     let articlesHtml = '';
     savedArticles.forEach(article => {
-        const tag = availableTags.find(t => t.name === article.category) || { color: "secondary", name: "General" };
+        const tag = availableTags.find(t => t.name === article.tags[0]) || { color: "secondary", name: "General" };
 
         articlesHtml += `
         <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-secondary-subtle">

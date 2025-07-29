@@ -13,7 +13,7 @@
 
     let html = '<div class="container px-2 px-md-4">';
     sharedArticles.forEach(article => {
-        const tag = availableTags.find(t => t.id === article.category) || { color: "info", name: "General" };
+        const tag = availableTags.find(t => t.name === article.tags[0]) || { color: "secondary", name: "General" };
 
         html += `
         <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-info">

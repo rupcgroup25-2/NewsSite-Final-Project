@@ -13,10 +13,13 @@ namespace Newsite_Server.BL
         string sourceName;
         string author;
         string comment;
+        List<string> tags;
 
-        public Article() { }
+        public Article() {
+            tags = new List<string>();
+        }
 
-        public Article(int id, string title, string description, string url, string urlToImage, DateTime publishedAt, string sourceName, string author)
+        public Article(int id, string title, string description, string url, string urlToImage, DateTime publishedAt, string sourceName, string author, List<string> tags)
         {
             this.Id = id;
             this.Title = title;
@@ -26,6 +29,7 @@ namespace Newsite_Server.BL
             this.PublishedAt = publishedAt;
             this.SourceName = sourceName;
             this.Author = author;
+            this.Tags = new List<string>();
         }
 
         public string Comment { get => comment; set => comment = value; }
@@ -40,27 +44,52 @@ namespace Newsite_Server.BL
         public string Author { get => author; set => author = value; }
         public int SharedById { get; set; }      
         public string SharedByName { get; set; }
+        public List<string> Tags { get; set; }
+
 
         DBservices dbs = new DBservices();
 
-        public int InsertArticleIfNotExists()
+        public int InsertArticleIfNotExists(List<string> tags = null)
         {
             Article existing = dbs.GetArticleByUrl(this.Url);
+            int articleId;
+
             if (existing != null)
             {
-                return existing.Id; // exists
+                articleId = existing.Id;
+            }
+            else
+            {
+                int newId = dbs.InsertArticle(this);
+                if (newId <= 0)
+                    return -1;
+
+                this.Id = newId;
+                articleId = newId;
             }
 
-            int newId = dbs.InsertArticle(this);
-            if (newId > 0)
-                this.Id = newId; // new Id return from the db
+            if (tags != null && tags.Count > 0)
+            {
+                AssignTagsToArticle(articleId, tags);
+            }
 
-            return newId;
+            return articleId;
         }
 
-        public int AssignArticleTag(int articleId, int tagId) //Assign tag to article
+        public int AssignArticleTag(int articleId, string tag) //Assign tag to article
         {
-            return dbs.AssignTagToArticle(articleId, tagId);
+            return dbs.AssignTagToArticle(articleId, tag);
+        }
+
+        public void AssignTagsToArticle(int articleId, List<string> tags)
+        {
+            if (tags == null || tags.Count == 0)
+                return;
+
+            foreach (string tag in tags)
+            {
+                AssignArticleTag(articleId, tag);
+            }
         }
 
         public int SaveArticleForUser(int userId, int articleId)

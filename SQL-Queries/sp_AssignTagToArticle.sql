@@ -12,15 +12,15 @@ GO
 -- =============================================
 CREATE PROCEDURE [dbo].[sp_AssignTagToArticle]
     @ArticleId INT,
-    @TagId INT
+    @TagName INT
 AS
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM ArticleTagsTableFinal
-        WHERE ArticleId = @ArticleId AND TagId = @TagId
+        WHERE ArticleId = @ArticleId AND TagName = @TagName
     )
     BEGIN
-        INSERT INTO ArticleTagsTableFinal (ArticleId, TagId)
-        VALUES (@ArticleId, @TagId)
+        INSERT INTO ArticleTagsTableFinal (ArticleId, TagName)
+        VALUES (@ArticleId, @TagName)
     END
 END

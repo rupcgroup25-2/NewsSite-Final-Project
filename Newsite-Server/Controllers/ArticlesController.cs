@@ -39,6 +39,7 @@ namespace Newsite_Server.Controllers
             return Ok(articles);
         }
 
+        
         [HttpGet("singleSaved/userId/{userId}/articleId/{articleId}")]
         public IActionResult GetSingleSavedArticles(int userId, int articleId)
         {
@@ -133,32 +134,31 @@ namespace Newsite_Server.Controllers
                 return Ok("Article already exists");
         }
 
-        [HttpPost("AssignTagToArticle")]
-        public IActionResult AssignTagToArticle(int articleId, int tagId)
-        {
-            if (articleId <= 0 || tagId <= 0)
-                return BadRequest("Invalid IDs");
+        //[HttpPost("AssignTagToArticle")]
+        //public IActionResult AssignTagToArticle(int articleId, int tagId)
+        //{
+        //    if (articleId <= 0 || tagId <= 0)
+        //        return BadRequest("Invalid IDs");
 
-            Article article = new Article();
-            int result = article.AssignArticleTag(articleId, tagId);
-            if (result > 0)
-                return Ok("Tag assigned to the article");
-            else
-            {
-                return BadRequest("Couldn't assign tag to the article");
-            }
-        }
+        //    Article article = new Article();
+        //    int result = article.AssignArticleTag(articleId, tagId);
+        //    if (result > 0)
+        //        return Ok("Tag assigned to the article");
+        //    else
+        //    {
+        //        return BadRequest("Couldn't assign tag to the article");
+        //    }
+        //}
 
         [HttpPost("SaveArticle")]
         public IActionResult SaveArticle(int userId, [FromBody] Article article)
         {
-
             int result = article.SaveArticleForUser(userId, article.Id);
 
             if (result > 0)
-                return Ok("Article saved successfully");
+                return Ok(article.Id);
             else
-                return Ok("Article already saved");
+                return Ok(0);
         }
 
         [HttpPost("ShareArticle")]

@@ -112,6 +112,9 @@ function saveArticle(article, saveSCB, saveECB) {
         return;
     }
 
+    // מניחה שיש פונקציה שמחזירה את כל הקטגוריות של הכתבה במערך (מספרים)
+    let articleCategories = getCategoriesFromLocalStorage(article.id); // מחזיר List<int>
+
     const articleToSend = {
         comment: "",
         id: 0,
@@ -123,7 +126,8 @@ function saveArticle(article, saveSCB, saveECB) {
         sourceName: article.source || "",
         author: article.author || "",
         sharedById: 0,
-        sharedByName: "string"
+        sharedByName: "string",
+        tags: articleCategories || []  // שולחים את רשימת התגיות כ־IDs
     };
 
     if (!articleToSend) {
@@ -135,13 +139,35 @@ function saveArticle(article, saveSCB, saveECB) {
         "POST",
         serverUrl + `Articles/SaveArticle?userId=${currentUser.id}`,
         JSON.stringify(articleToSend),
-        function (responseText) {
+        function (articleId) {
+            // לא צריך לקרוא ל־AssignTagToArticle נפרד כי זה כבר קורה בשרת
             savedArticles.push(article.id);
-            saveSCB(responseText);
+            saveSCB(articleId);
         },
-        saveECB
+        function (err) {
+            saveECB(err);
+        }
     );
 }
+
+function getCategoriesFromLocalStorage(articleId) {
+    const storedArticles = getCachedArticles();
+
+    if (!storedArticles || !Array.isArray(storedArticles)) {
+        console.warn("No cached articles found in localStorage");
+        return [];
+    }
+
+    const foundArticle = storedArticles.find(article => article.id === articleId);
+
+    if (foundArticle && typeof foundArticle.category === "string") {
+        return [foundArticle.category]; // מחזיר מערך עם קטגוריה אחת
+    } else {
+        console.warn("Article not found or category missing in localStorage");
+        return [];
+    }
+}
+
 
 // --- Report Article ---
 //handle UI on report submit

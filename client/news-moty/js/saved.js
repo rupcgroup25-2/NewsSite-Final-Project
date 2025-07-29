@@ -36,7 +36,7 @@
 
     let articlesHtml = '';
     savedArticles.forEach(article => {
-        const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
+        const tag = availableTags.find(t => t.name === article.category) || { color: "secondary", name: "General" };
 
         articlesHtml += `
         <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-secondary-subtle">
@@ -69,8 +69,6 @@
 
     $articlesContainer.html(articlesHtml);
 }
-
-
 
 
 $(document).on('click', '.unsave-btn', function () {
@@ -154,8 +152,6 @@ function renderError(message) {
     
     $articlesContainer.html(`<div class="alert alert-danger text-center">${message}</div>`);
 }
-
-
 
 // Event handlers
 $(document).ready(function () {

@@ -16,7 +16,7 @@ availableTags = [
 
 let currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('currentUser'));
 console.log('Initial currentUser loaded:', currentUser);
-let savedArticles = JSON.parse(localStorage.getItem('savedArticles')) || [];
+let savedArticles = [];
 let sharedArticles = [];
 let userTags = [];
 

@@ -726,7 +726,7 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // This method assign tag to an article 
         //--------------------------------------------------------------------------------------------------
-        public int AssignTagToArticle(int articleId, int tagId)
+        public int AssignTagToArticle(int articleId, string tag)
         {
             SqlConnection con = null;
             SqlCommand cmd;
@@ -743,7 +743,7 @@ namespace Newsite_Server.DAL
 
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@ArticleId", articleId);
-            paramDic.Add("@TagId", tagId);
+            paramDic.Add("@TagName", tag);
 
             cmd = CreateCommandWithStoredProcedureGeneral("sp_AssignTagToArticle", con, paramDic);
 
@@ -1127,26 +1127,43 @@ namespace Newsite_Server.DAL
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@UserId", userId);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSavedArticlesForUserFinal", con, paramDic);
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSavedArticlesWithTagsFinal", con, paramDic); // שם חדש
 
-            List<Article> articles = new List<Article>();
+            Dictionary<int, Article> articleDict = new Dictionary<int, Article>();
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
                 while (reader.Read())
                 {
-                    Article a = new Article();
-                    a.Id = Convert.ToInt32(reader["Id"]);
-                    a.Title = reader["Title"].ToString();
-                    a.Description = reader["Description"].ToString();
-                    a.Url = reader["Url"].ToString();
-                    a.UrlToImage = reader["UrlToImage"].ToString();
-                    a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
-                    a.SourceName = reader["SourceName"].ToString();
-                    a.Author = reader["Author"].ToString();
-                    articles.Add(a);
+                    int articleId = Convert.ToInt32(reader["ArticleId"]);
+
+                    if (!articleDict.ContainsKey(articleId))
+                    {
+                        Article a = new Article();
+                        a.Id = articleId;
+                        a.Title = reader["Title"].ToString();
+                        a.Description = reader["Description"].ToString();
+                        a.Url = reader["Url"].ToString();
+                        a.UrlToImage = reader["UrlToImage"].ToString();
+                        a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                        a.SourceName = reader["SourceName"].ToString();
+                        a.Author = reader["Author"].ToString();
+                        a.Tags = new List<string>();
+
+                    articleDict[articleId] = a;
                 }
-                return articles;
+
+                    string tagName = reader["TagName"] != null ? reader["TagName"].ToString() : null;
+
+                    if (string.IsNullOrWhiteSpace(tagName))
+                        tagName = "General";
+
+                    if (!articleDict[articleId].Tags.Contains(tagName))
+                        articleDict[articleId].Tags.Add(tagName);
+                }
+
+                return articleDict.Values.ToList();
             }
             catch (Exception ex)
             {
@@ -1273,29 +1290,46 @@ namespace Newsite_Server.DAL
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@UserId", userId);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticlesForUser", con, paramDic);
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetSharedArticlesWithTagsFinal", con, paramDic);
 
-            List<Article> articles = new List<Article>();
+            Dictionary<int, Article> articleDict = new Dictionary<int, Article>();
             SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             try
             {
                 while (reader.Read())
                 {
-                    Article a = new Article();
-                    a.Id = Convert.ToInt32(reader["Id"]);
-                    a.Title = reader["Title"].ToString();
-                    a.Description = reader["Description"].ToString();
-                    a.Url = reader["Url"].ToString();
-                    a.UrlToImage = reader["UrlToImage"].ToString();
-                    a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
-                    a.SourceName = reader["SourceName"].ToString();
-                    a.Author = reader["Author"].ToString();
-                    a.Comment = reader["Comment"].ToString(); // מהשיתוף
-                    a.SharedById = Convert.ToInt32(reader["SharedByUserId"]);
-                    a.SharedByName = reader["SharedByName"].ToString();
-                    articles.Add(a);
+                    int articleId = Convert.ToInt32(reader["ArticleId"]);
+
+                    if (!articleDict.ContainsKey(articleId))
+                    {
+                        Article a = new Article();
+                        a.Id = articleId;
+                        a.Title = reader["Title"].ToString();
+                        a.Description = reader["Description"].ToString();
+                        a.Url = reader["Url"].ToString();
+                        a.UrlToImage = reader["UrlToImage"].ToString();
+                        a.PublishedAt = Convert.ToDateTime(reader["PublishedAt"]);
+                        a.SourceName = reader["SourceName"].ToString();
+                        a.Author = reader["Author"].ToString();
+                        a.Tags = new List<string>();
+                        a.Comment = reader["Comment"].ToString(); // מהשיתוף
+                        a.SharedById = Convert.ToInt32(reader["SharedByUserId"]);
+                        a.SharedByName = reader["SharedByName"].ToString();
+
+                        articleDict[articleId] = a;
+                    }
+
+                    string tagName = reader["TagName"] != null ? reader["TagName"].ToString() : null;
+
+                    if (string.IsNullOrWhiteSpace(tagName))
+                        tagName = "General";
+
+                    if (!articleDict[articleId].Tags.Contains(tagName))
+                        articleDict[articleId].Tags.Add(tagName);
                 }
-                return articles;
+
+                return articleDict.Values.ToList();
             }
             catch (Exception ex)
             {

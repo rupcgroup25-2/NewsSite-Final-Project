@@ -1,0 +1,21 @@
+CREATE PROCEDURE sp_GetSavedArticlesWithTagsFinal
+	@UserId INT
+AS
+BEGIN
+    SELECT 
+        a.Id AS ArticleId,
+        a.Title,
+        a.Description,
+        a.Url,
+        a.UrlToImage,
+        a.PublishedAt,
+        a.SourceName,
+        a.Author,
+
+        t.Name as TagName
+
+    FROM ArticlesTableFinal a  INNER JOIN SavedArticlesTable s ON a.Id = s.ArticleId
+    LEFT JOIN ArticleTagsTableFinal at ON a.Id = at.ArticleId
+    LEFT JOIN TagsTableFinal t ON at.TagId = t.Id
+    WHERE s.UserId = @UserId
+END

@@ -18,7 +18,21 @@ namespace Newsite_Server.Controllers
             return tag.GetAllTags();
         }
 
-        // POST api/<TagsController>
+        [HttpGet("GetTrendingTags")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTrendingTags([FromQuery] string country = "US")
+        {
+            try
+            {
+                var topics = await GoogleTrendsScraper.GetTrendingTopicsWithPlaywrightAsync(country.ToUpper());
+                return Ok(topics);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
         [HttpPost]
         public IActionResult CreateTag([FromBody] Tag tag)
         {

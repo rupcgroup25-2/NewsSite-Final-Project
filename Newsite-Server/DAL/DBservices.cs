@@ -379,6 +379,55 @@ namespace Newsite_Server.DAL
         }
 
         //--------------------------------------------------------------------------------------------------
+        // This method gets the top N most common tag names and their usage count
+        //--------------------------------------------------------------------------------------------------
+        public List<(string TagName, int TagCount)> GetTopMostCommonTags(int topCount)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            List<(string TagName, int TagCount)> topTags = new List<(string, int)>();
+
+            try
+            {
+                con = connect("myProjDB"); // Replace with your actual DB name
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return topTags;
+            }
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("@TopCount", topCount);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetTopMostCommonTagsFinal", con, parameters);
+
+            try
+            {
+                SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                while (dataReader.Read())
+                {
+                    string tagName = dataReader["Name"].ToString();
+                    int tagCount = Convert.ToInt32(dataReader["TagCount"]);
+                    topTags.Add((tagName, tagCount));
+                }
+
+                return topTags;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return topTags;
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
+
+        //--------------------------------------------------------------------------------------------------
         // Insert Followed user to follower 
         //--------------------------------------------------------------------------------------------------
         public int FollowUser(int followerId, string followedEmail)

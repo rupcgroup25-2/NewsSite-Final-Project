@@ -29,7 +29,6 @@ function AdminLinkIfNeeded() {
 
 document.addEventListener('DOMContentLoaded', AdminLinkIfNeeded);
 
-
 function renderHomeTab() {
     $("#home").html(`
     <div class="mb-4">

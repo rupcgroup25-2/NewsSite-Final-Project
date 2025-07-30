@@ -810,6 +810,91 @@ namespace Newsite_Server.DAL
         //===============Article===============================================================================
 
         //--------------------------------------------------------------------------------------------------
+        // This method deletes a comment for a given user and article
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteComment(int userId, int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@ArticleId", articleId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("SP_DeleteCommentByUserAndArticleFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); 
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close(); 
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method deletes all comments for a given article
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteAllCommentsForArticle(int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("SP_DeleteAllCommentsForArticleFinal", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
         // This method adds comment to article
         //--------------------------------------------------------------------------------------------------
         public int AddComment(int articleId, int userId, string commentText)

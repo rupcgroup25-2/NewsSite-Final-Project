@@ -42,6 +42,17 @@ namespace Newsite_Server.BL
             return dbs.GetCommentsByArticle(articleId);
         }
 
+        public int DeleteComment(int userId, int articleId)
+        {
+            DBservices dbs = new DBservices();
+            return dbs.DeleteComment(userId, articleId);
+        }
+
+        public int DeleteAllCommentsForArticle(int articleId)
+        {
+            DBservices dbs = new DBservices();
+            return dbs.DeleteAllCommentsForArticle(articleId);
+        }
     }
 
 }

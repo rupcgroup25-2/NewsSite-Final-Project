@@ -334,7 +334,6 @@ $(document).ready(async function () {
         try {
             let articleInDB = await findArticleInDB(window.article.url);
             if (articleInDB) {
-                console.log("hi");
                 window.article.id = articleInDB.id;
             }
         }
@@ -509,6 +508,7 @@ $(document).ready(async function () {
 `;
     //load comments from server
     function loadComments(articleId) {
+
         const url = serverUrl + `comments/article/${articleId}`;
         ajaxCall("GET", url, null,
             function (response) {
@@ -532,16 +532,32 @@ $(document).ready(async function () {
         }
 
         comments.forEach(function (c) {
+            let deleteButton = '';
+            if (c.userId === currentUser.id) {
+                deleteButton = `<button class="btn btn-sm btn-danger float-end delete-comment-btn" data-article-id="${window.article.id}">Delete Comment</button>`;
+            }
+
             const commentHtml = `
-            <div class="border p-2 mb-2">
-                <strong> ${c.username}</strong><br>
-                <span>${c.commentText}</span><br>
-                <small class="text-muted">${new Date(c.createdAt).toLocaleString()}</small>
-            </div>
+        <div class="border p-2 mb-2">
+            <strong>${c.username}</strong>
+            ${deleteButton}<br>
+            <span>${c.commentText}</span><br>
+            <small class="text-muted">${new Date(c.createdAt).toLocaleString()}</small>
+        </div>
         `;
             container.append(commentHtml);
         });
+
+        if (isAdmin()) {
+            const deleteBtn = `
+            <button id="delete-all-comments-btn" class="btn btn-danger mt-3">
+                Delete All Comments
+            </button>
+        `;
+            container.append(deleteBtn);
+        }
     }
+    
     function updateCommentsCount(comments) {
         const commentsCountEl = document.getElementById("comments-count");
         if (commentsCountEl) {
@@ -607,6 +623,48 @@ $(document).ready(async function () {
 
     $(document).ready(function () {
         loadComments(window.article.id);
+    });
+
+    //delete comment
+    $(document).on('click', '.delete-comment-btn', function () {
+        const articleId = $(this).data('article-id');
+
+        if (!confirm("Are you sure you want to delete your comment ?")) return;
+
+        const url = serverUrl + `Comments/DeleteCommentByArticleAndUser?userId=${currentUser.id}&articleId=${articleId}`;
+
+        console.log(url);
+
+        ajaxCall("DELETE", url, null,
+            function (response) {
+                alert(response);
+                loadComments(articleId);
+            },
+            function (xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+        );
+    });
+
+    //delete all comments of article by admin
+    function isAdmin() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        return user && user.email === "admin@newshub.com";
+    }
+
+    $(document).on('click', '#delete-all-comments-btn', function () {
+        if (!confirm("Are you sure you want to delete all comments for this article?")) return;
+
+        const url = serverUrl + `Admin/DeleteAllComments/${article.id}`;
+
+        ajaxCall("DELETE", url, null,
+            function (response) {
+                alert(response);
+                loadComments(article.id); 
+            },
+            function (xhr) {
+                alert("Error: " + xhr.responseText);
+            });
     });
 
 

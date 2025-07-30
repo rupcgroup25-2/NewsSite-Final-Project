@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔔 בדיקת התראות מתקדמת</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f8f9fa;
+        }
+        .card { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 25px; 
+            margin: 15px 0; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            margin: 8px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        button:hover { 
+            background: #0056b3; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+        button.success { background: #28a745; }
+        button.success:hover { background: #1e7e34; }
+        button.warning { background: #ffc107; color: #212529; }
+        button.warning:hover { background: #e0a800; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #c82333; }
+        
+        .log { 
+            background: #f8f9fa; 
+            border: 2px solid #dee2e6; 
+            border-radius: 8px; 
+            padding: 15px; 
+            max-height: 500px; 
+            overflow-y: auto; 
+            font-family: 'Courier New', monospace; 
+            white-space: pre-wrap;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .status-green { background: #28a745; }
+        .status-red { background: #dc3545; }
+        .status-yellow { background: #ffc107; }
+        
+        .notification-bell {
+            width: 40px;
+            height: 40px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            position: relative;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔔 מרכז בדיקת התראות מתקדם</h1>
+        <p>כלי מקיף לבדיקה ותיקון של מערכת ההתראות</p>
+        
+        <div style="display: flex; align-items: center; gap: 20px; margin: 20px 0;">
+            <span>סטטוס מערכת:</span>
+            <div>Firebase <span id="firebase-status" class="status-indicator status-red"></span></div>
+            <div>Service Worker <span id="sw-status" class="status-indicator status-red"></span></div>
+            <div>הרשאות <span id="permission-status" class="status-indicator status-red"></span></div>
+            <div>שרת <span id="server-status" class="status-indicator status-red"></span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🧪 בדיקות מערכת</h3>
+        <button onclick="checkSystemStatus()">📊 בדיקת סטטוס כללי</button>
+        <button onclick="testNotificationDisplay()">🎨 בדיקת הצגת התראות</button>
+        <button onclick="testNotificationButton()">🔔 בדיקת כפתור התראות</button>
+        <button onclick="testBrowserNotification()">🌐 התראת דפדפן</button>
+        <button onclick="testCustomNotification()">🎯 התראה מותאמת</button>
+        <button onclick="testVanillaNotification()">🍦 התראה Vanilla JS</button>
+    </div>
+
+    <div class="card">
+        <h3>🎮 סימולציית התראות</h3>
+        <button class="success" onclick="simulateFollowNotification()">👥 עוקב חדש</button>
+        <button class="warning" onclick="simulateShareNotification()">📤 שיתוף מאמר</button>
+        <button class="info" onclick="simulateCommentNotification()">💬 תגובה חדשה</button>
+        <button class="danger" onclick="simulateErrorNotification()">❌ שגיאה</button>
+    </div>
+
+    <div class="card">
+        <h3>🔧 כלי תיקון</h3>
+        <button onclick="fixNotificationButton()">🔨 תקן כפתור התראות</button>
+        <button onclick="resetServiceWorker()">🔄 אתחל Service Worker</button>
+        <button onclick="requestPermissions()">🔒 בקש הרשאות</button>
+        <button onclick="clearAllNotifications()">🗑️ נקה כל ההתראות</button>
+    </div>
+
+    <div class="card">
+        <h3>📊 תוצאות ולוגים</h3>
+        <div style="margin-bottom: 10px;">
+            <button onclick="clearLog()">🗑️ נקה לוג</button>
+            <button onclick="exportLog()">📄 ייצא לוג</button>
+            <button onclick="copyLog()">📋 העתק לוג</button>
+        </div>
+        <div id="log" class="log"></div>
+    </div>
+
+    <!-- אזור הדמיה של navbar -->
+    <div class="card">
+        <h3>🎭 הדמיה של כפתור התראות</h3>
+        <div style="background: #343a40; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: white;">Navigation Bar Demo</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="notifications-btn" class="notification-bell">🔔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- טעינת סקריפטים -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/shared/initServerUrl.js"></script>
+    <script src="js/shared/data.js"></script>
+    <script src="js/shared/ajaxCalls.js"></script>
+    <script src="js/firebaseConfig.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/notification-recovery.js"></script>
+
+    <script>
+        // הגדרת משתמש לבדיקה
+        window.currentUser = { id: 1021, name: "rubi", email: "rubi@gmail.com" };
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString('he-IL');
+            const className = type;
+            logEl.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('לוג נוקה', 'info');
+        }
+
+        function copyLog() {
+            const logContent = document.getElementById('log').innerText;
+            navigator.clipboard.writeText(logContent).then(() => {
+                log('לוג הועתק ללוח', 'success');
+            });
+        }
+
+        function exportLog() {
+            const logContent = document.getElementById('log').innerText;
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `notification-log-${new Date().toISOString().slice(0,19)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            log('לוג יוצא לקובץ', 'success');
+        }
+
+        // עדכון סטטוס אינדיקטורים
+        function updateStatus(indicator, isGood) {
+            const element = document.getElementById(indicator + '-status');
+            if (element) {
+                element.className = `status-indicator ${isGood ? 'status-green' : 'status-red'}`;
+            }
+        }
+
+        // בדיקת סטטוס כללי
+        async function checkSystemStatus() {
+            log('🔍 בודק סטטוס כללי של המערכת...', 'info');
+            
+            // בדיקת Firebase
+            try {
+                if (typeof firebaseConfig !== 'undefined') {
+                    log('✅ Firebase Config זמין', 'success');
+                    updateStatus('firebase', true);
+                } else {
+                    log('❌ Firebase Config לא זמין', 'error');
+                    updateStatus('firebase', false);
+                }
+            } catch (e) {
+                log('❌ שגיאה בבדיקת Firebase', 'error');
+                updateStatus('firebase', false);
+            }
+
+            // בדיקת Service Worker
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length > 0) {
+                    log(`✅ נמצאו ${registrations.length} Service Workers`, 'success');
+                    updateStatus('sw', true);
+                } else {
+                    log('⚠️ לא נמצאו Service Workers', 'warning');
+                    updateStatus('sw', false);
+                }
+            } catch (e) {
+                log('❌ שגיאה בבדיקת Service Worker', 'error');
+                updateStatus('sw', false);
+            }
+
+            // בדיקת הרשאות
+            if (Notification.permission === 'granted') {
+                log('✅ הרשאות התראות מאושרות', 'success');
+                updateStatus('permission', true);
+            } else {
+                log(`⚠️ הרשאות התראות: ${Notification.permission}`, 'warning');
+                updateStatus('permission', false);
+            }
+
+            // בדיקת שרת
+            try {
+                const response = await fetch('https://localhost:7065/api/Notifications/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ שרת פועל: ${data.status}`, 'success');
+                    updateStatus('server', true);
+                } else {
+                    log(`❌ שרת החזיר: ${response.status}`, 'error');
+                    updateStatus('server', false);
+                }
+            } catch (e) {
+                log('❌ שגיאה בחיבור לשרת', 'error');
+                updateStatus('server', false);
+            }
+
+            log('🎯 בדיקת סטטוס הושלמה', 'info');
+        }
+
+        // בדיקת הצגת התראות
+        function testNotificationDisplay() {
+            log('🎨 בודק הצגת התראות...', 'info');
+            
+            if (typeof showCustomNotification === 'function') {
+                log('✅ פונקציית showCustomNotification זמינה', 'success');
+                showCustomNotification('בדיקת התראה', 'זוהי התראת בדיקה לוודא שההצגה עובדת', { url: '#' });
+                log('📤 התראת בדיקה נשלחה', 'info');
+            } else {
+                log('❌ פונקציית showCustomNotification לא זמינה', 'error');
+            }
+        }
+
+        // בדיקת כפתור התראות
+        function testNotificationButton() {
+            log('🔔 בודק כפתור התראות...', 'info');
+            
+            const btn = document.getElementById('notifications-btn');
+            if (btn) {
+                log('✅ כפתור התראות נמצא', 'success');
+                log(`📍 סטייל: ${btn.style.display}`, 'info');
+                log(`📍 אירועים: ${btn.onclick ? 'יש' : 'אין'}`, btn.onclick ? 'success' : 'warning');
+                
+                // נסה להפעיל את הפונקציה לתיקון
+                if (typeof showNotificationButtonImmediate === 'function') {
+                    showNotificationButtonImmediate();
+                    log('🔧 הופעלה פונקציית תיקון הכפתור', 'info');
+                }
+            } else {
+                log('❌ כפתור התראות לא נמצא', 'error');
+            }
+        }
+
+        // התראת דפדפן
+        function testBrowserNotification() {
+            log('🌐 בודק התראת דפדפן...', 'info');
+            
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('התראת בדיקה מהדפדפן', {
+                    body: 'זוהי התראה ישירה מהדפדפן',
+                    icon: '/public/newsSite.png',
+                    tag: 'browser-test'
+                });
+                
+                notification.onclick = () => {
+                    log('👆 נלחץ על התראת הדפדפן', 'info');
+                    notification.close();
+                };
+                
+                log('✅ התראת דפדפן נשלחה', 'success');
+            } else {
+                log('❌ אין הרשאות להתראות דפדפן', 'error');
+            }
+        }
+
+        // התראה מותאמת
+        function testCustomNotification() {
+            log('🎯 בודק התראה מותאמת...', 'info');
+            
+            if (typeof showCustomNotification === 'function') {
+                showCustomNotification(
+                    'התראה מותאמת מתקדמת', 
+                    'זוהי התראה עם עיצוב מותאם וכפתורי פעולה', 
+                    { url: 'https://example.com' }
+                );
+                log('✅ התראה מותאמת הוצגה', 'success');
+            } else {
+                log('❌ פונקציית התראה מותאמת לא זמינה', 'error');
+            }
+        }
+
+        // התראה Vanilla JS
+        function testVanillaNotification() {
+            log('🍦 בודק התראה Vanilla JS...', 'info');
+            
+            if (typeof showVanillaNotification === 'function') {
+                showVanillaNotification(
+                    'התראה Vanilla JS', 
+                    'זוהי התראה בטכנולוגיית JavaScript גולמית', 
+                    { url: 'https://example.com' }
+                );
+                log('✅ התראה Vanilla JS הוצגה', 'success');
+            } else {
+                log('❌ פונקציית Vanilla JS לא זמינה', 'error');
+            }
+        }
+
+        // סימולציות התראות
+        function simulateFollowNotification() {
+            log('👥 סימולציית התראת עוקב חדש...', 'info');
+            if (typeof showCustomNotification === 'function') {
+                showCustomNotification('עוקב חדש!', 'אלי כהן החל לעקוב אחריך', { url: '/profile/eli' });
+            }
+        }
+
+        function simulateShareNotification() {
+            log('📤 סימולציית התראת שיתוף...', 'info');
+            if (typeof showCustomNotification === 'function') {
+                showCustomNotification('שיתוף חדש!', 'רותם לוי שיתפה את המאמר שלך "טכנולוגיות חדשות"', { url: '/article/123' });
+            }
+        }
+
+        function simulateCommentNotification() {
+            log('💬 סימולציית התראת תגובה...', 'info');
+            if (typeof showCustomNotification === 'function') {
+                showCustomNotification('תגובה חדשה!', 'דני ישראל הגיב על המאמר שלך', { url: '/article/456#comments' });
+            }
+        }
+
+        function simulateErrorNotification() {
+            log('❌ סימולציית התראת שגיאה...', 'info');
+            if (typeof showCustomNotification === 'function') {
+                showCustomNotification('שגיאה במערכת', 'אירעה שגיאה בשמירת הנתונים. נסה שוב מאוחר יותר.', null);
+            }
+        }
+
+        // כלי תיקון
+        function fixNotificationButton() {
+            log('🔨 מתקן כפתור התראות...', 'info');
+            if (typeof showNotificationButtonImmediate === 'function') {
+                showNotificationButtonImmediate();
+                log('✅ פונקציית תיקון הופעלה', 'success');
+            } else {
+                log('❌ פונקציית תיקון לא זמינה', 'error');
+            }
+        }
+
+        async function resetServiceWorker() {
+            log('🔄 מאתחל Service Worker...', 'info');
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    log(`🗑️ Service Worker הוסר: ${registration.scope}`, 'info');
+                }
+                log('✅ כל ה-Service Workers הוסרו', 'success');
+            } catch (e) {
+                log(`❌ שגיאה באתחול Service Worker: ${e.message}`, 'error');
+            }
+        }
+
+        async function requestPermissions() {
+            log('🔒 מבקש הרשאות התראות...', 'info');
+            try {
+                const permission = await Notification.requestPermission();
+                log(`📍 תוצאה: ${permission}`, permission === 'granted' ? 'success' : 'warning');
+                updateStatus('permission', permission === 'granted');
+            } catch (e) {
+                log(`❌ שגיאה בבקשת הרשאות: ${e.message}`, 'error');
+            }
+        }
+
+        function clearAllNotifications() {
+            log('🗑️ מנקה את כל ההתראות...', 'info');
+            
+            // נקה התראות jQuery
+            if (typeof $ !== 'undefined') {
+                $('.custom-notification').remove();
+                log('✅ התראות jQuery נוקו', 'success');
+            }
+            
+            // נקה התראות Vanilla
+            const vanillaNotifications = document.querySelectorAll('.custom-notification');
+            vanillaNotifications.forEach(n => n.remove());
+            log(`✅ ${vanillaNotifications.length} התראות Vanilla נוקו`, 'success');
+        }
+
+        // אתחול
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 מרכז בדיקת התראות מוכן!', 'success');
+            log('💡 לחץ על "בדיקת סטטוס כללי" כדי להתחיל', 'info');
+            
+            // בצע בדיקה אוטומטית
+            setTimeout(checkSystemStatus, 1000);
+        });
+
+    </script>
+</body>
+</html>

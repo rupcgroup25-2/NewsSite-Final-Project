@@ -14,10 +14,13 @@ namespace Newsite_Server.Controllers
     public class UsersController : ControllerBase
     {
         private TokenService _tokenService;
+        private readonly Notifications notifications;
+
 
         public UsersController()
         {
             _tokenService = new TokenService();
+            notifications = new Notifications();
         }
 
         [HttpPost("Login")]
@@ -90,35 +93,48 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("Follow")]
-        public IActionResult FollowUser(int followerId, string followedEmail)
+        public async Task<IActionResult> FollowUser(int followerId, string followedEmail)
         {
             var userClaims = User.Claims.ToList();
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            Console.WriteLine($"🔍 Debug - User Email: {userEmail}");
-            Console.WriteLine($"🔍 Debug - User Role: {userRole}");
-            Console.WriteLine($"🔍 Debug - All Claims:");
-
-            foreach(var claim in userClaims)
-    {
+            foreach (var claim in userClaims)
+            {
                 Console.WriteLine($"   - {claim.Type}: {claim.Value}");
             }
 
             // בדיקה אם זה Admin
             bool isAdmin = User.IsInRole("Admin");
-            Console.WriteLine($"🔍 Debug - Is Admin: {isAdmin}");
-
 
             User user = new User();
-
             int result = user.FollowUser(followerId, followedEmail);
 
             if (result > 0)
+            {
+                // הוסף התראה על עוקב חדש - משופר עם הפונקציות החדשות
+                try
+                {
+                    string followerName = user.GetUserNameById(followerId);
+                    User followedUser = user.GetUserByEmail(followedEmail);
+
+                    if (!string.IsNullOrEmpty(followerName) && followedUser != null)
+                    {
+                        // שלח התראה למשתמש שעליו עוקבים
+                        await notifications.NotifyNewFollower(followedUser.Id, followerName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send follow notification: {ex.Message}");
+                }
+
                 return Ok("Follow successfully");
+            }
             else
                 return BadRequest("Already following or failed to add follow");
         }
+
 
         [HttpDelete("Unfollow")]
         public IActionResult UnfollowUser(int followerId,  string followedEmail)
@@ -154,6 +170,28 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Failed to update username.");
 
             return Ok(new { message = "Profile updated successfully." });
+        }
+
+        [HttpPost("SaveFCMTokenAlt")]
+        public IActionResult SaveFCMTokenAlt(int userId, string fcmToken)
+        {
+            try
+            {
+                int result = notifications.SaveFCMToken(userId, fcmToken);
+
+                if (result > 0)
+                {
+                    return Ok("FCM token saved successfully");
+                }
+                else
+                {
+                    return StatusCode(500, "Failed to save FCM token");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
         }
 
     }

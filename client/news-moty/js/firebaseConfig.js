@@ -7,4 +7,5 @@
     appId: "1:397153014495:web:c3613b494555359a86cf6a",
     measurementId: "G-WN88XW35LV"
 };
-//firebase config
+const vapidKey = "BFqcGAmvJABvn9fTvtYczaHHCMF03MgwSu1RlMXanVHjXYZbSkG0MMRM6_R_hMcClIkg2kL34xqu5FwruARQeDQ";
+

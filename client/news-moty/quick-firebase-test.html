@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 בדיקה מהירה - Firebase FCM</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .card { 
+            background: white; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin: 10px 0; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 5px; 
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .log { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 5px; 
+            padding: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            white-space: pre-wrap;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔧 בדיקה מהירה של Firebase FCM</h1>
+        <p>בדיקה מהירה של התיקונים שביצענו</p>
+        
+        <div>
+            <button onclick="testBasicSetup()">1️⃣ בדיקת הגדרות בסיסיות</button>
+            <button onclick="testServiceWorker()">2️⃣ בדיקת Service Worker החדש</button>
+            <button onclick="testFirebaseInit()">3️⃣ בדיקת אתחול Firebase</button>
+            <button onclick="testTokenGeneration()">4️⃣ בדיקת יצירת Token</button>
+            <button onclick="testServerConnection()">5️⃣ בדיקת חיבור לשרת</button>
+            <button onclick="clearLog()">🗑️ נקה לוג</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📊 תוצאות בדיקות:</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <!-- טעינת כל הסקריפטים הנדרשים -->
+    <script src="js/shared/initServerUrl.js"></script>
+    <script src="js/shared/data.js"></script>
+    <script src="js/shared/ajaxCalls.js"></script>
+    <script src="js/firebaseConfig.js"></script>
+
+    <script>
+        // הגדרת משתמש לבדיקה
+        window.currentUser = { id: 1021, name: "rubi", email: "rubi@gmail.com" };
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString('he-IL');
+            const className = type;
+            logEl.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('לוג נוקה', 'info');
+        }
+
+        // 1. בדיקת הגדרות בסיסיות
+        function testBasicSetup() {
+            log('🧪 מתחיל בדיקת הגדרות בסיסיות...', 'info');
+            
+            // בדיקת Firebase Config
+            if (typeof firebaseConfig !== 'undefined') {
+                log(`✅ Firebase Config נמצא - פרויקט: ${firebaseConfig.projectId}`, 'success');
+            } else {
+                log('❌ Firebase Config לא נמצא', 'error');
+                return false;
+            }
+
+            // בדיקת VAPID Key
+            if (typeof vapidKey !== 'undefined') {
+                log(`✅ VAPID Key נמצא - אורך: ${vapidKey.length} תווים`, 'success');
+                log(`📍 VAPID Key מתחיל ב: ${vapidKey.substring(0, 10)}...`, 'info');
+            } else {
+                log('❌ VAPID Key לא נמצא', 'error');
+            }
+
+            // בדיקת תמיכת דפדפן
+            if ('serviceWorker' in navigator) {
+                log('✅ Service Worker נתמך בדפדפן', 'success');
+            } else {
+                log('❌ Service Worker לא נתמך בדפדפן', 'error');
+            }
+
+            if ('Notification' in window) {
+                log(`✅ Notifications נתמכות - סטטוס: ${Notification.permission}`, 'success');
+            } else {
+                log('❌ Notifications לא נתמכות בדפדפן', 'error');
+            }
+
+            log('🎯 בדיקת הגדרות בסיסיות הושלמה', 'info');
+        }
+
+        // 2. בדיקת Service Worker החדש
+        async function testServiceWorker() {
+            log('🔧 בודק Service Worker החדש...', 'info');
+            
+            try {
+                // בטל רישום של service workers ישנים
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    log(`🔄 מבטל רישום Service Worker: ${registration.scope}`, 'warning');
+                    await registration.unregister();
+                }
+
+                // רשם Service Worker חדש
+                log('📝 רושם Service Worker חדש...', 'info');
+                const registration = await navigator.serviceWorker.register('./firebase-messaging-sw-v12.js', {
+                    scope: '/firebase-cloud-messaging-push-scope'
+                });
+
+                log('✅ Service Worker נרשם בהצלחה', 'success');
+                log(`📍 Scope: ${registration.scope}`, 'info');
+
+                // חכה ש-Service Worker יהיה מוכן
+                await navigator.serviceWorker.ready;
+                log('🟢 Service Worker מוכן לשימוש', 'success');
+
+                return registration;
+            } catch (error) {
+                log(`❌ שגיאה ב-Service Worker: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // 3. בדיקת אתחול Firebase
+        async function testFirebaseInit() {
+            log('🔥 בודק אתחול Firebase...', 'info');
+            
+            try {
+                if (typeof firebaseConfig === 'undefined') {
+                    throw new Error('Firebase Config לא נמצא');
+                }
+
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js');
+                window.app = initializeApp(firebaseConfig);
+                
+                log('✅ Firebase אותחל בהצלחה', 'success');
+                log(`📍 App name: ${window.app.name}`, 'info');
+                log(`📍 Project ID: ${window.app.options.projectId}`, 'info');
+
+                return window.app;
+            } catch (error) {
+                log(`❌ שגיאה באתחול Firebase: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // 4. בדיקת יצירת Token
+        async function testTokenGeneration() {
+            log('🔑 בודק יצירת FCM Token...', 'info');
+            
+            try {
+                // ודא שFirebase מאותחל
+                if (!window.app) {
+                    log('🔥 מאתחל Firebase קודם...', 'warning');
+                    await testFirebaseInit();
+                }
+
+                // ודא שService Worker רשום
+                const registration = await testServiceWorker();
+                if (!registration) {
+                    throw new Error('Service Worker לא זמין');
+                }
+
+                // קבל הרשאות
+                if (Notification.permission === 'default') {
+                    log('🔒 מבקש הרשאות התראות...', 'warning');
+                    const permission = await Notification.requestPermission();
+                    log(`📍 תוצאת הרשאה: ${permission}`, permission === 'granted' ? 'success' : 'error');
+                }
+
+                // יצור Token
+                const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js');
+                const messaging = getMessaging(window.app);
+
+                log('🎯 מייצר FCM Token עם VAPID Key...', 'info');
+                
+                let token;
+                if (typeof vapidKey !== 'undefined') {
+                    token = await getToken(messaging, { 
+                        vapidKey: vapidKey,
+                        serviceWorkerRegistration: registration
+                    });
+                } else {
+                    token = await getToken(messaging, {
+                        serviceWorkerRegistration: registration
+                    });
+                }
+
+                if (token) {
+                    log('✅ FCM Token נוצר בהצלחה!', 'success');
+                    log(`📧 Token (חלקי): ${token.substring(0, 50)}...`, 'info');
+                    log(`📏 אורך Token: ${token.length} תווים`, 'info');
+                    
+                    window.testFCMToken = token;
+                    return token;
+                } else {
+                    throw new Error('לא התקבל Token');
+                }
+
+            } catch (error) {
+                log(`❌ שגיאה ביצירת Token: ${error.message}`, 'error');
+                if (error.code) {
+                    log(`📋 קוד שגיאה: ${error.code}`, 'error');
+                }
+                return null;
+            }
+        }
+
+        // 5. בדיקת חיבור לשרת
+        async function testServerConnection() {
+            log('🌐 בודק חיבור לשרת...', 'info');
+            
+            try {
+                // בדוק סטטוס השרת
+                log('📡 בודק סטטוס השרת...', 'info');
+                const statusResponse = await fetch('https://localhost:7065/api/Notifications/status');
+                
+                if (statusResponse.ok) {
+                    const statusData = await statusResponse.json();
+                    log(`✅ שרת פועל: ${statusData.status}`, 'success');
+                    log(`💾 מסד נתונים: ${statusData.database}`, statusData.database === 'connected' ? 'success' : 'warning');
+                } else {
+                    log(`⚠️ שרת החזיר שגיאה: ${statusResponse.status}`, 'warning');
+                }
+
+                // נסה לשמור Token (אם יש)
+                if (window.testFCMToken) {
+                    log('💾 מנסה לשמור FCM Token בשרת...', 'info');
+                    
+                    const saveResponse = await fetch('https://localhost:7065/api/Notifications/SaveFCMToken', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `userId=${window.currentUser.id}&fcmToken=${encodeURIComponent(window.testFCMToken)}`
+                    });
+
+                    if (saveResponse.ok) {
+                        log('✅ FCM Token נשמר בהצלחה בשרת!', 'success');
+                    } else {
+                        const errorText = await saveResponse.text();
+                        log(`❌ שמירת Token נכשלה: ${saveResponse.status} - ${errorText}`, 'error');
+                    }
+                } else {
+                    log('⚠️ אין FCM Token לשמירה - רץ קודם בדיקת יצירת Token', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ שגיאה בחיבור לשרת: ${error.message}`, 'error');
+                log('💡 ודא שהשרת רץ על: https://localhost:7065', 'info');
+            }
+        }
+
+        // אתחול אוטומטי
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 מערכת בדיקת Firebase FCM מוכנה!', 'success');
+            log('💡 לחץ על הכפתורים כדי לבצע בדיקות', 'info');
+        });
+
+    </script>
+</body>
+</html>

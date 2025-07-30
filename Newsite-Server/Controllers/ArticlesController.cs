@@ -20,6 +20,13 @@ namespace Newsite_Server.Controllers
         const int MAX_SUMMARY_LENGTH = 200;
         const int MAX_TEXT_LENGTH = 3000;
 
+        private readonly Notifications notifications;
+
+        public ArticlesController()
+        {
+            notifications = new Notifications();
+        }
+
         [HttpGet]
         [Authorize(Roles = "Admin")] // All methods restricted only for admin
         public IEnumerable<Article> GetAllArticles()
@@ -162,13 +169,35 @@ namespace Newsite_Server.Controllers
         }
 
         [HttpPost("ShareArticle")]
-        public IActionResult ShareArticle(int userId, [FromBody] Article article)
+        public async Task<IActionResult> ShareArticle(int userId, [FromBody] Article article)
         {
             int result = article.ShareArticleWithComment(userId, article.Id, article.Comment);
 
             if (result > 0)
+            {
+                try
+                {
+                    // קבל את שם המשתמש שישר את הכתבה (משופר)
+                    User userHandler = new User();
+                    string sharerName = userHandler.GetUserNameById(userId);
+
+                    if (!string.IsNullOrEmpty(sharerName))
+                    {
+                        await notifications.NotifyArticleSharedToFollowers(
+                            userId,
+                            sharerName,
+                            article.Title ?? "Article"
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send share notification: {ex.Message}");
+                }
+
                 return Ok("Article shared successfully");
-            else if (result == -1) 
+            }
+            else if (result == -1)
                 return Ok("The user is blocked sharing");
             else
                 return Ok("Article already shared");

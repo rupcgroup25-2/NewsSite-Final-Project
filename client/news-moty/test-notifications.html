@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang=                <hr>
+                <h6>🔍 Advanced Firebase Checks:</h6>
+                <button class="btn btn-info" onclick="runCompleteFirebaseCheck()">🎯 Complete Firebase Check</button>
+                <button class="btn btn-secondary" onclick="fullFirebaseProjectCheck()">📋 Project Config Check</button>
+                <button class="btn btn-warning" onclick="checkServiceWorkerConfig()">🔧 Service Worker Check</button>
+                
+                <hr>
+                <h6>🔄 System Recovery:</h6>n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notifications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Test Push Notifications</h1>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>Debug Information:</h5>
+                <div id="debug-info"></div>
+                
+                <hr>
+                
+                <button class="btn btn-primary" onclick="testFirebaseConfig()">1. Test Firebase Config</button>
+                <button class="btn btn-secondary" onclick="testPermissions()">2. Test Permissions</button>
+                <button class="btn btn-success" onclick="testGetToken()">3. Test Get FCM Token</button>
+                <button class="btn btn-warning" onclick="testSaveToken()">4. Test Save Token</button>
+                <button class="btn btn-info" onclick="testGetUsers()">5. Get Available Users</button>
+                <button class="btn btn-dark" onclick="createTestUser()">6. Create Test User</button>
+                <button class="btn btn-outline-primary" onclick="testServerConnection()">7. Test Server</button>
+                <button class="btn btn-danger" onclick="testSendNotification()">8. Test Send Notification</button>
+                
+                <hr>
+                <h6>� System Recovery:</h6>
+                <button class="btn btn-success" onclick="recoverNotificationSystem()">🏥 Recover Notification System</button>
+                <button class="btn btn-info" onclick="showNotificationButtonImmediate()">👁️ Show Bell Button</button>
+                <button class="btn btn-warning" onclick="if(currentUser) sendTestNotification(currentUser.id)">🧪 Quick Test</button>
+                
+                <hr>
+                <h6>�🔐 VAPID Key Debugging:</h6>
+                <button class="btn btn-outline-warning" onclick="debugVAPIDKey()">🔍 Debug VAPID Key</button>
+                <button class="btn btn-outline-danger" onclick="fixVAPIDIssues()">🔧 Fix VAPID Issues</button>
+                <button class="btn btn-outline-info" onclick="validateVAPIDKeyAndProject()">✅ Validate Config</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include all necessary scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/shared/initServerUrl.js"></script>
+    <script src="js/shared/data.js"></script>
+    <script src="js/shared/ajaxCalls.js"></script>
+    <script src="js/firebaseConfig.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/notification-recovery.js"></script>
+    <script src="js/firebase-advanced-check.js"></script>
+
+    <script>
+        // Set a test user for testing
+        window.currentUser = { id: 1, name: "Test User" };
+
+        function log(message) {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML += '<div class="alert alert-info">' + message + '</div>';
+            console.log(message);
+        }
+
+        // Initialize Firebase for testing (since articlePage.js isn't loaded)
+        async function initFirebaseForTesting() {
+            if (typeof firebaseConfig !== 'undefined') {
+                try {
+                    // Import Firebase app
+                    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js');
+                    window.app = initializeApp(firebaseConfig);
+                    log('Firebase initialized for testing');
+                    return true;
+                } catch (error) {
+                    log('Error initializing Firebase: ' + error.message);
+                    return false;
+                }
+            } else {
+                log('firebaseConfig not found');
+                return false;
+            }
+        }
+
+        function testFirebaseConfig() {
+            log('Testing Firebase Config...');
+            log('firebaseConfig exists: ' + (typeof firebaseConfig !== 'undefined'));
+            log('vapidKey exists: ' + (typeof vapidKey !== 'undefined'));
+            log('Full VAPID Key: ' + (typeof vapidKey !== 'undefined' ? vapidKey : 'Not found'));
+            log('VAPID Key length: ' + (typeof vapidKey !== 'undefined' ? vapidKey.length : 'N/A'));
+            log('VAPID Key format check - starts with B: ' + (typeof vapidKey !== 'undefined' ? vapidKey.startsWith('B') : 'N/A'));
+        }
+
+        function testPermissions() {
+            log('Testing Notification Permissions...');
+            log('Current permission: ' + Notification.permission);
+            
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    log('Permission after request: ' + permission);
+                });
+            }
+        }
+
+        async function testGetToken() {
+            log('Testing FCM Token...');
+            try {
+                // Make sure Firebase is initialized first
+                if (!window.app) {
+                    await initFirebaseForTesting();
+                }
+                
+                if (typeof getFCMToken === 'function') {
+                    const token = await getFCMToken();
+                    window.currentFCMToken = token; // Store for later use
+                    log('FCM Token received: ' + (token ? 'YES' : 'NO'));
+                    if (token) {
+                        log('Token preview: ' + token.substring(0, 20) + '...');
+                    }
+                } else {
+                    log('ERROR: getFCMToken function not found');
+                }
+            } catch (error) {
+                log('ERROR getting FCM token: ' + error.message);
+            }
+        }
+
+        function testSaveToken() {
+            log('Testing Save Token to Server...');
+            log('serverUrl: ' + (typeof serverUrl !== 'undefined' ? serverUrl : 'undefined'));
+            
+            if (typeof saveFCMTokenToServer === 'function') {
+                // Use a real FCM token for testing if available
+                const testToken = currentFCMToken || 'test-token-123';
+                saveFCMTokenToServer(1, testToken);
+                log('Save token function called with token: ' + testToken.substring(0, 20) + '...');
+            } else {
+                log('ERROR: saveFCMTokenToServer function not found');
+            }
+        }
+
+        function testServerConnection() {
+            log('Testing server connection...');
+            log('Server URL: ' + (typeof serverUrl !== 'undefined' ? serverUrl : 'undefined'));
+            
+            if (typeof serverUrl !== 'undefined') {
+                // Test simple endpoint
+                fetch(serverUrl + 'Users/AllEmails')
+                    .then(response => {
+                        log('Server response status: ' + response.status);
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Server returned ' + response.status);
+                        }
+                    })
+                    .then(data => {
+                        log('Server connection successful!');
+                        log('Users found: ' + data.length);
+                    })
+                    .catch(error => {
+                        log('Server connection failed: ' + error.message);
+                        log('Make sure the server is running on port 7065');
+                    });
+            } else {
+                log('ERROR: serverUrl not defined');
+            }
+        }
+
+        function createTestUser() {
+            log('Creating test user...');
+            
+            const testUser = {
+                Name: "Test User",
+                Email: "testuser@test.com",
+                Password: "123456"
+            };
+            
+            if (typeof serverUrl !== 'undefined' && typeof ajaxCall === 'function') {
+                ajaxCall('POST', serverUrl + 'Users/Register', JSON.stringify(testUser),
+                    function(response) {
+                        log('Test user created successfully!');
+                        log('User details: ' + JSON.stringify(response));
+                        
+                        // Update currentUser
+                        window.currentUser = response;
+                        log('Updated currentUser to: ' + JSON.stringify(window.currentUser));
+                    },
+                    function(xhr) {
+                        log('Error creating test user (may already exist): ' + xhr.responseText);
+                        
+                        // Try to login with existing user
+                        const loginData = {
+                            Email: testUser.Email,
+                            Password: testUser.Password
+                        };
+                        
+                        ajaxCall('POST', serverUrl + 'Users/Login', JSON.stringify(loginData),
+                            function(loginResponse) {
+                                log('Logged in with existing test user!');
+                                window.currentUser = loginResponse;
+                                log('Updated currentUser to: ' + JSON.stringify(window.currentUser));
+                            },
+                            function(loginXhr) {
+                                log('ERROR: Could not create or login test user: ' + loginXhr.responseText);
+                            }
+                        );
+                    }
+                );
+            } else {
+                log('ERROR: Required functions not available');
+            }
+        }
+
+        function testGetUsers() {
+            log('Testing Get Users...');
+            
+            if (typeof serverUrl !== 'undefined' && typeof ajaxCall === 'function') {
+                ajaxCall('GET', serverUrl + 'Users/AllEmails', null,
+                    function(response) {
+                        log('Available users found: ' + response.length);
+                        if (response.length > 0) {
+                            log('First few users: ' + JSON.stringify(response.slice(0, 3)));
+                            
+                            // Update currentUser to use a real user ID
+                            if (response[0] && response[0].id) {
+                                window.currentUser.id = response[0].id;
+                                log('Updated test user ID to: ' + response[0].id);
+                            }
+                        }
+                    },
+                    function(xhr) {
+                        log('ERROR getting users: ' + xhr.responseText);
+                    }
+                );
+            } else {
+                log('ERROR: Required functions not available');
+            }
+        }
+
+        function testSendNotification() {
+            log('Testing Send Notification...');
+            log('Using user ID: ' + window.currentUser.id);
+            log('serverUrl: ' + (typeof serverUrl !== 'undefined' ? serverUrl : 'undefined'));
+            
+            if (typeof sendTestNotification === 'function') {
+                try {
+                    sendTestNotification(window.currentUser.id);
+                    log('Test notification function called with ID: ' + window.currentUser.id);
+                } catch (error) {
+                    log('ERROR calling test notification: ' + error.message);
+                }
+            } else {
+                log('ERROR: sendTestNotification function not found');
+            }
+        }
+
+        // Test on page load
+        window.onload = async function() {
+            log('Page loaded. Starting basic tests...');
+            testFirebaseConfig();
+            
+            // Test server connection first
+            setTimeout(() => {
+                testServerConnection();
+            }, 500);
+            
+            // Initialize Firebase for testing
+            setTimeout(async () => {
+                await initFirebaseForTesting();
+                log('Ready for testing!');
+                log('');
+                log('TESTING WORKFLOW:');
+                log('1. Check Firebase Config');
+                log('2. Test Server Connection');
+                log('3. Create/Login Test User');
+                log('4. Test FCM Token Generation');
+                log('5. Save Token to Server');
+                log('6. Send Test Notification');
+            }, 1000);
+        };
+
+        // פונקציות VAPID שחסרות
+        async function debugVAPIDKey() {
+            log('🔐 VAPID Key Debugging');
+            log('=====================');
+            
+            // בדיקת הגדרות בסיסיות
+            log('Configuration:');
+            log('- VAPID Key defined: ' + (typeof vapidKey !== 'undefined'));
+            log('- VAPID Key value: ' + (typeof vapidKey !== 'undefined' ? vapidKey : 'undefined'));
+            log('- Firebase Config: ' + JSON.stringify(firebaseConfig, null, 2));
+            
+            // בדיקת Service Worker
+            if ('serviceWorker' in navigator) {
+                log('Service Worker Status:');
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                log('- Registrations found: ' + registrations.length);
+                
+                registrations.forEach((registration, index) => {
+                    log(`  SW ${index + 1}:`);
+                    log(`    - Scope: ${registration.scope}`);
+                    log(`    - Active: ${registration.active ? 'Yes' : 'No'}`);
+                    log(`    - Installing: ${registration.installing ? 'Yes' : 'No'}`);
+                    log(`    - Waiting: ${registration.waiting ? 'Yes' : 'No'}`);
+                });
+            }
+            
+            // נסה ליצור טוקן עם פרטים מלאים
+            if (messaging) {
+                log('Token Generation Test:');
+                
+                try {
+                    // נסה בלי VAPID
+                    log('1. Trying without VAPID key...');
+                    const { getToken } = await import('https://www.gstatic.com/firebasejs/9.19.1/firebase-messaging.js');
+                    
+                    try {
+                        const tokenWithoutVAPID = await getToken(messaging);
+                        log('✅ Token without VAPID: ' + (tokenWithoutVAPID ? tokenWithoutVAPID.substring(0, 30) + '...' : 'Failed'));
+                    } catch (error) {
+                        log('❌ Failed without VAPID: ' + error.message);
+                    }
+                    
+                    // נסה עם VAPID
+                    if (typeof vapidKey !== 'undefined') {
+                        log('2. Trying with VAPID key...');
+                        try {
+                            const tokenWithVAPID = await getToken(messaging, { vapidKey: vapidKey });
+                            log('✅ Token with VAPID: ' + (tokenWithVAPID ? tokenWithVAPID.substring(0, 30) + '...' : 'Failed'));
+                        } catch (error) {
+                            log('❌ Failed with VAPID: ' + error.message);
+                            log('💡 This suggests VAPID key mismatch with project');
+                        }
+                    }
+                    
+                } catch (importError) {
+                    log('❌ Error importing Firebase: ' + importError.message);
+                }
+            } else {
+                log('❌ Messaging not initialized');
+            }
+        }
+
+        async function fixVAPIDIssues() {
+            log('🔧 Attempting to fix VAPID issues...');
+            
+            try {
+                // 1. נסה לאפס Service Worker
+                if ('serviceWorker' in navigator) {
+                    log('🔄 Unregistering all service workers...');
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        log('✅ Service worker unregistered: ' + registration.scope);
+                    }
+                    
+                    // חכה רגע ואז רשום מחדש
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    log('🔄 Re-registering service worker...');
+                    const newRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                    log('✅ Service worker re-registered: ' + newRegistration.scope);
+                }
+                
+                // 2. נקה את הטוקן הנוכחי
+                currentFCMToken = null;
+                log('🗑️ Cleared current FCM token');
+                
+                // 3. נסה ליצור טוקן חדש
+                log('🔄 Will retry token generation...');
+                log('✅ VAPID fix completed. Please try initializing notifications again.');
+                
+                return true;
+            } catch (error) {
+                log('❌ Error fixing VAPID issues: ' + error.message);
+                return false;
+            }
+        }
+
+        async function validateVAPIDKeyAndProject() {
+            log('🔍 Validating VAPID key compatibility...');
+            
+            try {
+                // בדוק שהפרויקט והמפתחות תואמים
+                const projectInfo = {
+                    projectId: firebaseConfig.projectId,
+                    messagingSenderId: firebaseConfig.messagingSenderId,
+                    apiKey: firebaseConfig.apiKey,
+                    vapidKey: typeof vapidKey !== 'undefined' ? vapidKey : 'undefined'
+                };
+                
+                log('📋 Project Configuration:');
+                log('- Project ID: ' + projectInfo.projectId);
+                log('- Messaging Sender ID: ' + projectInfo.messagingSenderId);
+                log('- API Key: ' + projectInfo.apiKey.substring(0, 20) + '...');
+                log('- VAPID Key: ' + (projectInfo.vapidKey !== 'undefined' ? projectInfo.vapidKey.substring(0, 20) + '...' : 'Not defined'));
+                
+                // בדוק אם Service Worker מוגדר נכון
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    log('🔧 Service Worker registrations found: ' + registrations.length);
+                    
+                    registrations.forEach((registration, index) => {
+                        log(`📱 SW ${index + 1}: ${registration.scope}`);
+                        log(`📱 SW ${index + 1} active: ${registration.active ? 'Yes' : 'No'}`);
+                    });
+                }
+                
+                log('✅ Validation completed');
+                return true;
+            } catch (error) {
+                log('❌ VAPID validation error: ' + error.message);
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>

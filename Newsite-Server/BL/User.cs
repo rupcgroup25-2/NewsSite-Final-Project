@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Eventing.Reader;
 using System.Text.RegularExpressions;
 using static BCrypt.Net.BCrypt;
+using System.Linq;
 namespace Newsite_Server.BL
 {
     public class User
@@ -144,6 +145,21 @@ namespace Newsite_Server.BL
                 return result;
             }
             return 0;
+        }
+
+        public User GetUserById(int userId)
+        {
+            return dbs.SelectUserById(userId);
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            return dbs.SelectUserByEmail(email);
+        }
+
+        public string GetUserNameById(int userId)
+        {
+            return dbs.SelectUserNameById(userId);
         }
     }
 }

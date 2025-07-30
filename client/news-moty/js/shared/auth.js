@@ -128,13 +128,23 @@ $(document).on('submit', '#loginForm', function (e) {
             console.log("Login successful!", response);
             currentUser = response;
             localStorage.setItem('user', JSON.stringify(currentUser));
-            renderUserActions();
-            showMessage('#loginMessage', 'Login successful!', 'success');
+
+            // בדוק אם יש משתמש קודם ועבור להתראות החדשות
+            if (typeof switchUserNotifications === 'function') {
+                switchUserNotifications(currentUser.id);
+            } else if (typeof subscribeUserToNotifications === 'function') {
+                subscribeUserToNotifications(currentUser.id);
+            }
+
+            hideMessage('#loginError');
+            $('#loginModal').modal('hide');
+
+            showMessage('#loginSuccess', 'Login successful! Welcome back.', 'success');
             setTimeout(() => {
-                $('#loginModal').modal('hide');
-                hideMessage('#loginMessage');
+                hideMessage('#loginSuccess');
+                renderUserActions();
                 location.reload();
-            }, 1000);
+            }, 1500);
 
         },
         function error(xhr, status, error) {
@@ -249,6 +259,12 @@ $(document).on('click', '#logout-btn', function () {
     currentUser = null;
     localStorage.removeItem('user');
     localStorage.removeItem('cachedFollowingUsers');
+    
+    // בטל הרשמה להתראות
+    if (typeof unsubscribeUserFromNotifications === 'function') {
+        unsubscribeUserFromNotifications();
+    }
+    
     renderUserActions();
     location.reload();
     //renderTabs();

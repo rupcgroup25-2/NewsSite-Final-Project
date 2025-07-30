@@ -5,6 +5,8 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+// Import will be done via script tag in HTML
+
 
 // Import Firebase configuration
 // Firebase configuration will be imported from firebaseConfig.js
@@ -16,9 +18,16 @@ function initializeFirebase() {
     if (typeof firebaseConfig !== 'undefined') {
         try {
             app = initializeApp(firebaseConfig);
+            window.app = app; // Make app globally available
             analytics = getAnalytics(app);
             db = getFirestore(app);
             auth = getAuth(app);
+            
+            // Initialize notifications if the function is available
+            if (typeof initializeNotifications === 'function') {
+                initializeNotifications();
+            }
+            
             console.log("Firebase initialized successfully");
             return true;
         } catch (error) {
@@ -518,6 +527,10 @@ $(document).ready(async function () {
             },
             function (xhr) {
                 console.error("Failed to load comments:", xhr.status, xhr.responseText);
+                // אם נכשל, נסה שוב אחרי רגע
+                setTimeout(() => {
+                    loadComments(articleId);
+                }, 1000);
             });
     }
 
@@ -596,8 +609,14 @@ $(document).ready(async function () {
         ajaxCall("POST", serverUrl + "Comments/Addcomment", JSON.stringify(data),
             function (response) {
                 $(e.target).find('#commentInput').val('');
-                alert(response);
+                
+                // רענן את התגובות והמתן לסיום
                 loadComments(window.article.id);
+                
+                // הצג הודעת הצלחה רק אחרי שהתגובות נטענו
+                setTimeout(() => {
+                    alert(response);
+                }, 500);
             },
             function (xhr) {
                 alert(xhr.responseText);

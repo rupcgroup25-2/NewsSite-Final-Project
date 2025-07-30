@@ -518,7 +518,7 @@ function displayArchiveResults(articles) {
         const articleId = `search_${index}_${Date.now()}`;
         const isSaved = savedArticles.includes(articleId);
         const tag = { color: "secondary", name: "Archive" }; // Default tag for search results
-        
+        console.log(article.source);
         // Create article object for the action buttons
         const articleObj = {
             id: articleId,
@@ -530,8 +530,8 @@ function displayArchiveResults(articles) {
             urlToImage: article.urlToImage, // Add urlToImage field  
             publishedAt: article.publishedAt,
             url: article.url,
-            source: article.source?.name || 'Unknown',
-            sourceName: article.source?.name || 'Unknown', // Add sourceName field
+            source: article.source || 'Unknown',
+            sourceName: article.source || 'Unknown', // Add sourceName field
             author: article.author || 'Unknown',
             category: "Archive",
             fullText: article.description || article.content || '' // Add fullText field
@@ -553,7 +553,7 @@ function displayArchiveResults(articles) {
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title mb-2">${article.title}</h5>
                         <p class="card-text text-muted flex-grow-1">${article.description || 'No description available'}</p>
-                        <div class="mb-2 text-end small text-secondary">Source: ${article.source?.name || 'Unknown'}</div>
+                        <div class="mb-2 text-end small text-secondary">Source: ${article.source || 'Unknown'}</div>
                         <div class="d-flex flex-wrap gap-2 mt-auto">
                             
                             <a href="article.html?id=${articleId}" class="btn btn-outline-primary flex-fill" style="text-decoration:none" target="_blank">View</a>

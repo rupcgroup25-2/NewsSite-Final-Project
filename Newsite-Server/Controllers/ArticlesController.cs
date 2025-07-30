@@ -369,23 +369,31 @@ namespace Newsite_Server.Controllers
             var jsonString = await response.Content.ReadAsStringAsync();
             var json = JsonDocument.Parse(jsonString);
             var rawArticles = json.RootElement.GetProperty("articles");
+            var filteredArticles = rawArticles.EnumerateArray()
+    .Where(a =>
+        a.TryGetProperty("title", out _) &&
+        (a.TryGetProperty("description", out _) || a.TryGetProperty("content", out _)) &&
+        a.TryGetProperty("urlToImage", out _));
 
-            var articles = rawArticles.EnumerateArray()
-                .Where(a =>
-                    a.TryGetProperty("title", out _) &&
-                    (a.TryGetProperty("description", out _) || a.TryGetProperty("content", out _)) &&
-                    a.TryGetProperty("urlToImage", out _))
-                .Select((a, index) => new
+            var articles = filteredArticles
+                .Select((a, index) =>
                 {
-                    id = $"search_{query}_{index}",
-                    title = a.GetProperty("title").GetString(),
-                    content = a.TryGetProperty("content", out var content) ? content.GetString() : null,
-                    description = a.TryGetProperty("description", out var desc) ? desc.GetString() : null,
-                    publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
-                    urlToImage = a.GetProperty("urlToImage").GetString(),
-                    url = a.GetProperty("url").GetString(),
-                    source = a.GetProperty("source").GetProperty("name").GetString()
+                    var source = a.GetProperty("source").GetProperty("name").GetString();
+                    Console.WriteLine($"Article Source: {source}");
+
+                    return new
+                    {
+                        id = $"search_{query}_{index}",
+                        title = a.GetProperty("title").GetString(),
+                        content = a.TryGetProperty("content", out var content) ? content.GetString() : null,
+                        description = a.TryGetProperty("description", out var desc) ? desc.GetString() : null,
+                        publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
+                        urlToImage = a.GetProperty("urlToImage").GetString(),
+                        url = a.GetProperty("url").GetString(),
+                        source = source,
+                    };
                 }).ToList();
+
 
             Article temp = new Article();//in order to increase the api calls counter of NewsAPI
             temp.increaseNewsApiCounter();

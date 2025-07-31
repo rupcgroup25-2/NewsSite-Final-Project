@@ -1,11 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using CloudinaryDotNet.Actions;
+using CloudinaryDotNet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 using Newsite_Server.Services;
+using Newtonsoft.Json;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
+using CloudinaryDotNet; // For FileDescription
+using CloudinaryDotNet.Actions;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Newsite_Server.Controllers
@@ -222,6 +228,63 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Failed to upload image");
 
             return Ok(new { ImageUrl = imageUrl });
+        }
+
+        [HttpPost("GenerateProfileImage")]
+        public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.Prompt))
+                return BadRequest("Prompt is required.");
+
+            // קריאת המפתח מקובץ טקסט (כמו אצלך ב-ArticlesController)
+            string huggingFaceApiKey;
+            try
+            {
+                huggingFaceApiKey = System.IO.File.ReadAllText("huggingface-key.txt").Trim();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Failed to read HuggingFace API key: " + ex.Message);
+            }
+
+            // קריאה ל-HuggingFace Stable Diffusion
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", huggingFaceApiKey);
+
+            var payload = new { inputs = req.Prompt };
+            var json = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(
+                "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
+                content
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, error);
+            }
+
+            // קבלת התמונה כ-byte[]
+            var imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+            // העלאה ל-Cloudinary
+            using var ms = new MemoryStream(imageBytes);
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription("generated.png", ms),
+                Folder = "profile_pics",
+                PublicId = $"profile_pics/{req.UserId}"
+            };
+            var uploadResult = await _cloudinaryService.UploadRawStreamAsync(uploadParams);
+
+            if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                return StatusCode(500, "Failed to upload generated image to Cloudinary.");
+
+            // אפשרות: עדכן את כתובת התמונה בפרופיל המשתמש במסד הנתונים כאן
+
+            return Ok(new { imageUrl = uploadResult.SecureUrl.ToString() });
         }
     }
 }

@@ -25,13 +25,17 @@ public class CloudinaryService
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                PublicId = $"profile_pics/{userId}", // שמירה לפי מזהה המשתמש
-                Folder = "profile_pics",
+                PublicId = $"newspapersite/{userId}", // שמירה לפי מזהה המשתמש
+                Folder = "newspapersite",
                 Overwrite = true
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
             return result.SecureUrl.ToString(); // URL לתמונה
         }
+    }
+    public async Task<ImageUploadResult> UploadRawStreamAsync(ImageUploadParams uploadParams)
+    {
+        return await _cloudinary.UploadAsync(uploadParams);
     }
 }

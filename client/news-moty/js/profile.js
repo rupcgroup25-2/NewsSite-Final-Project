@@ -158,15 +158,21 @@ function renderProfile() {
                             <div class="col-auto">
                                 <!-- Simple user icon instead of image -->
                                 <div class="position-relative">
-    <img id="profilePic" src="${profile.imageUrl || '/img/default-profile.png'}" 
-         alt="Profile Image" class="rounded-circle border" 
-         style="width: 120px; height: 120px; object-fit: cover;">
-    <input type="file" id="profileImageInput" accept="image/*" style="display:none;">
-    <button class="btn btn-sm btn-outline-secondary position-absolute bottom-0 end-0" 
-            id="uploadProfileImageBtn" title="Change profile image">
-        <i class="bi bi-camera"></i>
-    </button>
-</div>
+                                <img id="profilePic" src="${`https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg` || '/img/default-profile.png'}" 
+                                     alt="Profile Image" class="rounded-circle border" 
+                                     style="width: 120px; height: 120px; object-fit: cover;">
+                                <input type="file" id="profileImageInput" accept="image/*" style="display:none;">
+                                <button class="btn btn-sm btn-outline-secondary position-absolute bottom-0 end-0" 
+                                        id="uploadProfileImageBtn" title="Change profile image">
+                                    <i class="bi bi-camera"></i>
+                                </button>
+                            </div>
+                                                    <div class="input-group mt-2">
+                            <input type="text" id="profileImagePrompt" class="form-control" placeholder="Describe your profile image...">
+                            <button class="btn btn-outline-success" id="generateProfileImageBtn" type="button">
+                                <i class="bi bi-magic"></i> Generate Image
+                            </button>
+                        </div>
                             </div>
                             <div class="col">
                                 <h2 class="mb-1">${profile.name || 'Unknown User'}</h2>
@@ -1038,3 +1044,50 @@ function bindProfileImageUploadEvents() {
             .finally(() => $('#profilePic').css('opacity', 1));
     });
 }
+//Generate picture
+$(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfileImageBtn', function () {
+    const prompt = $('#profileImagePrompt').val().trim();
+    if (!prompt) {
+        alert('Please enter a prompt.');
+        return;
+    }
+
+    let token;
+    try {
+        token = getAuthToken();
+    } catch {
+        token = null;
+    }
+
+    $('#profilePic').css('opacity', 0.5);
+
+    fetch(serverUrl + 'Users/GenerateProfileImage', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ userId: currentUser.id, prompt: prompt })
+    })
+        .then(res => {
+            if (res.status === 401) {
+                alert('Your session has expired. Please log in again.');
+                localStorage.removeItem('user');
+                localStorage.removeItem('cachedFollowingUsers');
+                window.location.reload();
+                return Promise.reject();
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data && data.imageUrl) {
+                $('#profilePic').attr('src', data.imageUrl);
+                currentUser.imageUrl = data.imageUrl;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+            } else {
+                alert('Image generation failed');
+            }
+        })
+        .catch(() => alert('Image generation failed'))
+        .finally(() => $('#profilePic').css('opacity', 1));
+});

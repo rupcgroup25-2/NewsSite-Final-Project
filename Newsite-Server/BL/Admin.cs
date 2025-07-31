@@ -32,6 +32,11 @@ namespace Newsite_Server.BL
             return dbs.TotalDailyUserLogins();
         }
 
+        public List<(string TagName, int TagCount)> GetTopMostCommonTags(int topCount)
+        {
+            return dbs.GetTopMostCommonTags(topCount);
+        }
+
         public int GetPullRequestsCount(string apiName)
         {
             return dbs.SelectPullRequestsCount(apiName);

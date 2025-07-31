@@ -29,7 +29,6 @@ function AdminLinkIfNeeded() {
 
 document.addEventListener('DOMContentLoaded', AdminLinkIfNeeded);
 
-
 function renderHomeTab() {
     $("#home").html(`
     <div class="mb-4">
@@ -473,7 +472,7 @@ async function searchArchive() {
     
     try {
         const results = await searchGuardianAPI(query, fromDate, toDate);
-        displayArchiveResults(results);
+        displayArchiveResults(results, query);
         // Hide regular articles when showing search results
         $('#articles-list').hide();
         $('#hero-article').hide();
@@ -499,7 +498,7 @@ async function searchGuardianAPI(query, fromDate = null, toDate = null) {
     }
 }
 
-function displayArchiveResults(articles) {
+function displayArchiveResults(articles, query) {
     if (!articles || articles.length === 0) {
         $('#archiveResults').html('<div class="alert alert-info">No articles found.</div>');
         return;
@@ -517,8 +516,8 @@ function displayArchiveResults(articles) {
     articles.forEach((article, index) => {
         const articleId = `search_${index}_${Date.now()}`;
         const isSaved = savedArticles.includes(articleId);
-        const tag = { color: "secondary", name: "Archive" }; // Default tag for search results
-        
+        const tag = { color: "white", name: query }; // Default tag for search results
+        console.log(article.source);
         // Create article object for the action buttons
         const articleObj = {
             id: articleId,
@@ -530,10 +529,10 @@ function displayArchiveResults(articles) {
             urlToImage: article.urlToImage, // Add urlToImage field  
             publishedAt: article.publishedAt,
             url: article.url,
-            source: article.source?.name || 'Unknown',
-            sourceName: article.source?.name || 'Unknown', // Add sourceName field
+            source: article.source || 'Unknown',
+            sourceName: article.source || 'Unknown', // Add sourceName field
             author: article.author || 'Unknown',
-            category: "Archive",
+            category: query,
             fullText: article.description || article.content || '' // Add fullText field
         };
         
@@ -546,14 +545,14 @@ function displayArchiveResults(articles) {
                     <div class="position-relative">
                         <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
                         <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
-                            <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
+                            <span class="badge bg-${tag.color} fs-6 shadow text-black">${tag.name}</span>
                             <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
                         </div>
                     </div>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title mb-2">${article.title}</h5>
                         <p class="card-text text-muted flex-grow-1">${article.description || 'No description available'}</p>
-                        <div class="mb-2 text-end small text-secondary">Source: ${article.source?.name || 'Unknown'}</div>
+                        <div class="mb-2 text-end small text-secondary">Source: ${article.source || 'Unknown'}</div>
                         <div class="d-flex flex-wrap gap-2 mt-auto">
                             
                             <a href="article.html?id=${articleId}" class="btn btn-outline-primary flex-fill" style="text-decoration:none" target="_blank">View</a>

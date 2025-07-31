@@ -87,6 +87,24 @@ namespace Newsite_Server.Controllers
                 return NotFound("No Logins yet");
         }
 
+        [HttpGet("GetTopMostCommonTags")]
+        public IActionResult GetTopMostCommonTags(int topCount)
+        {
+            Admin admin = new Admin();
+            var rawResult = admin.GetTopMostCommonTags(topCount); // List<(string TagName, int TagCount)>
+
+            if (rawResult.Any())
+            {
+                var result = rawResult.Select(t => new { TagName = t.TagName, TagCount = t.TagCount });
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound("No tags found");
+            }
+        }
+
+
         [HttpPut("{id}/block")]
         public IActionResult ToggleBlockSharing(int id)
         {
@@ -118,5 +136,27 @@ namespace Newsite_Server.Controllers
             User user = new User();
             return user.GetAllUsers();
         }
+
+        [HttpDelete("DeleteAllComments/{articleId}")]
+        public IActionResult DeleteAllComments(int articleId)
+        {
+            try
+            {
+                Comment c = new Comment();
+                int result = c.DeleteAllCommentsForArticle(articleId);
+
+                if (result > 0)
+                    return Ok("All comments deleted successfully.");
+                else
+                    return NotFound("No comments found for this article.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
     }
 }

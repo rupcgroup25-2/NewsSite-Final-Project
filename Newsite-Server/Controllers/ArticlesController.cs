@@ -398,7 +398,6 @@ namespace Newsite_Server.Controllers
             var jsonString = await response.Content.ReadAsStringAsync();
             var json = JsonDocument.Parse(jsonString);
             var rawArticles = json.RootElement.GetProperty("articles");
-
             var articles = rawArticles.EnumerateArray()
                 .Where(a =>
                     a.TryGetProperty("title", out _) &&
@@ -413,7 +412,7 @@ namespace Newsite_Server.Controllers
                     publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
                     urlToImage = a.GetProperty("urlToImage").GetString(),
                     url = a.GetProperty("url").GetString(),
-                    source = a.GetProperty("source").GetProperty("name").GetString()
+                    source = a.GetProperty("source").GetProperty("name").GetString(),
                 }).ToList();
 
             Article temp = new Article();//in order to increase the api calls counter of NewsAPI

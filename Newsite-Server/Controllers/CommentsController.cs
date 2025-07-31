@@ -155,35 +155,7 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        [HttpPost("debug/test-comment-notification")]
-        [AllowAnonymous]
-        public async Task<IActionResult> TestCommentNotification([FromBody] dynamic testData)
-        {
-            try
-            {
-                int articleId = testData.articleId;
-                string articleTitle = testData.articleTitle ?? "Test Article";
-                int commenterId = testData.commenterId;
-                string commenterName = testData.commenterName ?? "Test User";
-                
-                Console.WriteLine($"🧪 Testing comment notification for article {articleId}");
-                
-                await notifications.NotifyNewComment(articleId, articleTitle, commenterId, commenterName);
-                
-                return Ok(new { 
-                    Success = true, 
-                    Message = "Test notification sent",
-                    ArticleId = articleId,
-                    CommenterId = commenterId
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Test notification failed: {ex.Message}");
-                return BadRequest($"Test failed: {ex.Message}");
-            }
-        }
-        
+              
         [HttpGet("article/{articleId}")]
         [AllowAnonymous]
         public IActionResult GetCommentsByArticle(int articleId)

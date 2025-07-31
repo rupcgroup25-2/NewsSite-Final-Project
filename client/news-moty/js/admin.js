@@ -126,7 +126,22 @@ function renderAdminDashboard({
                     </div>
                 </div>
             </div>
-                  
+
+            <!-- Top Tags Section -->
+            <div id="topTagsSection" class="mb-4">
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px 20px 0 0;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-tags-fill me-2" style="font-size: 1.5rem;"></i>
+                            <h5 class="mb-0 fw-bold" id="topTagsHeader"></h5>
+                        </div>
+                    </div>
+                    <div class="card-body" id="topTagsList">
+                        <div class="text-muted">Loading top tags...</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Users Management Table -->
             <div class="card border-0 shadow-lg mb-5" style="border-radius: 20px; overflow: hidden;">
                 <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
@@ -733,6 +748,8 @@ async function loadAdminDashboardData() {
             ...summaryData
         });
 
+        loadTopTags(5);
+
     } catch (err) {
         $('#admin').html(`
             <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 50vh;">
@@ -815,3 +832,34 @@ $(document).ready(function () {
         $('#userSearchResults').text(`${visibleCount} users found`);
     });
 });
+
+function loadTopTags(topCount) {
+    ajaxCall(
+        "GET",
+        serverUrl + `Admin/GetTopMostCommonTags?topCount=${topCount}`,
+        null,
+        function (tags) {
+            let html = '';
+            if (!tags || tags.length === 0) {
+                html = `<p class="text-muted">No tags found.</p>`;
+            } else {
+                html += '<ul class="list-group list-group-flush">';
+
+                tags.forEach((tag, index) => {
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-tag me-2 text-primary"></i>${tag.tagName}</span>
+                            <span class="badge bg-primary rounded-pill">${tag.tagCount}</span>
+                        </li>`;
+                });
+
+                html += '</ul>';
+            }
+            $('#topTagsHeader').text(`Top ${$(tags).length} Tags`);
+            $('#topTagsList').html(html);
+        },
+        function (xhr, status, error) {
+            $('#topTagsList').html(`<p class="text-danger">Failed to load tags.</p>`);
+        }
+    );
+}

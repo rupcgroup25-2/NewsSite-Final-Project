@@ -16,12 +16,14 @@ namespace Newsite_Server.Controllers
     {
         private TokenService _tokenService;
         private readonly Notifications notifications;
+        private readonly CloudinaryService _cloudinaryService;
 
-
-        public UsersController()
+  
+        public UsersController(IConfiguration config)
         {
             _tokenService = new TokenService();
             notifications = new Notifications();
+            _cloudinaryService = new CloudinaryService(config);
         }
 
         [HttpPost("Login")]
@@ -206,6 +208,20 @@ namespace Newsite_Server.Controllers
             {
                 return StatusCode(500, $"Error: {ex.Message}");
             }
+        }
+
+        [HttpPost("UploadProfileImage")]
+        public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageRequest request)
+        {
+            if (request.ImageFile == null || request.ImageFile.Length == 0)
+                return BadRequest("No image file provided");
+
+            var imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, request.UserId.ToString());
+
+            if (string.IsNullOrEmpty(imageUrl))
+                return BadRequest("Failed to upload image");
+
+            return Ok(new { ImageUrl = imageUrl });
         }
     }
 }

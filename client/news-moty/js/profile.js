@@ -157,10 +157,16 @@ function renderProfile() {
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <!-- Simple user icon instead of image -->
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                     style="width: 120px; height: 120px; font-size: 3rem;">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
+                                <div class="position-relative">
+    <img id="profilePic" src="${profile.imageUrl || '/img/default-profile.png'}" 
+         alt="Profile Image" class="rounded-circle border" 
+         style="width: 120px; height: 120px; object-fit: cover;">
+    <input type="file" id="profileImageInput" accept="image/*" style="display:none;">
+    <button class="btn btn-sm btn-outline-secondary position-absolute bottom-0 end-0" 
+            id="uploadProfileImageBtn" title="Change profile image">
+        <i class="bi bi-camera"></i>
+    </button>
+</div>
                             </div>
                             <div class="col">
                                 <h2 class="mb-1">${profile.name || 'Unknown User'}</h2>
@@ -271,6 +277,10 @@ function renderProfile() {
     
     // הוסף הגדרות התראות לפרופיל
     addNotificationSettingsToProfile();
+
+
+    bindProfileImageUploadEvents();
+
 }
 
 function loadRecentActivities(userId, count = 10) {
@@ -969,3 +979,62 @@ $(document).on('click', '#testNotificationBtn', function () {
         $btn.prop('disabled', false).html(originalText);
     }, 3000);
 });
+
+//adding profile picture
+function getAuthToken() {
+    return JSON.parse(localStorage.getItem("user")).token;
+}
+
+function bindProfileImageUploadEvents() {
+    // Open file dialog when button is clicked
+    $(document).off('click', '#uploadProfileImageBtn').on('click', '#uploadProfileImageBtn', function () {
+        $('#profileImageInput').click();
+    });
+
+    // Handle file selection
+    $(document).off('change', '#profileImageInput').on('change', '#profileImageInput', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('UserId', currentUser.id);
+        formData.append('ImageFile', file);
+
+        // Optional: show loading spinner on image
+        $('#profilePic').css('opacity', 0.5);
+
+        let token;
+        try {
+            token = getAuthToken();
+        } catch {
+            token = null;
+        }
+
+        fetch(serverUrl + 'Users/UploadProfileImage', {
+            method: 'POST',
+            body: formData,
+            headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        })
+            .then(res => {
+                if (res.status === 401) {
+                    alert('Your session has expired. Please log in again.');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('cachedFollowingUsers');
+                    window.location.reload();
+                    return Promise.reject();
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.imageUrl) {
+                    $('#profilePic').attr('src', data.imageUrl);
+                    currentUser.imageUrl = data.imageUrl;
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                } else if (data) {
+                    alert('Image upload failed');
+                }
+            })
+            .catch(() => alert('Image upload failed'))
+            .finally(() => $('#profilePic').css('opacity', 1));
+    });
+}

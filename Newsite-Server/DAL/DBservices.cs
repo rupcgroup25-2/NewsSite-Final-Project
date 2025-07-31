@@ -2757,6 +2757,7 @@ namespace Newsite_Server.DAL
             }
 
             string userIdsString = string.Join(",", userIds);
+            Console.WriteLine($"🔍 Getting FCM tokens for users: {userIdsString}");
 
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@UserIds", userIdsString);
@@ -2768,13 +2769,26 @@ namespace Newsite_Server.DAL
                 SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (reader.Read())
                 {
-                    tokens.Add(reader["FCMToken"].ToString());
+                    string token = reader["FCMToken"].ToString();
+                    tokens.Add(token);
+                    Console.WriteLine($"📱 Found token: {token.Substring(0, Math.Min(20, token.Length))}...");
                 }
+                
+                Console.WriteLine($"📊 Total tokens retrieved: {tokens.Count}");
+                
+                // בדיקת כפילויות נוספת ברמת הקוד
+                var uniqueTokens = tokens.Distinct().ToList();
+                if (uniqueTokens.Count != tokens.Count)
+                {
+                    Console.WriteLine($"⚠️ Found duplicates! Original: {tokens.Count}, Unique: {uniqueTokens.Count}");
+                    tokens = uniqueTokens;
+                }
+                
                 return tokens;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                Console.WriteLine($"❌ Exception in GetFCMTokensForUsers: {ex.Message}");
                 return tokens;
             }
             finally

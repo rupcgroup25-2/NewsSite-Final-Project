@@ -3,32 +3,120 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using Newtonsoft.Json;
 using Newsite_Server.DAL;
+using Google.Apis.Auth.OAuth2;
+using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
 
 namespace Newsite_Server.Services
 {
     public class NotificationService
     {
-        private readonly HttpClient httpClient;
         private readonly DBservices dbServices;
-        private readonly string serverKey;
+        private static bool isFirebaseInitialized = false;
 
         public NotificationService()
         {
-            httpClient = new HttpClient();
             dbServices = new DBservices();
             
-            // קרא את ה-server key מהקובץ (צור קובץ firebase-server-key.txt בroot של הפרויקט)
+            // אתחול Firebase Admin SDK אם עדיין לא אותחל
+            if (!isFirebaseInitialized)
+            {
+                try
+                {
+                    Console.WriteLine("🔥 Initializing Firebase Admin SDK...");
+                    
+                    // בדוק אם יש כבר FirebaseApp
+                    if (FirebaseApp.DefaultInstance == null)
+                    {
+                        var serviceAccountPath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-service-account.json");
+                        
+                        if (!File.Exists(serviceAccountPath))
+                        {
+                            throw new FileNotFoundException($"Firebase service account file not found at: {serviceAccountPath}");
+                        }
+                        
+                        Console.WriteLine($"📁 Loading service account from: {serviceAccountPath}");
+                        var credential = GoogleCredential.FromFile(serviceAccountPath);
+                        
+                        // הוספת ProjectId מפורש - זה קריטי!
+                        var options = new AppOptions()
+                        {
+                            Credential = credential,
+                            ProjectId = "newspapersite-ruppin"  // Project ID מפורש
+                        };
+                        
+                        FirebaseApp.Create(options);
+                        Console.WriteLine($"✅ Firebase Admin SDK initialized successfully for project: {options.ProjectId}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("✅ Firebase Admin SDK already initialized");
+                        Console.WriteLine($"📍 Project ID: {FirebaseApp.DefaultInstance.Options.ProjectId}");
+                    }
+                    isFirebaseInitialized = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Error initializing Firebase Admin SDK: {ex.Message}");
+                    Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
+                }
+            }
+        }
+
+        // בדיקת חיבור ל-Firebase
+        private async Task TestFirebaseConnection()
+        {
             try
             {
-                serverKey = System.IO.File.ReadAllText("firebase-server-key.txt").Trim();
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"key={serverKey}");
-                httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+                Console.WriteLine("🔍 Testing Firebase connection...");
+                
+                // יצירת הודעה בסיסית לבדיקה
+                var testMessage = new Message()
+                {
+                    Token = "test-token-that-will-fail", // טוקן מזויף לבדיקה
+                    Notification = new Notification()
+                    {
+                        Title = "Test Connection",
+                        Body = "Testing Firebase connectivity"
+                    }
+                };
+
+                try
+                {
+                    // נסיון שליחה (צפוי להיכשל אבל יבדוק את החיבור)
+                    await FirebaseMessaging.DefaultInstance.SendAsync(testMessage);
+                }
+                catch (FirebaseMessagingException ex)
+                {
+                    // אם זה שגיאת טוקן לא תקין, אז החיבור תקין
+                    if (ex.Message.Contains("registration-token-not-registered") || 
+                        ex.Message.Contains("invalid-registration-token"))
+                    {
+                        Console.WriteLine("✅ Firebase connection test successful (invalid token as expected)");
+                        return;
+                    }
+                    else if (ex.Message.Contains("404") || ex.Message.Contains("Not Found"))
+                    {
+                        Console.WriteLine("❌ Firebase 404 error - possible project issues:");
+                        Console.WriteLine("   1. Check if Firebase project 'newspapersite-ruppin' exists");
+                        Console.WriteLine("   2. Verify FCM API is enabled in Firebase Console");
+                        Console.WriteLine("   3. Check service account permissions");
+                        throw new Exception($"Firebase project not found or FCM API disabled: {ex.Message}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"❌ Firebase connection test failed: {ex.Message}");
+                        throw;
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading Firebase server key: {ex.Message}");
+                Console.WriteLine($"❌ Firebase connection test error: {ex.Message}");
+                throw;
             }
         }
 
@@ -58,41 +146,133 @@ namespace Newsite_Server.Services
                 return false;
             }
 
-            var payload = new
-            {
-                registration_ids = tokens,
-                notification = new
-                {
-                    title = title,
-                    body = body,
-                    icon = "/public/newsSite.png",
-                    click_action = "FCM_PLUGIN_ACTIVITY"
-                },
-                data = data ?? new Dictionary<string, string>()
-            };
-
             try
             {
-                var json = JsonConvert.SerializeObject(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await httpClient.PostAsync("https://fcm.googleapis.com/fcm/send", content);
+                Console.WriteLine($"🚀 Sending notification to {tokens.Count} tokens");
+                Console.WriteLine($"📋 Title: {title}");
+                Console.WriteLine($"📋 Body: {body}");
                 
-                if (response.IsSuccessStatusCode)
+                // בדיקה שFirebase מאותחל כמו שצריך
+                if (FirebaseApp.DefaultInstance == null)
                 {
-                    Console.WriteLine("Notification sent successfully");
+                    Console.WriteLine("❌ Firebase not initialized!");
+                    return false;
+                }
+                
+                Console.WriteLine($"✅ Firebase Project ID: {FirebaseApp.DefaultInstance.Options.ProjectId}");
+                
+                // בדיקת חיבור Firebase לפני שליחה
+                await TestFirebaseConnection();
+                
+                var message = new MulticastMessage()
+                {
+                    Tokens = tokens,
+                    Notification = new Notification()
+                    {
+                        Title = title,
+                        Body = body
+                        // הסרנו את ImageUrl כדי למנוע שגיאות עם נתיבים יחסיים
+                    },
+                    Data = data ?? new Dictionary<string, string>(),
+                    Android = new AndroidConfig()
+                    {
+                        Notification = new AndroidNotification()
+                        {
+                            ClickAction = "FCM_PLUGIN_ACTIVITY",
+                            Icon = "newsSite" // שם האייקון בלבד, לא נתיב מלא
+                        }
+                    },
+                    Webpush = new WebpushConfig()
+                    {
+                        Notification = new WebpushNotification()
+                        {
+                            Icon = "/news-moty/public/newsSite.png",
+                            Badge = "/news-moty/public/newsSite.png"
+                        }
+                    }
+                };
+
+                Console.WriteLine($"📦 Message prepared. Sending to Firebase...");
+                Console.WriteLine($"🎯 Sample tokens: {string.Join(", ", tokens.Take(2))}...");
+                
+                var response = await FirebaseMessaging.DefaultInstance.SendMulticastAsync(message);
+                
+                Console.WriteLine($"📨 Firebase Response - Success: {response.SuccessCount}, Failures: {response.FailureCount}");
+                
+                if (response.SuccessCount > 0)
+                {
+                    Console.WriteLine($"✅ Notification sent successfully to {response.SuccessCount} devices");
+                    
+                    // הדפסת שגיאות אם יש
+                    if (response.FailureCount > 0)
+                    {
+                        Console.WriteLine($"⚠️ Some failures occurred:");
+                        for (int i = 0; i < response.Responses.Count; i++)
+                        {
+                            if (!response.Responses[i].IsSuccess)
+                            {
+                                Console.WriteLine($"  ❌ Token {i}: {response.Responses[i].Exception?.Message}");
+                            }
+                        }
+                    }
                     return true;
                 }
                 else
                 {
-                    var error = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error sending notification: {error}");
+                    Console.WriteLine($"❌ Failed to send notification. All {response.FailureCount} attempts failed");
+                    
+                    // הדפסת כל השגיאות
+                    for (int i = 0; i < response.Responses.Count; i++)
+                    {
+                        if (!response.Responses[i].IsSuccess)
+                        {
+                            Console.WriteLine($"  ❌ Token {i}: {response.Responses[i].Exception?.Message}");
+                        }
+                    }
                     return false;
                 }
             }
+            catch (FirebaseMessagingException fex)
+            {
+                Console.WriteLine($"🔥 Firebase Messaging Exception: {fex.Message}");
+                Console.WriteLine($"📋 Error Code: {fex.ErrorCode}");
+                Console.WriteLine($"📋 Stack Trace: {fex.StackTrace}");
+                
+                // בדיקה ספציפית לשגיאת 404
+                if (fex.Message.Contains("404") || fex.Message.Contains("Not Found"))
+                {
+                    Console.WriteLine("❌ Firebase 404 Error Detected!");
+                    Console.WriteLine("🔧 Possible solutions:");
+                    Console.WriteLine("   1. Verify Firebase project 'newspapersite-ruppin' exists and is active");
+                    Console.WriteLine("   2. Check that Cloud Messaging API (FCM) is enabled in Google Cloud Console");
+                    Console.WriteLine("   3. Verify service account has proper permissions (Firebase Admin SDK Admin Service Agent)");
+                    Console.WriteLine("   4. Check if billing is enabled for the Firebase project");
+                    Console.WriteLine("   5. Ensure the project ID in service account matches the actual project");
+                }
+                
+                if (fex.InnerException != null)
+                {
+                    Console.WriteLine($"🔍 Inner Exception: {fex.InnerException.Message}");
+                    if (fex.InnerException.InnerException != null)
+                    {
+                        Console.WriteLine($"🔍 Inner Inner Exception: {fex.InnerException.InnerException.Message}");
+                    }
+                }
+                
+                return false;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception sending notification: {ex.Message}");
+                Console.WriteLine($"❌ General Exception in SendNotificationToTokens: {ex.Message}");
+                Console.WriteLine($"📋 Type: {ex.GetType().Name}");
+                Console.WriteLine($"📋 Stack Trace: {ex.StackTrace}");
+                
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"🔍 Inner Exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"🔍 Inner Type: {ex.InnerException.GetType().Name}");
+                }
+                
                 return false;
             }
         }

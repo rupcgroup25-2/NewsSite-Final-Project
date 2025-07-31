@@ -10,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var key = "MotyNivYuvalSuperSecretKey123";
 
+// Add HttpClient for Firebase
+builder.Services.AddHttpClient();
+
 // Add services to the container with global [Authorize] filter
 builder.Services.AddControllers(config =>
 {

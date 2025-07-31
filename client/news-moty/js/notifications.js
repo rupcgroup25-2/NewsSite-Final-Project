@@ -261,7 +261,10 @@ async function getFCMToken(messagingModule) {
         
         let token;
         
-        // נסה קודם עם VAPID key אם זמין
+        // נסה קודם עם 
+        
+        
+        
         if (typeof vapidKey !== 'undefined') {
             try {
                 console.log('🔐 Trying to get token with VAPID key...');

@@ -1,10 +1,11 @@
 ﻿
+using Newsite_Server.BL;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
-using Newsite_Server.BL;
 using static BCrypt.Net.BCrypt;
 
 namespace Newsite_Server.DAL
@@ -36,6 +37,54 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
 
         //===============User===============================================================================
+
+        public List<Dictionary<string, object>> GetRecentActivities(int userId, int numOfActivities)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@numOfActivities", numOfActivities); 
+
+            cmd = CreateCommandWithStoredProcedureGeneral("SP_GetRecentUserActivitiesFinal", con, paramDic);
+
+            List<Dictionary<string, object>> activities = new List<Dictionary<string, object>>();
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Dictionary<string, object> activity = new Dictionary<string, object>();
+                    activity["ActivityType"] = reader["ActivityType"].ToString();
+                    activity["ActivityDate"] = Convert.ToDateTime(reader["ActivityDate"]);
+                    activities.Add(activity);
+                }
+                return activities;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return null;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
 
         public List<User> SelectUsers()
         {

@@ -11,8 +11,19 @@ $(document).ready(function() {
         renderLoginRequired();
         return;
     }
-    
+
     loadUserProfile();
+
+    const defaultCount = parseInt($("#activityCountSelect").val()) || 10;
+
+    loadRecentActivities(currentUser.id, defaultCount);
+
+    $("#activityCountSelect").on("change", function () {
+        const selectedCount = parseInt($(this).val()) || 10;
+        console.log("activityCountSelect changed to:", selectedCount);
+        loadRecentActivities(currentUser.id, selectedCount);
+    });
+
     loadEmails();
 });
 
@@ -179,6 +190,27 @@ function renderProfile() {
             
             <!-- Following Users -->
             <div class="col-12">
+
+            <!-- Recent Activities -->
+            <div class="col-12">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Recent Activities
+                        </h5>
+                        <select id="activityCountSelect" class="form-select form-select-sm w-auto">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="card-body" id="recent-activities-container">
+                        <!-- תוכן הפעולות נטען דינמית -->
+                    </div>
+                </div>
+            </div>
+
                 <!-- Interests Section -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header">
@@ -221,10 +253,58 @@ function renderProfile() {
             </div>
         </div>
     `);
-    
+
+    // אחרי שהכנסנו את ה־HTML, עכשיו אפשר להאזין ל-select:
+    const $select = $("#activityCountSelect");
+
+    // טען פעולות כברירת מחדל:
+    const defaultCount = parseInt($select.val()) || 10;
+    loadRecentActivities(currentUser.id, defaultCount);
+
+    // האזן לשינויי הסלקט:
+    $select.on("change", function () {
+        const selectedCount = parseInt($(this).val()) || 10;
+        loadRecentActivities(currentUser.id, selectedCount);
+    });
+
     // Bind events
     bindProfileEvents();
 }
+
+function loadRecentActivities(userId, count = 10) {
+    ajaxCall(
+        "GET",
+        `${serverUrl}Users/AllActivities?userId=${userId}&count=${count}`,
+        null,
+        function success(data) {
+            const activities = Array.isArray(data) ? data : [];
+            $("#recent-activities-container").html(renderRecentActivities(activities));
+        },
+        function error(xhr) {
+            console.error("Failed to fetch activities:", xhr.responseText || xhr.statusText);
+            $("#recent-activities-container").html('<p class="text-muted">Could not load recent activities.</p>');
+        }
+    );
+}
+
+function renderRecentActivities(activities) {
+    if (!activities || activities.length === 0) {
+        return '<p class="text-muted">No recent activities.</p>';
+    }
+
+    return `
+        <ul class="list-group list-group-flush">
+            ${activities.map(activity => `
+                <li class="list-group-item">
+                    <i class="bi bi-dot me-2 text-primary"></i>
+                    ${activity.ActivityType}
+                    <br><small class="text-muted">${new Date(activity.ActivityDate).toLocaleString()}</small>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+}
+
 
 function renderFollowingUsers() {
     if (followingUsers.length === 0) {

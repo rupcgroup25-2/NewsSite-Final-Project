@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 using Newsite_Server.Services;
-using System.Data.SqlClient;
 using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Security.Claims;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -156,5 +157,18 @@ namespace Newsite_Server.Controllers
             return Ok(new { message = "Profile updated successfully." });
         }
 
+
+        [HttpGet]
+        [Route("AllActivities")]
+        public IActionResult GetAllUserActivities(int userId, int count)
+        {
+            User u = new User();
+            List<Dictionary<string, object>> activities = u.GetActivitiesForUser(userId, count);
+
+            if (activities != null && activities.Any())
+                return Ok(activities);
+            else
+                return BadRequest("No activities found or server error.");
+        }
     }
 }

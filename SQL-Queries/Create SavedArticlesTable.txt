@@ -1,6 +1,8 @@
 CREATE TABLE SavedArticlesTable (
     UserId INT,
     ArticleId INT,
+	SavedAt DATETIME DEFAULT GETDATE(),
+
     PRIMARY KEY (UserId, ArticleId),
     FOREIGN KEY (UserId) REFERENCES UsersTableFinal(Id),
     FOREIGN KEY (ArticleId) REFERENCES ArticlesTableFinal(Id)

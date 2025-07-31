@@ -145,5 +145,11 @@ namespace Newsite_Server.BL
             }
             return 0;
         }
+
+        public List<Dictionary<string, object>> GetActivitiesForUser(int userId, int numOfActivities)
+        {
+            List<Dictionary<string, object>> recentActivities = dbs.GetRecentActivities(userId, numOfActivities);
+            return recentActivities;
+        }
     }
 }

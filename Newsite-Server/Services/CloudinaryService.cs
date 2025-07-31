@@ -25,8 +25,8 @@ public class CloudinaryService
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                PublicId = $"newspapersite/{userId}", // שמירה לפי מזהה המשתמש
-                Folder = "newspapersite",
+                PublicId = $"profile_pics/{userId}", // שמירה לפי מזהה המשתמש
+                Folder = "profile_pics",
                 Overwrite = true
             };
 

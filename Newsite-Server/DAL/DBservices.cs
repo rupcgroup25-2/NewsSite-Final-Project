@@ -33,8 +33,25 @@ namespace Newsite_Server.DAL
         }
 
         //--------------------------------------------------------------------------------------------------
-        // This method selects all Users from the UsersTable 
+        // Test database connection
         //--------------------------------------------------------------------------------------------------
+        public bool TestConnection()
+        {
+            try
+            {
+                using (SqlConnection con = connect("myProjDB"))
+                {
+                    Console.WriteLine("✅ Database connection successful");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Database connection failed: {ex.Message}");
+                return false;
+            }
+        }
+
 
         //===============User===============================================================================
 
@@ -77,15 +94,157 @@ namespace Newsite_Server.DAL
                 Console.WriteLine("Execution Exception: " + ex.Message);
                 return null;
             }
+
+        // פונקציה לקבלת משתמש ספציפי לפי Email
+        public User SelectUserByEmail(string email)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@email", email);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetUserByEmailFinal", con, paramDic);         // create the command
+            User user = null;
+
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (dataReader.Read())
+                {
+                    user = new User();
+                    user.Id = Convert.ToInt32(dataReader["Id"]);
+                    user.Name = dataReader["Name"].ToString();
+                    user.Email = dataReader["Email"].ToString();
+                    user.Password = dataReader["Password"].ToString();
+                    user.Active = Convert.ToBoolean(dataReader["Active"]);
+                    user.BlockSharing = Convert.ToBoolean(dataReader["BlockSharing"]);
+                }
+                return user;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
             finally
             {
                 if (con != null)
                 {
+                    // close the db connection
                     con.Close();
                 }
             }
         }
 
+        // פונקציה לקבלת משתמש ספציפי לפי ID
+        public User SelectUserById(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+             paramDic.Add("@userId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetUserByIdFinal", con, paramDic);         // create the command
+            User user = null;
+
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (dataReader.Read())
+                {
+                    user = new User();
+                    user.Id = Convert.ToInt32(dataReader["Id"]);
+                    user.Name = dataReader["Name"].ToString();
+                    user.Email = dataReader["Email"].ToString();
+                    user.Password = dataReader["Password"].ToString();
+                    user.Active = Convert.ToBoolean(dataReader["Active"]);
+                    user.BlockSharing = Convert.ToBoolean(dataReader["BlockSharing"]);
+                }
+                return user;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+            finally
+            {
+                if (con != null)
+                {
+
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+
+        // פונקציה לקבלת שם משתמש לפי ID (מהיר יותר)
+        public string SelectUserNameById(int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            try
+            {
+                con = connect("myProjDB"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@userId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetUserNameByIdFinal", con, paramDic);         // create the command
+            string userName = null;
+
+            SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            try
+            {
+                if (dataReader.Read())
+                {
+                    userName = dataReader["Name"].ToString();
+                }
+                return userName;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method selects all Users from the UsersTable 
+        //--------------------------------------------------------------------------------------------------
         public List<User> SelectUsers()
         {
             SqlConnection con;
@@ -426,6 +585,55 @@ namespace Newsite_Server.DAL
                 con.Close();
             }
         }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method gets the top N most common tag names and their usage count
+        //--------------------------------------------------------------------------------------------------
+        public List<(string TagName, int TagCount)> GetTopMostCommonTags(int topCount)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            List<(string TagName, int TagCount)> topTags = new List<(string, int)>();
+
+            try
+            {
+                con = connect("myProjDB"); // Replace with your actual DB name
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return topTags;
+            }
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("@TopCount", topCount);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetTopMostCommonTagsFinal", con, parameters);
+
+            try
+            {
+                SqlDataReader dataReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                while (dataReader.Read())
+                {
+                    string tagName = dataReader["Name"].ToString();
+                    int tagCount = Convert.ToInt32(dataReader["TagCount"]);
+                    topTags.Add((tagName, tagCount));
+                }
+
+                return topTags;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return topTags;
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
+
 
         //--------------------------------------------------------------------------------------------------
         // Insert Followed user to follower 
@@ -1442,7 +1650,6 @@ namespace Newsite_Server.DAL
             }
         }
 
-
         //--------------------------------------------------------------------------------------------------
         // This method select all shared articles for a user with his comments
         //--------------------------------------------------------------------------------------------------
@@ -2368,6 +2575,431 @@ namespace Newsite_Server.DAL
                 if (con != null) con.Close();
             }
         }
+
+        //===============Notifications-FCM===============================================================================
+
+        //--------------------------------------------------------------------------------------------------
+        // Save FCM Token for user
+        //--------------------------------------------------------------------------------------------------
+        public int SaveFCMToken(int userId, string fcmToken)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            try
+            {
+                // בדוק אם הטוקן כבר קיים
+                string checkQuery = "SELECT COUNT(*) FROM FCMTokensFinal WHERE UserId = @UserId AND FCMToken = @FCMToken";
+                cmd = new SqlCommand(checkQuery, con);
+                cmd.Parameters.AddWithValue("@UserId", userId);
+                cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
+                
+                int count = (int)cmd.ExecuteScalar();
+                
+                if (count > 0)
+                {
+                    // הטוקן כבר קיים, עדכן רק את הזמנים והסטטוס
+                    string updateQuery = @"UPDATE FCMTokensFinal 
+                                         SET IsActive = 1, NotificationsEnabled = 1, UpdatedAt = GETDATE() 
+                                         WHERE UserId = @UserId AND FCMToken = @FCMToken";
+                    cmd = new SqlCommand(updateQuery, con);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
+                    
+                    int updateResult = cmd.ExecuteNonQuery();
+                    Console.WriteLine($"✅ FCM Token updated for existing record, affected rows: {updateResult}");
+                    return updateResult > 0 ? 1 : 0;
+                }
+                else
+                {
+                    // הטוקן לא קיים, הכנס חדש
+                    string insertQuery = @"INSERT INTO FCMTokensFinal (UserId, FCMToken, IsActive, NotificationsEnabled, CreatedAt, UpdatedAt)
+                                         VALUES (@UserId, @FCMToken, 1, 1, GETDATE(), GETDATE())";
+                    cmd = new SqlCommand(insertQuery, con);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
+                    
+                    int insertResult = cmd.ExecuteNonQuery();
+                    Console.WriteLine($"✅ New FCM Token inserted, affected rows: {insertResult}");
+                    return insertResult > 0 ? 1 : 0;
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                // טיפול ספציפי בשגיאות SQL
+                if (sqlEx.Number == 2627 || sqlEx.Number == 2601) // UNIQUE constraint violation
+                {
+                    Console.WriteLine($"⚠️ FCM Token already exists for user {userId}, this is expected");
+                    return 1; // מחזיר הצלחה כי הטוקן כבר קיים
+                }
+                else
+                {
+                    Console.WriteLine($"SQL Exception: {sqlEx.Message} (Error Number: {sqlEx.Number})");
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Disable FCM Token notifications for user
+        //--------------------------------------------------------------------------------------------------
+        public int DisableFCMToken(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_DisableFCMTokenFinal", con, paramDic);
+
+            try
+            {
+                int result = cmd.ExecuteNonQuery();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Enable FCM Token notifications for user
+        //--------------------------------------------------------------------------------------------------
+        public int EnableFCMToken(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_EnableFCMTokenFinal", con, paramDic);
+
+            try
+            {
+                int result = cmd.ExecuteNonQuery();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Get FCM Tokens for specific users
+        //--------------------------------------------------------------------------------------------------
+        public List<string> GetFCMTokensForUsers(List<int> userIds)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+            List<string> tokens = new List<string>();
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return tokens;
+            }
+
+            string userIdsString = string.Join(",", userIds);
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserIds", userIdsString);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetFCMTokensForUsersFinal", con, paramDic);
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+                while (reader.Read())
+                {
+                    tokens.Add(reader["FCMToken"].ToString());
+                }
+                return tokens;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return tokens;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Check if user has notifications enabled
+        //--------------------------------------------------------------------------------------------------
+        public bool IsUserNotificationsEnabled(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return false;
+            }
+
+            string query = "SELECT COUNT(*) FROM FCMTokensFinal WHERE UserId = @UserId AND IsActive = 1 AND NotificationsEnabled = 1";
+            cmd = new SqlCommand(query, con);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            try
+            {
+                int count = (int)cmd.ExecuteScalar();
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return false;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Get all active user IDs with notifications enabled
+        //--------------------------------------------------------------------------------------------------
+        public List<int> GetAllActiveUserIds()
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+            List<int> userIds = new List<int>();
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return userIds;
+            }
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllActiveUserIdsWithNotificationsFinal", con, new Dictionary<string, object>());
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+                while (reader.Read())
+                {
+                    userIds.Add((int)reader["UserId"]);
+                }
+                return userIds;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return userIds;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Get users who commented on article (excluding specific user)
+        //--------------------------------------------------------------------------------------------------
+        public List<int> GetUsersWhoCommentedOnArticle(int articleId, int excludeUserId)
+        {
+            Console.WriteLine($"🔍 GetUsersWhoCommentedOnArticle called - ArticleId: {articleId}, ExcludeUserId: {excludeUserId}");
+            
+            SqlConnection con = null;
+            SqlCommand cmd;
+            List<int> userIds = new List<int>();
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return userIds;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+            paramDic.Add("@ExcludeUserId", excludeUserId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetUsersWhoCommentedOnArticleFinal", con, paramDic);
+
+            try
+            {
+                Console.WriteLine($"📊 Executing SP: sp_GetUsersWhoCommentedOnArticleFinal with ArticleId={articleId}, ExcludeUserId={excludeUserId}");
+                
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+                while (reader.Read())
+                {
+                    int userId = (int)reader["UserId"];
+                    userIds.Add(userId);
+                    Console.WriteLine($"👤 Found user who commented: {userId}");
+                }
+                reader.Close();
+                
+                Console.WriteLine($"📊 Total users found: {userIds.Count}");
+                return userIds;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return userIds;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+        //--------------------------------------------------------------------------------------------------
+        // Get user followers with notifications enabled
+        //--------------------------------------------------------------------------------------------------
+        public List<int> GetUserFollowers(int userId)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+            List<int> followers = new List<int>();
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return followers;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetUserFollowersFinal", con, paramDic);
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+                while (reader.Read())
+                {
+                    followers.Add((int)reader["FollowerId"]);
+                }
+                return followers;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return followers;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Get all users with notifications enabled (instead of admin-only)
+        //--------------------------------------------------------------------------------------------------
+        public List<int> GetAllUsersWithNotifications()
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+            List<int> userIds = new List<int>();
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return userIds;
+            }
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_GetAllUsersWithNotificationsFinal", con, new Dictionary<string, object>());
+
+            try
+            {
+                SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+                while (reader.Read())
+                {
+                    userIds.Add((int)reader["Id"]);
+                }
+                return userIds;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return userIds;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
         private SqlCommand CreateCommandWithStoredProcedureGeneral(String spName, SqlConnection con, Dictionary<string, object> paramDic)
         {
 
@@ -2390,6 +3022,45 @@ namespace Newsite_Server.DAL
 
 
             return cmd;
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // Delete invalid FCM Token
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteInvalidFCMToken(string fcmToken)
+        {
+            SqlConnection con = null;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            try
+            {
+                string query = "DELETE FROM FCMTokensFinal WHERE FCMToken = @FCMToken";
+                cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
+
+                int result = cmd.ExecuteNonQuery();
+                Console.WriteLine($"✅ Deleted {result} invalid FCM token(s)");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
         }
 
     }

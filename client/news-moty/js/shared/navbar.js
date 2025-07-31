@@ -8,6 +8,14 @@
             <span class="fs-4">News Hub</span>
         </a>
         <div class="d-flex align-items-center gap-2 order-lg-2 ms-auto p-2">
+            <button class="btn btn-outline-secondary btn-sm position-relative" id="notifications-btn" type="button" 
+                    aria-label="Notifications" title="Notifications" style="display: none;">
+                <i class="bi bi-bell"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                      id="notification-badge" style="display: none; font-size: 0.6em;">
+                    <span class="visually-hidden">unread messages</span>
+                </span>
+            </button>
             <button class="btn btn-outline-secondary btn-sm" id="toggle-dark" type="button" aria-label="Toggle dark mode">
                 <i class="bi bi-moon-stars-fill"></i>
             </button>

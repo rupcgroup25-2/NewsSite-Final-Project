@@ -125,16 +125,25 @@ $(document).on('submit', '#loginForm', function (e) {
                 showMessage('#loginMessage', 'Login failed. Please check your credentials.', 'danger');
                 return;
             }
-            console.log("Login successful!", response);
             currentUser = response;
             localStorage.setItem('user', JSON.stringify(currentUser));
-            renderUserActions();
-            showMessage('#loginMessage', 'Login successful!', 'success');
+
+            // בדוק אם יש משתמש קודם ועבור להתראות החדשות
+            if (typeof switchUserNotifications === 'function') {
+                switchUserNotifications(currentUser.id);
+            } else if (typeof subscribeUserToNotifications === 'function') {
+                subscribeUserToNotifications(currentUser.id);
+            }
+
+            hideMessage('#loginError');
+            $('#loginModal').modal('hide');
+
+            showMessage('#loginSuccess', 'Login successful! Welcome back.', 'success');
             setTimeout(() => {
-                $('#loginModal').modal('hide');
-                hideMessage('#loginMessage');
+                hideMessage('#loginSuccess');
+                renderUserActions();
                 location.reload();
-            }, 1000);
+            }, 1500);
 
         },
         function error(xhr, status, error) {
@@ -159,7 +168,6 @@ $(document).on("input", "#registerName, #registerEmail, #registerPassword", func
 
 
 $(document).on('submit', '#registerForm', function (e) {
-    console.log("submit clicked");
     e.preventDefault();
     if (!checkValidation()) return;
 
@@ -182,7 +190,6 @@ $(document).on('submit', '#registerForm', function (e) {
         serverUrl + "Users/Register",
         JSON.stringify(requestData),
         function success(response) {
-            console.log("Registration successful!", response);
             renderUserActions();
             showMessage('#registerError', 'Registration successful!', 'success');
             setTimeout(() => {
@@ -249,6 +256,12 @@ $(document).on('click', '#logout-btn', function () {
     currentUser = null;
     localStorage.removeItem('user');
     localStorage.removeItem('cachedFollowingUsers');
+    
+    // בטל הרשמה להתראות
+    if (typeof unsubscribeUserFromNotifications === 'function') {
+        unsubscribeUserFromNotifications();
+    }
+    
     renderUserActions();
     location.reload();
     //renderTabs();

@@ -1,0 +1,181 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newsite_Server.BL;
+
+namespace Newsite_Server.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [AllowAnonymous]
+    public class NotificationsController : ControllerBase
+    {
+        private readonly Notifications notifications;
+
+        public NotificationsController()
+        {
+            notifications = new Notifications();
+        }
+
+        [HttpGet("status")]
+        public IActionResult GetStatus()
+        {
+            try
+            {
+                Console.WriteLine("🔧 Status endpoint called");
+                
+                // בדיקת חיבור לבסיס נתונים
+                var dbStatus = notifications.TestDatabaseConnection();
+                
+                return Ok(new { 
+                    status = "healthy", 
+                    timestamp = DateTime.Now,
+                    message = "Notification server is running",
+                    database = dbStatus ? "connected" : "disconnected"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception in status: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("SaveFCMToken")]
+        public IActionResult SaveFCMToken(int userId, string fcmToken)
+        {
+            try
+            {
+                Console.WriteLine($"🔧 SaveFCMToken called for user {userId}");
+                
+                if (string.IsNullOrEmpty(fcmToken))
+                {
+                    Console.WriteLine("❌ FCM token is null or empty");
+                    return BadRequest("FCM token cannot be empty");
+                }
+
+                int result = notifications.SaveFCMToken(userId, fcmToken);
+
+                if (result > 0)
+                {
+                    Console.WriteLine($"✅ FCM token saved successfully for user {userId}");
+                    return Ok("FCM token saved successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"⚠️ SaveFCMToken returned 0 for user {userId}");
+                    return StatusCode(500, "Failed to save FCM token");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception in SaveFCMToken: {ex.Message}");
+                Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpPut("DisableFCMToken")]
+        public IActionResult DisableFCMToken(int userId)
+        {
+            try
+            {
+                int result = notifications.DisableFCMToken(userId);
+
+                if (result > 0)
+                {
+                    return Ok("Notifications disabled successfully");
+                }
+                else
+                {
+                    return StatusCode(500, "Failed to disable notifications");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpPut("EnableFCMToken")]
+        public IActionResult EnableFCMToken(int userId)
+        {
+            try
+            {
+                int result = notifications.EnableFCMToken(userId);
+
+                if (result > 0)
+                {
+                    return Ok("Notifications enabled successfully");
+                }
+                else
+                {
+                    return StatusCode(500, "Failed to enable notifications");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("NotificationStatus")]
+        public IActionResult GetNotificationStatus(int userId)
+        {
+            try
+            {
+                bool isEnabled = notifications.IsUserNotificationsEnabled(userId);
+                return Ok(new { notificationsEnabled = isEnabled });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("TestNotification")]
+        public async Task<IActionResult> TestNotification(int userId)
+        {
+            try
+            {
+                Console.WriteLine($"🧪 TestNotification endpoint called for userId: {userId}");
+                
+                // בדוק אם יש FCM tokens לאותו משתמש
+                Console.WriteLine($"🔍 Checking if user {userId} has FCM tokens...");
+                
+                bool success = await notifications.SendTestNotification(userId);
+
+                if (success)
+                {
+                    Console.WriteLine("✅ Test notification sent successfully");
+                    return Ok("Test notification sent successfully");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Failed to send test notification - no tokens or sending failed");
+                    return StatusCode(500, "Failed to send test notification - check if you have notification tokens");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error in TestNotification endpoint: {ex.Message}");
+                Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("SystemUpdate")]
+        public async Task<IActionResult> SendSystemUpdate(string title, string message)
+        {
+            try
+            {
+                await notifications.NotifySystemUpdate(title, message);
+                return Ok("System update notification sent successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+    }
+}

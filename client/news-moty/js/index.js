@@ -472,7 +472,7 @@ async function searchArchive() {
     
     try {
         const results = await searchGuardianAPI(query, fromDate, toDate);
-        displayArchiveResults(results);
+        displayArchiveResults(results, query);
         // Hide regular articles when showing search results
         $('#articles-list').hide();
         $('#hero-article').hide();
@@ -498,7 +498,7 @@ async function searchGuardianAPI(query, fromDate = null, toDate = null) {
     }
 }
 
-function displayArchiveResults(articles) {
+function displayArchiveResults(articles, query) {
     if (!articles || articles.length === 0) {
         $('#archiveResults').html('<div class="alert alert-info">No articles found.</div>');
         return;
@@ -516,7 +516,7 @@ function displayArchiveResults(articles) {
     articles.forEach((article, index) => {
         const articleId = `search_${index}_${Date.now()}`;
         const isSaved = savedArticles.includes(articleId);
-        const tag = { color: "secondary", name: "Archive" }; // Default tag for search results
+        const tag = { color: "white", name: query }; // Default tag for search results
         console.log(article.source);
         // Create article object for the action buttons
         const articleObj = {
@@ -532,7 +532,7 @@ function displayArchiveResults(articles) {
             source: article.source || 'Unknown',
             sourceName: article.source || 'Unknown', // Add sourceName field
             author: article.author || 'Unknown',
-            category: "Archive",
+            category: query,
             fullText: article.description || article.content || '' // Add fullText field
         };
         
@@ -545,7 +545,7 @@ function displayArchiveResults(articles) {
                     <div class="position-relative">
                         <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
                         <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
-                            <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
+                            <span class="badge bg-${tag.color} fs-6 shadow text-black">${tag.name}</span>
                             <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
                         </div>
                     </div>
@@ -597,3 +597,42 @@ function clearSearchResults() {
     $('#category-pills .nav-link[data-category="all"]').addClass('active');
     currentCategory = "all";
 }
+
+// Initialize Firebase and notifications when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Index page loaded, initializing Firebase and notifications...');
+    
+    // הפעל את המערכת החדשה להתראות
+    if (typeof window.initNotificationsOnPageLoad === 'function') {
+        console.log('🔔 Using new notification system...');
+        window.initNotificationsOnPageLoad();
+    } else {
+        console.log('⚠️ New notification system not found, trying legacy method...');
+        // Legacy method - יישאר לתמיכה לאחור
+        setTimeout(() => {
+            if (typeof firebaseConfig !== 'undefined') {
+                try {
+                    // Initialize Firebase if not already initialized
+                    if (!window.app) {
+                        const { initializeApp } = firebase;
+                        window.app = initializeApp(firebaseConfig);
+                        console.log('✅ Firebase initialized in index.js');
+                    }
+                    
+                    // Initialize notifications if available
+                    if (typeof initializeNotifications === 'function') {
+                        console.log('🔔 Initializing notifications...');
+                        initializeNotifications();
+                    } else {
+                        console.log('⚠️ initializeNotifications function not found');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error initializing Firebase in index.js:', error);
+                }
+            } else {
+                console.error('❌ Firebase config not found in index.js');
+            }
+        }, 100);
+    }
+});

@@ -4,9 +4,9 @@ let userProfile = null;
 let followingUsers = [];
 let allEmails = [];
 
-$(document).ready(function() {
+$(document).ready(function () {
     renderUserActions();
-    
+
     if (!currentUser) {
         renderLoginRequired();
         return;
@@ -26,7 +26,6 @@ $(document).ready(function() {
 
     loadEmails();
 });
-
 function renderLoginRequired() {
     $('#profile').html(`
         <div class="text-center py-5">
@@ -269,6 +268,9 @@ function renderProfile() {
 
     // Bind events
     bindProfileEvents();
+    
+    // הוסף הגדרות התראות לפרופיל
+    addNotificationSettingsToProfile();
 }
 
 function loadRecentActivities(userId, count = 10) {
@@ -654,9 +656,15 @@ function unfollowUser(userEmail) {
         serverUrl + `Users/Unfollow?followerId=${currentUser.id}&followedEmail=${encodeURIComponent(userEmail)}`,
         "",
         function (response) {
+            // הסר המשתמש מהמערך המקומי
             followingUsers = followingUsers.filter(user => user.email !== userEmail);
+            
+            // עדכן את ה-cache
+            localStorage.setItem('cachedFollowingUsers', JSON.stringify(followingUsers));
+            
+            // רנדר מחדש את הפרופיל
             renderProfile();
-            loadFollowingUsers();
+            
             alert('User unfollowed successfully.');
         },
         function (xhr) {
@@ -772,4 +780,192 @@ $(document).on('click', '#follow-user-btn', function () {
             alert(errorMsg);
         }
     );
+});
+
+function addNotificationSettingsToProfile() {
+    if (!currentUser) return;
+
+    const notificationSettings = `
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bell me-2"></i>Notification Settings
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="notificationsSwitch">
+                    <label class="form-check-label" for="notificationsSwitch">
+                        Receive push notifications
+                    </label>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Notification Style:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="notificationStyle" id="styleAuto" value="auto" checked>
+                        <label class="form-check-label" for="styleAuto">
+                            🤖 Auto - In-page when visible, system when not
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="notificationStyle" id="styleInPage" value="inpage">
+                        <label class="form-check-label" for="styleInPage">
+                            🎨 In-page - Always show notifications inside the website
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="notificationStyle" id="styleSystem" value="system">
+                        <label class="form-check-label" for="styleSystem">
+                            📱 System - Always show as browser notifications
+                        </label>
+                    </div>
+                </div>
+                
+                <small class="text-muted d-block mb-3">
+                    Get notified about new comments, article shares, and system updates
+                </small>
+                <button class="btn btn-outline-primary btn-sm" id="testNotificationBtn">
+                    <i class="bi bi-bell"></i> Send Test Notification
+                </button>
+            </div>
+        </div>
+    `;
+
+    // הוסף לאחר הכרטיס הראשון בפרופיל
+    const $firstCard = $('#profile .card:first');
+    
+    if ($firstCard.length > 0) {
+        $firstCard.after(notificationSettings);
+    } else {
+        // נסה להוסיף בסוף האזור של הפרופיל
+        const $profile = $('#profile');
+        if ($profile.length > 0) {
+            $profile.append(`<div class="col-12">${notificationSettings}</div>`);
+        }
+    }
+
+    // טען הגדרות נוכחיות
+    loadNotificationSettings();
+    
+    // הוסף מאזינים לשינוי הגדרות
+    $(document).on('change', 'input[name="notificationStyle"]', function() {
+        const selectedStyle = $(this).val();
+        localStorage.setItem('notificationStyle', selectedStyle);
+        
+        // הצג הודעה על השינוי
+        $('.notification-status').removeClass('text-warning text-success text-muted text-danger')
+            .addClass('text-success').text(`Notification style updated to: ${selectedStyle}`);
+    });
+}
+
+// טעינת הגדרות התראות
+function loadNotificationSettings() {
+    if (!currentUser) return;
+    
+    // בדוק שהפונקציות הנדרשות קיימות
+    if (typeof checkNotificationStatus !== 'function') {
+        setTimeout(loadNotificationSettings, 1000); // נסה שוב אחרי שנייה
+        return;
+    }
+    
+    // הוסף loading state
+    $('#notificationsSwitch').prop('disabled', true);
+    $('#testNotificationBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Loading...');
+
+    checkNotificationStatus(currentUser.id).then(isEnabled => {
+        $('#notificationsSwitch').prop('checked', isEnabled).prop('disabled', false);
+        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell"></i> Send Test Notification');
+        
+        // טען הגדרת סוג התראה מ-localStorage
+        const savedStyle = localStorage.getItem('notificationStyle') || 'auto';
+        $(`input[name="notificationStyle"][value="${savedStyle}"]`).prop('checked', true);
+        
+        // הצג סטטוס נוכחי
+        const statusText = isEnabled ? 'enabled' : 'disabled';
+        const statusClass = isEnabled ? 'text-success' : 'text-muted';
+        $('.notification-status').remove();
+        $('#notificationsSwitch').parent().append(`
+            <small class="notification-status ${statusClass} d-block mt-1">
+                Notifications are currently ${statusText} (${savedStyle} style)
+            </small>
+        `);
+    }).catch(err => {
+        $('#notificationsSwitch').prop('disabled', false);
+        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell"></i> Send Test Notification');
+        
+        $('.notification-status').remove();
+        $('#notificationsSwitch').parent().append(`
+            <small class="notification-status text-danger d-block mt-1">
+                Error loading notification status
+            </small>
+        `);
+    });
+}
+
+// טיפול בשינוי הגדרות
+$(document).on('change', '#notificationsSwitch', function () {
+    if (!currentUser) return;
+
+    const isEnabled = $(this).is(':checked');
+    const switchElement = $(this);
+    
+    // הוסף visual feedback
+    switchElement.prop('disabled', true);
+    $('.notification-status').removeClass('text-success text-muted text-danger').addClass('text-warning').text('Updating...');
+
+    const originalValue = !isEnabled; // הערך המקורי לפני השינוי
+    
+    const updatePromise = isEnabled ? 
+        new Promise(resolve => {
+            if (typeof enableNotifications === 'function') {
+                enableNotifications(currentUser.id);
+            }
+            setTimeout(resolve, 1000);
+        }) :
+        new Promise(resolve => {
+            if (typeof disableNotifications === 'function') {
+                disableNotifications(currentUser.id);
+            }
+            setTimeout(resolve, 1000);
+        });
+    
+    updatePromise.then(() => {
+        // בדוק את הסטטוס החדש
+        return checkNotificationStatus(currentUser.id);
+    }).then(newStatus => {
+        const statusText = newStatus ? 'enabled' : 'disabled';
+        const statusClass = newStatus ? 'text-success' : 'text-muted';
+        $('.notification-status').removeClass('text-warning text-danger').addClass(statusClass).text(`Notifications are currently ${statusText}`);
+    }).catch(error => {
+        // החזר את המתג למצב המקורי
+        switchElement.prop('checked', originalValue);
+        $('.notification-status').removeClass('text-warning text-success text-muted').addClass('text-danger').text('Error updating notification settings');
+    }).finally(() => {
+        // החזר את השליטה
+        switchElement.prop('disabled', false);
+    });
+});
+
+// שליחת התראת בדיקה
+$(document).on('click', '#testNotificationBtn', function () {
+    if (!currentUser) return;
+    
+    const $btn = $(this);
+    const originalText = $btn.html();
+    
+    // הוסף loading state
+    $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Sending...');
+    
+    // בדוק שהפונקציה קיימת
+    if (typeof sendTestNotification === 'function') {
+        sendTestNotification(currentUser.id);
+    } else {
+        alert('Test notification function is not available. Please make sure notifications are properly loaded.');
+    }
+    
+    // החזר למצב הרגיל אחרי 3 שניות
+    setTimeout(() => {
+        $btn.prop('disabled', false).html(originalText);
+    }, 3000);
 });

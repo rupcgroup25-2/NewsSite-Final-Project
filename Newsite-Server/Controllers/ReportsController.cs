@@ -10,18 +10,42 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class ReportsController : ControllerBase
     {
-        [HttpPost]
-        public IActionResult SubmitReport([FromBody] ReportWithArticleDto dto)
+        private readonly Notifications notifications;
+
+        public ReportsController()
         {
+            notifications = new Notifications();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitReport([FromBody] ReportWithArticleDto dto)
+        {
+
             int resultSavingArticle = dto.Article.InsertArticleIfNotExists();
 
             dto.Report.ArticleId = resultSavingArticle;
             int resultSavingReport = dto.Report.SubmitReport();
 
             if (resultSavingReport > 0)
+            {
+                // שלח התראה לכל המשתמשים (במקום אדמינים ספציפיים)
+                try
+                {
+                    await notifications.NotifySystemUpdate(
+                        "New Report Submitted",
+                        $"A new report has been submitted for review"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send report notification: {ex.Message}");
+                }
+
                 return Ok("Report submitted successfully.");
+            }
             else
                 return BadRequest("Similar report has been already sumbitted.");
+
         }
 
         [HttpGet]

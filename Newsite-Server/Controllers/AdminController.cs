@@ -87,6 +87,24 @@ namespace Newsite_Server.Controllers
                 return NotFound("No Logins yet");
         }
 
+        [HttpGet("GetTopMostCommonTags")]
+        public IActionResult GetTopMostCommonTags(int topCount)
+        {
+            Admin admin = new Admin();
+            var rawResult = admin.GetTopMostCommonTags(topCount); // List<(string TagName, int TagCount)>
+
+            if (rawResult.Any())
+            {
+                var result = rawResult.Select(t => new { TagName = t.TagName, TagCount = t.TagCount });
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound("No tags found");
+            }
+        }
+
+
         [HttpPut("{id}/block")]
         public IActionResult ToggleBlockSharing(int id)
         {

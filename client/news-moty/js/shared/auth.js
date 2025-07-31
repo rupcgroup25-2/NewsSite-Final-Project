@@ -125,7 +125,6 @@ $(document).on('submit', '#loginForm', function (e) {
                 showMessage('#loginMessage', 'Login failed. Please check your credentials.', 'danger');
                 return;
             }
-            console.log("Login successful!", response);
             currentUser = response;
             localStorage.setItem('user', JSON.stringify(currentUser));
 
@@ -169,7 +168,6 @@ $(document).on("input", "#registerName, #registerEmail, #registerPassword", func
 
 
 $(document).on('submit', '#registerForm', function (e) {
-    console.log("submit clicked");
     e.preventDefault();
     if (!checkValidation()) return;
 
@@ -192,7 +190,6 @@ $(document).on('submit', '#registerForm', function (e) {
         serverUrl + "Users/Register",
         JSON.stringify(requestData),
         function success(response) {
-            console.log("Registration successful!", response);
             renderUserActions();
             showMessage('#registerError', 'Registration successful!', 'success');
             setTimeout(() => {

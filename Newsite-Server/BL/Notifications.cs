@@ -26,7 +26,6 @@ namespace Newsite_Server.BL
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Database connection test failed: {ex.Message}");
                 return false;
             }
         }
@@ -58,7 +57,6 @@ namespace Newsite_Server.BL
         // שליחת התראת בדיקה
         public async Task<bool> SendTestNotification(int userId)
         {
-            Console.WriteLine($"🧪 BL SendTestNotification called for userId: {userId}");
             
             try
             {
@@ -68,12 +66,10 @@ namespace Newsite_Server.BL
                     "This is a test notification from News Hub!"
                 );
                 
-                Console.WriteLine($"🧪 BL SendTestNotification result: {result}");
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error in BL SendTestNotification: {ex.Message}");
                 throw;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
+using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,6 +11,10 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class TagsController : ControllerBase
     {
+        private static Dictionary<string, string>? _twitterLocationMap = null;
+        private static DateTime _lastLocationLoadTime;
+        private static readonly object _locationMapLock = new();
+
         // GET: api/<TagsController>
         [HttpGet]
         public IEnumerable<Tag> Get()
@@ -18,20 +23,70 @@ namespace Newsite_Server.Controllers
             return tag.GetAllTags();
         }
 
-        [HttpGet("GetTrendingTags")]
+        [HttpGet("twitterTrends/{location}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetTrendingTags([FromQuery] string country = "US")
+        public async Task<IActionResult> GetTwitterTrends(string location)
         {
+            if (string.IsNullOrWhiteSpace(location))
+                return BadRequest("Location is required.");
+
+            // Load and cache the location map (reload every 12 hours for example)
+            lock (_locationMapLock)
+            {
+                if (_twitterLocationMap == null || DateTime.Now - _lastLocationLoadTime > TimeSpan.FromHours(12))
+                {
+                    try
+                    {
+                        var jsonText = System.IO.File.ReadAllText("twitter-api-locations.json");
+                        _twitterLocationMap = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
+                        _lastLocationLoadTime = DateTime.Now;
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, "Failed to load Twitter locations file: " + ex.Message);
+                    }
+                }
+            }
+
+            if (!_twitterLocationMap.TryGetValue(location, out var locationId))
+                return BadRequest($"Unknown location: {location}");
+
+            string apiKey;
             try
             {
-                var topics = await GoogleTrendsScraper.GetTrendingTopicsWithPlaywrightAsync(country.ToUpper());
-                return Ok(topics);
+                apiKey = System.IO.File.ReadAllText("twitter-trends-key.txt").Trim();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                return StatusCode(500, "Failed to read Twitter API key: " + ex.Message);
+            }
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://twitter-trends-by-location.p.rapidapi.com/location/{locationId}"),
+                Headers =
+        {
+            { "x-rapidapi-key", apiKey },
+            { "x-rapidapi-host", "twitter-trends-by-location.p.rapidapi.com" },
+        },
+            };
+
+            using var client = new HttpClient();
+            try
+            {
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+
+                var body = await response.Content.ReadAsStringAsync();
+                return Ok(JsonDocument.Parse(body)); // or just return Ok(body) if you prefer raw string
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, "Failed to fetch Twitter trends: " + ex.Message);
             }
         }
+
 
         [HttpPost]
         public IActionResult CreateTag([FromBody] Tag tag)

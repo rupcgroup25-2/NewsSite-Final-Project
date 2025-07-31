@@ -94,6 +94,7 @@ function renderArticles(category) {
 // Event handlers
 $(document).ready(function () {
     renderHomeTab();
+    loadFiveTrendingTags("United States");
 })
 
 // Category filter
@@ -138,7 +139,7 @@ function renderHomeTab() {
             </ul>
         </div>
         <div class="mb-4">
-            <div class="row">
+            <div class="row mb-2">
                 <div class="col-md-6">
                     <input type="text" id="archiveQuery" class="form-control" placeholder="Search articles by topic...">
                 </div>
@@ -154,6 +155,7 @@ function renderHomeTab() {
                     </button>
                 </div>
             </div>
+            <div id="tagArea" class="mb-3"></div>
         </div>
         <div id="archiveResults" class="mb-4"></div>
         <div class="row" id="articles-list"></div>`);
@@ -386,6 +388,109 @@ function getArticleById(id) {
     }
     return article;
 }
+
+// --- Trending Tags ---
+function loadFiveTrendingTags(country) {
+    ajaxCall(
+        "GET",
+        serverUrl + `Tags/twitterTrends/${country}`,
+        null,
+        function (response) {
+            $("#tagArea").empty();
+
+            // Safely access the trends array
+            const trends = response?.trending?.trends || [];
+
+            // Take top 5 and extract 'name' field
+            const topFive = trends.slice(0, 5).map(t => t.name.replace(/^#/, ""));
+
+            $("#tagArea").text("Trending tags: ");
+            // Create and append buttons
+            topFive.forEach(tag => {
+                const button = $(`<button class="btn btn-outline-primary m-1 hashtag-button">#${tag}</button>`);
+                $("#tagArea").append(button);
+            });
+
+            const mapButton = $(`<button id="btnChooseCountry" class="btn btn-outline-secondary ms-2" title="Select Country"><i class="bi bi-globe2"></i></button>`);
+            $("#tagArea").append(mapButton);
+        },
+        function (err) {
+            console.error("Failed to load trending tags:", err);
+        }
+    );
+}
+
+function showCountryMapModal() {
+    // Avoid duplicating the modal
+    if ($('#countryMapModal').length) {
+        $('#countryMapModal').modal('show');
+        return;
+    }
+
+    const mapModal = `
+    <div class="modal fade" id="countryMapModal" tabindex="-1" aria-labelledby="countryMapLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="countryMapLabel">Select a Country</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="countryMapContainer" style="width: 100%; height: 500px;"></div>
+                    <p class="mt-2 text-muted">Click a country to load trending tags.</p>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    $('body').append(mapModal);
+
+    // Wait for modal to be fully shown before rendering map
+    $('#countryMapModal').on('shown.bs.modal', function () {
+        $('#countryMapContainer').vectorMap({
+            map: 'world_en',
+            backgroundColor: 'transparent',
+            hoverOpacity: 0,
+            hoverColor: '#88c',
+            onRegionClick: function (event, code, region) {
+                $('#countryMapModal').modal('hide');
+                loadFiveTrendingTags(region); // Call your existing function
+            }
+        });
+        //$('#countryMapContainer').vectorMap({
+        //    map: 'world_en',
+        //    backgroundColor: 'transparent',
+        //    hoverOpacity: 0,
+        //    hoverColor: '#88c',
+        //    onRegionClick: function (event, code, region) {
+        //        alert('Clicked country: ' + region);
+        //        // Your function here: loadFiveTrendingTags(region);
+        //    }
+        //});
+    });
+
+    $('#countryMapModal').modal('show');
+}
+
+$(document).on('click', '#btnChooseCountry', function () {
+    showCountryMapModal();
+});
+
+
+window.addEventListener('message', function (event) {
+    const countryName = event.data?.countryName;
+    if (countryName) {
+        $('#countryMapModal').modal('hide');
+        loadFiveTrendingTags(countryName);
+    }
+});
+
+// Delegate click event for dynamic hashtag buttons
+$(document).on('click', '.hashtag-button', function () {
+    const tagText = $(this).text().replace(/^#/, ""); // remove '#' if exists
+    $('#archiveQuery').val(tagText); // set the query input
+    searchArchive(); // trigger search
+});
 
 // --- Save Article ---
 function saveSCB(responseText) {

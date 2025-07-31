@@ -1,4 +1,12 @@
 /* ===== Custom News Site Styles ===== */
+.jqvmap-label {
+    color: black !important; /* Text color */
+    background: #fff !important; /* Background color */
+    border: 1px solid #ccc !important;
+    font-weight: bold;
+    z-index: 9999 !important;
+}
+
 
 :root {
   --news-glass-bg: rgba(255,255,255,0.85);

@@ -163,9 +163,9 @@ namespace Newsite_Server.Controllers
             int result = article.SaveArticleForUser(userId, article.Id);
 
             if (result > 0)
-                return Ok(article.Id);
+                return Ok("Article saved successfully");
             else
-                return Ok(0);
+                return Ok("article is already saved");
         }
 
         [HttpPost("ShareArticle")]

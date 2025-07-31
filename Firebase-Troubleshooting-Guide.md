@@ -22,7 +22,8 @@
 ### 3. ✅ בדיקת Service Account
 ```bash
 # בדוק את תוכן הקובץ
-Get-Content "firebase-service-account.json" | ConvertFrom-Json | Select-Object project_id, client_email
+Get-Content "firebase-service-account.json" | ConvertFrom-Json | Select-Object 
+, client_email
 ```
 
 ### 4. ✅ בדיקת הרשאות Service Account

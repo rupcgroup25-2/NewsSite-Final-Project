@@ -261,10 +261,7 @@ async function getFCMToken(messagingModule) {
         
         let token;
         
-        // נסה קודם עם 
-        
-        
-        
+        // Try to get FCM token with VAPID key if available
         if (typeof vapidKey !== 'undefined') {
             try {
                 console.log('🔐 Trying to get token with VAPID key...');
@@ -1562,4 +1559,173 @@ window.onUserLogin = function(user) {
 window.onUserLogout = function() {
     console.log('👤 User logged out, cleaning up notifications...');
     unsubscribeUserFromNotifications();
+};
+
+// Comprehensive Firebase Notification Diagnostics and Recovery
+window.diagnoseAndFixNotifications = async function() {
+    console.log('🔍 Starting comprehensive notification diagnostics...');
+    
+    const issues = [];
+    const fixes = [];
+    
+    try {
+        // 1. Check browser support
+        if (!('Notification' in window)) {
+            issues.push('Browser does not support notifications');
+            return { issues, fixes, canRecover: false };
+        }
+        
+        if (!('serviceWorker' in navigator)) {
+            issues.push('Browser does not support service workers');
+            return { issues, fixes, canRecover: false };
+        }
+        
+        // 2. Check Firebase config
+        if (typeof firebaseConfig === 'undefined') {
+            issues.push('Firebase config not loaded');
+            return { issues, fixes, canRecover: false };
+        }
+        
+        // 3. Check notification permission
+        console.log('🔐 Current notification permission:', Notification.permission);
+        if (Notification.permission === 'denied') {
+            issues.push('Notification permission denied by user');
+            fixes.push('User must manually enable notifications in browser settings');
+        }
+        
+        // 4. Check service worker registration
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        console.log('🔧 Found service worker registrations:', registrations.length);
+        
+        let hasFirebaseWorker = false;
+        for (const reg of registrations) {
+            console.log('🔧 Service worker scope:', reg.scope);
+            if (reg.scope.includes('firebase-messaging-sw') || reg.active?.scriptURL.includes('firebase-messaging-sw')) {
+                hasFirebaseWorker = true;
+                console.log('✅ Firebase messaging service worker found');
+                break;
+            }
+        }
+        
+        if (!hasFirebaseWorker) {
+            issues.push('Firebase messaging service worker not registered');
+            fixes.push('Re-registering Firebase service worker...');
+            
+            try {
+                console.log('🔄 Registering Firebase service worker...');
+                await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                fixes.push('✅ Firebase service worker registered successfully');
+            } catch (swError) {
+                issues.push(`Failed to register service worker: ${swError.message}`);
+            }
+        }
+        
+        // 5. Test Firebase initialization
+        if (!window.app) {
+            try {
+                fixes.push('Initializing Firebase...');
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js');
+                window.app = initializeApp(firebaseConfig);
+                fixes.push('✅ Firebase app initialized');
+            } catch (firebaseError) {
+                issues.push(`Firebase initialization failed: ${firebaseError.message}`);
+            }
+        }
+        
+        // 6. Test FCM token generation
+        if (window.app) {
+            try {
+                fixes.push('Testing FCM token generation...');
+                const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js');
+                const messaging = getMessaging(window.app);
+                
+                if (Notification.permission === 'granted') {
+                    let testToken;
+                    if (typeof vapidKey !== 'undefined') {
+                        testToken = await getToken(messaging, { vapidKey });
+                    } else {
+                        testToken = await getToken(messaging);
+                    }
+                    
+                    if (testToken) {
+                        fixes.push('✅ FCM token generated successfully');
+                        console.log('🎯 Test token:', testToken.substring(0, 50) + '...');
+                        
+                        // Test saving token to server
+                        if (typeof currentUser !== 'undefined' && currentUser?.id && typeof ajaxCall !== 'undefined' && typeof serverUrl !== 'undefined') {
+                            fixes.push('Testing server token save...');
+                            
+                            const savePromise = new Promise((resolve, reject) => {
+                                ajaxCall(
+                                    "POST",
+                                    serverUrl + `Notifications/SaveFCMToken?userId=${currentUser.id}&fcmToken=${encodeURIComponent(testToken)}`,
+                                    "",
+                                    () => {
+                                        fixes.push('✅ Token saved to server successfully');
+                                        resolve();
+                                    },
+                                    (xhr) => {
+                                        issues.push(`Failed to save token to server: ${xhr.responseText}`);
+                                        reject();
+                                    }
+                                );
+                            });
+                            
+                            await savePromise;
+                        }
+                    } else {
+                        issues.push('FCM token generation returned empty result');
+                    }
+                } else {
+                    issues.push('Cannot test token generation - notification permission not granted');
+                }
+            } catch (tokenError) {
+                issues.push(`FCM token test failed: ${tokenError.message}`);
+            }
+        }
+        
+        // 7. Test server connectivity
+        if (typeof serverUrl !== 'undefined' && typeof ajaxCall !== 'undefined') {
+            try {
+                fixes.push('Testing server connectivity...');
+                
+                const connectTest = new Promise((resolve, reject) => {
+                    ajaxCall(
+                        "POST",
+                        serverUrl + "Notifications/diagnose-firebase",
+                        "",
+                        () => {
+                            fixes.push('✅ Server connectivity test passed');
+                            resolve();
+                        },
+                        (xhr) => {
+                            issues.push(`Server connectivity failed: ${xhr.status} ${xhr.responseText}`);
+                            reject();
+                        }
+                    );
+                });
+                
+                await connectTest;
+            } catch (serverError) {
+                issues.push(`Server test failed: ${serverError.message}`);
+            }
+        }
+        
+        const canRecover = issues.length === 0 || issues.every(issue => 
+            !issue.includes('Browser does not support') && 
+            !issue.includes('denied by user')
+        );
+        
+        console.log('📊 Diagnostics completed:');
+        console.log('❌ Issues found:', issues);
+        console.log('🔧 Fixes applied:', fixes);
+        console.log('🚑 Can recover:', canRecover);
+        
+        return { issues, fixes, canRecover };
+        
+    } catch (error) {
+        console.error('❌ Diagnostics failed:', error);
+        issues.push(`Diagnostics error: ${error.message}`);
+        return { issues, fixes, canRecover: false };
+    }
 };

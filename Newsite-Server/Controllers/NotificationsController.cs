@@ -177,5 +177,132 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        [HttpGet("DiagnoseFirebase")]
+        public async Task<IActionResult> DiagnoseFirebase()
+        {
+            try
+            {
+                Console.WriteLine("🔧 Firebase diagnostic endpoint called");
+                
+                var result = await notifications.DiagnoseFirebaseConnection();
+                
+                return Ok(new { 
+                    firebaseConnectionTest = result,
+                    message = result ? "Firebase connection successful" : "Firebase connection failed - check logs for details"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Firebase diagnostic error: {ex.Message}");
+                return StatusCode(500, $"Error during Firebase diagnosis: {ex.Message}");
+            }
+        }
+
+        [HttpPost("CleanupInvalidTokens")]
+        public async Task<IActionResult> CleanupInvalidTokens()
+        {
+            try
+            {
+                Console.WriteLine("🧹 Starting cleanup of invalid FCM tokens...");
+                
+                var result = await notifications.CleanupInvalidTokens();
+                
+                return Ok(new { 
+                    tokensRemoved = result,
+                    message = $"Cleanup completed. Removed {result} invalid tokens."
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Token cleanup error: {ex.Message}");
+                return StatusCode(500, $"Error during token cleanup: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetTokenStats")]
+        public IActionResult GetTokenStats()
+        {
+            try
+            {
+                var stats = notifications.GetTokenStatistics();
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Token stats error: {ex.Message}");
+                return StatusCode(500, $"Error getting token stats: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetComprehensiveDiagnosis")]
+        public async Task<IActionResult> GetComprehensiveDiagnosis()
+        {
+            try
+            {
+                Console.WriteLine("🔍 Running comprehensive FCM diagnosis...");
+                
+                var diagnosis = await notifications.GetComprehensiveDiagnosis();
+                
+                return Ok(diagnosis);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Comprehensive diagnosis error: {ex.Message}");
+                return StatusCode(500, $"Error during comprehensive diagnosis: {ex.Message}");
+            }
+        }
+
+        [HttpGet("QuickHealthCheck")]
+        public async Task<IActionResult> QuickHealthCheck()
+        {
+            try
+            {
+                Console.WriteLine("⚡ Running quick health check...");
+                
+                var result = new
+                {
+                    timestamp = DateTime.Now,
+                    firebase = new
+                    {
+                        initialized = FirebaseAdmin.FirebaseApp.DefaultInstance != null,
+                        projectId = FirebaseAdmin.FirebaseApp.DefaultInstance?.Options?.ProjectId ?? "Not available"
+                    },
+                    database = notifications.TestDatabaseConnection(),
+                    tokens = notifications.GetTokenStatistics(),
+                    recommendations = new List<string>()
+                };
+
+                var recommendations = (List<string>)result.recommendations;
+
+                if (!result.firebase.initialized)
+                {
+                    recommendations.Add("❌ Firebase not initialized - check service account file");
+                }
+
+                if (!result.database)
+                {
+                    recommendations.Add("❌ Database connection failed - check connection string");
+                }
+
+                var tokenStats = (dynamic)result.tokens;
+                if (tokenStats.totalTokens == 0)
+                {
+                    recommendations.Add("⚠️ No FCM tokens found - users need to subscribe to notifications");
+                }
+
+                if (recommendations.Count == 0)
+                {
+                    recommendations.Add("✅ Basic health check passed - try comprehensive diagnosis for detailed analysis");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Quick health check error: {ex.Message}");
+                return StatusCode(500, $"Error during health check: {ex.Message}");
+            }
+        }
+
     }
 }

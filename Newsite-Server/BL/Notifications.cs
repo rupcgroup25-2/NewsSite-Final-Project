@@ -60,10 +60,12 @@ namespace Newsite_Server.BL
             
             try
             {
+                // שליחה ללא data כדי למנוע בעיות פורמט
                 bool result = await notificationService.SendNotificationToUser(
                     userId,
                     "Test Notification",
-                    "This is a test notification from News Hub!"
+                    "This is a test notification from News Hub!",
+                    null // ללא data
                 );
                 
                 return result;
@@ -170,6 +172,62 @@ namespace Newsite_Server.BL
                 $"Happy Birthday {userName}! 🎉",
                 data
             );
+        }
+
+        // Diagnostic method for Firebase connection
+        public async Task<bool> DiagnoseFirebaseConnection()
+        {
+            try
+            {
+                return await notificationService.TestFirebaseProjectConnection();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Firebase diagnosis failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // ניקוי FCM tokens לא תקפים
+        public async Task<int> CleanupInvalidTokens()
+        {
+            try
+            {
+                return await notificationService.CleanupInvalidTokens();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Token cleanup failed: {ex.Message}");
+                return 0;
+            }
+        }
+
+        // סטטיסטיקות על FCM tokens
+        public object GetTokenStatistics()
+        {
+            try
+            {
+                return notificationService.GetTokenStatistics();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Token statistics failed: {ex.Message}");
+                return new { error = ex.Message };
+            }
+        }
+
+        // דיאגנוזה מקיפה עם פתרונות
+        public async Task<object> GetComprehensiveDiagnosis()
+        {
+            try
+            {
+                return await notificationService.GetFCMDiagnosisAndSolutions();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Comprehensive diagnosis failed: {ex.Message}");
+                return new { error = ex.Message, timestamp = DateTime.Now };
+            }
         }
     }
 }

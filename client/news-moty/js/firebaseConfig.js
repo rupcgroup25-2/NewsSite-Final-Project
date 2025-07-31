@@ -7,5 +7,5 @@
     appId: "1:397153014495:web:c3613b494555359a86cf6a",
     measurementId: "G-WN88XW35LV"
 };
-const vapidKey = "BG64zK6ZvZzQypFxE1PVHsl5-4CtqORP2XPOZABI4Idxf_TuPh86zHyD94tQOtnztUxGejFnHGvGyLkCO6meAEg";
+const vapidKey = "BCkQ3CDNu2wqjN1yDagPvTL5yl3XNUTOKDJRZRGQcEgGfbTlrdM_t1ae-RiSGhz7Z3ZpIikZWC733VMRllKqdFU";
 

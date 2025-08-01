@@ -80,6 +80,7 @@ namespace Newsite_Server.Controllers
             try
             {
                 Console.WriteLine($"🔧 SaveFCMToken called for user {userId}");
+                Console.WriteLine($"📧 Token: {fcmToken?.Substring(0, Math.Min(30, fcmToken?.Length ?? 0))}...");
                 
                 if (string.IsNullOrEmpty(fcmToken))
                 {
@@ -92,7 +93,17 @@ namespace Newsite_Server.Controllers
                 if (result > 0)
                 {
                     Console.WriteLine($"✅ FCM token saved successfully for user {userId}");
-                    return Ok("FCM token saved successfully");
+                    
+                    // אמת שהטוקן נשמר בפועל
+                    Console.WriteLine($"🔍 Verifying token was saved...");
+                    bool isEnabled = notifications.IsUserNotificationsEnabled(userId);
+                    Console.WriteLine($"📊 User {userId} notifications enabled: {isEnabled}");
+                    
+                    return Ok(new { 
+                        message = "FCM token saved successfully",
+                        userId = userId,
+                        notificationsEnabled = isEnabled
+                    });
                 }
                 else
                 {
@@ -186,7 +197,7 @@ namespace Newsite_Server.Controllers
                 else
                 {
                     Console.WriteLine("❌ Failed to send test notification - no tokens or sending failed");
-                    return StatusCode(500, "Failed to send test notification - check if you have notification tokens");
+                    return StatusCode(500, "Failed to send test notification - check if you have notification tokens. Try refreshing the page and allowing notifications first.");
                 }
             }
             catch (Exception ex)

@@ -352,7 +352,7 @@ function saveFCMTokenToServer(userId, token) {
             if (subscribedUserId !== userId) {
                 showNotificationStatus('Notifications enabled successfully!', 'success');
             }
-            subscribedUserId = userId; // סמן שהמשתמש מנוי
+            subscribedUserId = userId; // סמן שהמשתמש מנוי - הזז את זה לתוך הפונקציה המוצלחת
             tokenSaveInProgress = false;
         },
         function (xhr) {
@@ -841,43 +841,82 @@ function sendTestNotification(userId) {
         return;
     }
     
+    // קודם שמור את הטוקן החדש לשרת
+    console.log('💾 Ensuring current FCM token is saved to server before testing...');
+    showNotificationStatus('Saving current token to server...', 'info');
+    
     ajaxCall(
         "POST",
-        serverUrl + `Notifications/TestNotification?userId=${userId}`,
+        serverUrl + `Notifications/SaveFCMToken?userId=${userId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
         null,
-        function (response) {
-            console.log('✅ Test notification sent successfully:', response);
-            showNotificationStatus('Test notification sent! Check your device.', 'success');
+        function (saveResponse) {
+            console.log('✅ FCM token saved successfully:', saveResponse);
+            
+            // בדוק אם השמירה באמת הצליחה
+            if (saveResponse && saveResponse.notificationsEnabled !== undefined) {
+                console.log('📊 Server confirms notifications enabled:', saveResponse.notificationsEnabled);
+            }
+            
+            // המתן זמן ארוך יותר לפני שליחת הבדיקה כדי לוודא שה-DB עודכן
+            console.log('⏳ Waiting for database to update...');
+            setTimeout(() => {
+                console.log('🚀 Now sending test notification...');
+                
+                // עכשיו שלח את הבדיקה
+                ajaxCall(
+                    "POST",
+                    serverUrl + `Notifications/TestNotification?userId=${userId}`,
+                    null,
+                    function (response) {
+                        console.log('✅ Test notification sent successfully:', response);
+                        showNotificationStatus('Test notification sent! Check your device.', 'success');
+                    },
+                    function (xhr) {
+                        console.error('❌ Error sending test notification:', xhr.status, xhr.responseText);
+                        
+                        // בדוק אם השגיאה קשורה לטוקן לא תקין
+                        const isTokenError = xhr.status === 500 && 
+                            (xhr.responseText.includes('no tokens') || 
+                             xhr.responseText.includes('invalid') ||
+                             xhr.responseText.includes('UNAUTHENTICATED') ||
+                             xhr.responseText.includes('refresh page') ||
+                             xhr.responseText.includes('THIRD_PARTY_AUTH_ERROR'));
+                        
+                        if (isTokenError) {
+                            console.log('🔄 Token issue detected, trying alternative approach...');
+                            showNotificationStatus('Database not updated yet. Trying direct test...', 'info');
+                            
+                            // אם עדיין לא עובד, נסה direct token
+                            setTimeout(() => {
+                                console.log('🎯 Falling back to direct token test...');
+                                testDirectToken("Test via Direct", "This test bypasses the database");
+                            }, 1000);
+                        } else {
+                            showNotificationStatus(`Error sending test notification: ${xhr.status} - ${xhr.responseText}`, 'danger');
+                        }
+                    }
+                );
+            }, 1500); // המתן 1.5 שניות לפני שליחת הבדיקה
         },
         function (xhr) {
-            console.error('❌ Error sending test notification:', xhr.status, xhr.responseText);
+            console.error('❌ Error saving FCM token before test:', xhr.responseText);
+            showNotificationStatus('Error saving token before test', 'warning');
             
-            // בדוק אם השגיאה קשורה לטוקן לא תקין
-            const isTokenError = xhr.status === 500 && 
-                (xhr.responseText.includes('no tokens') || 
-                 xhr.responseText.includes('invalid') ||
-                 xhr.responseText.includes('UNAUTHENTICATED') ||
-                 xhr.responseText.includes('THIRD_PARTY_AUTH_ERROR'));
-            
-            if (isTokenError) {
-                console.log('🔄 Token is invalid, refreshing and retrying...');
-                showNotificationStatus('Token expired, refreshing...', 'info');
-                
-                // רענן טוקן ונסה שוב
-                refreshFCMToken(userId).then(success => {
-                    if (success) {
-                        console.log('✅ Token refreshed successfully, retrying notification...');
-                        setTimeout(() => sendTestNotification(userId), 1000); // חכה קצת ונסה שוב
-                    } else {
-                        showNotificationStatus('Could not refresh token. Please refresh the page.', 'warning');
-                    }
-                }).catch(error => {
-                    console.error('❌ Error refreshing token:', error);
-                    showNotificationStatus('Error refreshing token. Please refresh the page.', 'danger');
-                });
-            } else {
-                showNotificationStatus(`Error sending test notification: ${xhr.status} - ${xhr.responseText}`, 'danger');
-            }
+            // גם אם השמירה נכשלה, נסה לשלוח בדיקה בכל זאת
+            console.log('⚠️ Proceeding with test despite save error...');
+            ajaxCall(
+                "POST",
+                serverUrl + `Notifications/TestNotification?userId=${userId}`,
+                null,
+                function (response) {
+                    console.log('✅ Test notification sent successfully (despite save error):', response);
+                    showNotificationStatus('Test notification sent! Check your device.', 'success');
+                },
+                function (xhr) {
+                    console.error('❌ Error sending test notification after save failure:', xhr.status, xhr.responseText);
+                    showNotificationStatus(`Test failed: ${xhr.status} - ${xhr.responseText}`, 'danger');
+                }
+            );
         }
     );
 }
@@ -1357,6 +1396,82 @@ window.onUserLogout = function() {
 // פונקציה פשוטה לבדיקת FCM token
 window.debugNotifications = debugNotificationSystem;
 
+// פונקציה מתקדמת לבדיקת מצב התראות
+window.advancedNotificationTest = async function() {
+    if (!currentUser) {
+        console.log('❌ No user logged in');
+        showNotificationStatus('Please log in first', 'warning');
+        return false;
+    }
+    
+    console.log('🔬 Running advanced notification test...');
+    console.log('==========================================');
+    
+    const userId = currentUser.id;
+    console.log('👤 User ID:', userId);
+    console.log('📧 Current FCM Token:', currentFCMToken ? `${currentFCMToken.substring(0, 30)}...` : 'None');
+    
+    try {
+        // שלב 1: שמור טוקן
+        console.log('\n📤 Step 1: Saving current token to server...');
+        if (!currentFCMToken) {
+            console.log('❌ No token to save');
+            return false;
+        }
+        
+        const saveResult = await new Promise((resolve, reject) => {
+            ajaxCall(
+                "POST",
+                serverUrl + `Notifications/SaveFCMToken?userId=${userId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
+                null,
+                resolve,
+                reject
+            );
+        });
+        
+        console.log('✅ Save result:', saveResult);
+        
+        // שלב 2: בדוק סטטוס התראות בשרת
+        console.log('\n📊 Step 2: Checking notification status on server...');
+        const statusResult = await checkNotificationStatus(userId);
+        console.log('📊 Server status:', statusResult);
+        
+        // שלב 3: המתן ונסה שליחת בדיקה
+        console.log('\n⏳ Step 3: Waiting 2 seconds for DB sync...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('🧪 Step 4: Sending test notification...');
+        const testResult = await new Promise((resolve, reject) => {
+            ajaxCall(
+                "POST",
+                serverUrl + `Notifications/TestNotification?userId=${userId}`,
+                null,
+                (response) => resolve({ success: true, response }),
+                (xhr) => resolve({ success: false, error: xhr.responseText, status: xhr.status })
+            );
+        });
+        
+        if (testResult.success) {
+            console.log('✅ Test notification sent successfully!');
+            showNotificationStatus('Advanced test completed successfully!', 'success');
+        } else {
+            console.log('❌ Test notification failed:', testResult.error);
+            
+            // שלב 5: אם נכשל, נסה direct test
+            console.log('\n🎯 Step 5: Trying direct token test as fallback...');
+            testDirectToken("Fallback Test", "Direct test after DB test failed");
+        }
+        
+        console.log('==========================================');
+        return testResult.success;
+        
+    } catch (error) {
+        console.error('❌ Advanced test error:', error);
+        showNotificationStatus('Advanced test failed: ' + error, 'danger');
+        return false;
+    }
+};
+
 // פונקציה נוספת לבדיקה מהירה של הטוקן
 window.quickTokenCheck = function() {
     console.log('=== Quick Token Check ===');
@@ -1406,7 +1521,7 @@ window.sendTokenToServer = function() {
     
     console.log('📤 Sending FCM token to server...');
     console.log('User ID:', currentUser.id);
-    console.log('Token:', `${currentFCMToken.substring(0, 30)}...`);
+    console.log('Token:', `${currentFCMToken}`);
     
     saveFCMTokenToServer(currentUser.id, currentFCMToken);
 };

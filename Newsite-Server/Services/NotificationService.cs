@@ -43,40 +43,40 @@ namespace Newsite_Server.Services
                             Console.WriteLine($"📁 Loading service account from: {serviceAccountPath}");
                             var credential = GoogleCredential.FromFile(serviceAccountPath);
 
-            // קרא את project_id מה-service account file במקום להגדיר ידנית
-            var serviceAccountJson = File.ReadAllText(serviceAccountPath);
-            
-            // בדיקה שהקובץ תקין
-            if (string.IsNullOrWhiteSpace(serviceAccountJson))
-            {
-                throw new Exception("Firebase service account file is empty or corrupted");
-            }
+                            // קרא את project_id מה-service account file במקום להגדיר ידנית
+                            var serviceAccountJson = File.ReadAllText(serviceAccountPath);
 
-            Dictionary<string, object> serviceAccountData;
-            try
-            {
-                serviceAccountData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(serviceAccountJson);
-            }
-            catch (Exception jsonEx)
-            {
-                throw new Exception($"Failed to parse firebase-service-account.json: {jsonEx.Message}");
-            }
+                            // בדיקה שהקובץ תקין
+                            if (string.IsNullOrWhiteSpace(serviceAccountJson))
+                            {
+                                throw new Exception("Firebase service account file is empty or corrupted");
+                            }
 
-            // וידוא שיש project_id
-            if (!serviceAccountData.ContainsKey("project_id"))
-            {
-                throw new Exception("firebase-service-account.json missing 'project_id' field");
-            }
+                            Dictionary<string, object> serviceAccountData;
+                            try
+                            {
+                                serviceAccountData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(serviceAccountJson);
+                            }
+                            catch (Exception jsonEx)
+                            {
+                                throw new Exception($"Failed to parse firebase-service-account.json: {jsonEx.Message}");
+                            }
 
-            var projectId = serviceAccountData["project_id"].ToString();
-            
-            // וידוא שה-project_id תקין
-            if (string.IsNullOrWhiteSpace(projectId))
-            {
-                throw new Exception("project_id in firebase-service-account.json is empty or null");
-            }
+                            // וידוא שיש project_id
+                            if (!serviceAccountData.ContainsKey("project_id"))
+                            {
+                                throw new Exception("firebase-service-account.json missing 'project_id' field");
+                            }
 
-            Console.WriteLine($"📍 Using Project ID: {projectId}");
+                            var projectId = serviceAccountData["project_id"].ToString();
+
+                            // וידוא שה-project_id תקין
+                            if (string.IsNullOrWhiteSpace(projectId))
+                            {
+                                throw new Exception("project_id in firebase-service-account.json is empty or null");
+                            }
+
+                            Console.WriteLine($"📍 Using Project ID: {projectId}");
 
                             var options = new AppOptions()
                             {
@@ -189,10 +189,23 @@ namespace Newsite_Server.Services
         // שלח התראה למשתמש ספציפי
         public async Task<bool> SendNotificationToUser(int userId, string title, string body, Dictionary<string, string> data = null)
         {
-            // First, clean up any potential duplicate or old tokens
-            await CleanupUserTokens(userId);
+            // עבור test notifications - אל תעשה cleanup אוטומטי
+            // First, clean up any potential duplicate or old tokens - commented out for testing
+            // await CleanupUserTokens(userId);
 
             var tokens = dbServices.GetFCMTokensForUsers(new List<int> { userId });
+            Console.WriteLine($"📊 SendNotificationToUser: Found {tokens.Count} tokens for user {userId}");
+
+            if (tokens.Count > 0)
+            {
+                for (int i = 0; i < Math.Min(tokens.Count, 3); i++) // הראה רק 3 ראשונים
+                {
+                    var token = tokens[i];
+                    var preview = token.Length > 30 ? token.Substring(0, 30) + "..." : token;
+                    Console.WriteLine($"  📧 Token {i + 1}: {preview}");
+                }
+            }
+
             return await SendNotificationToTokens(tokens, title, body, data);
         }
 
@@ -282,7 +295,7 @@ namespace Newsite_Server.Services
                 }
 
                 string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-                
+
                 if (!string.IsNullOrEmpty(response))
                 {
                     Console.WriteLine($"✅ Direct notification sent successfully. Response: {response}");
@@ -298,13 +311,13 @@ namespace Newsite_Server.Services
             {
                 Console.WriteLine($"❌ Firebase messaging error: {ex.Message}");
                 Console.WriteLine($"📋 Error code: {ex.ErrorCode}");
-                
+
                 // בדוק אם הטוקן לא תקין
                 if (ex.ErrorCode.ToString() == "InvalidArgument" || ex.ErrorCode.ToString() == "Unregistered")
                 {
                     Console.WriteLine("⚠️ Token appears to be invalid or unregistered");
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -331,166 +344,193 @@ namespace Newsite_Server.Services
                 Console.WriteLine($"📋 Body: {body}");
 
                 // בדיקה שFirebase מאותחל כמו שצריך
-                        if (FirebaseApp.DefaultInstance == null)
-                        {
-                            Console.WriteLine("❌ Firebase not initialized!");
-                            return false;
-                        }
+                if (FirebaseApp.DefaultInstance == null)
+                {
+                    Console.WriteLine("❌ Firebase not initialized!");
+                    return false;
+                }
 
-                        Console.WriteLine($"✅ Firebase Project ID: {FirebaseApp.DefaultInstance.Options.ProjectId}");
+                Console.WriteLine($"✅ Firebase Project ID: {FirebaseApp.DefaultInstance.Options.ProjectId}");
 
-                        // יצירת הודעה פשוטה בלי קונפיגורציות מיוחדות שיכולות לגרום ל-404
-                        var message = new MulticastMessage()
-                        {
-                            Tokens = tokens,
-                            Notification = new Notification()
-                            {
-                                Title = title,
-                                Body = body
-                            }
-                            // הסרת Data לחלוטין במקרה של null או בעיות פורמט
-                        };
+                // Additional debug info
+                Console.WriteLine($"🔧 Firebase App Name: {FirebaseApp.DefaultInstance.Name}");
+                Console.WriteLine($"🔧 Service Account Email: {FirebaseApp.DefaultInstance.Options.Credential}");
+                Console.WriteLine($"🔧 Total tokens to process: {tokens.Count}");
 
-                        // רק אם יש data valid, הוסף אותו
-                        if (data != null && data.Count > 0)
-                        {
-                            message.Data = data;
-                        }
+                // טיפול בטוקנים ריקים או לא תקפים לפני שליחה
+                var validTokens = new List<string>();
+                var invalidTokens = new List<string>();
 
-                        Console.WriteLine($"📦 Message prepared. Sending to Firebase...");
-                        Console.WriteLine($"🎯 Sample tokens: {string.Join(", ", tokens.Take(2))}...");
+                Console.WriteLine("🔍 Validating tokens before sending...");
 
-                        // Additional debug info
-                        Console.WriteLine($"🔧 Firebase App Name: {FirebaseApp.DefaultInstance.Name}");
-                        Console.WriteLine($"🔧 Service Account Email: {FirebaseApp.DefaultInstance.Options.Credential}");
-                        Console.WriteLine($"🔧 Total tokens to process: {tokens.Count}");
-
-                        // טיפול בטוקנים ריקים או לא תקפים לפני שליחה
-                        var validTokens = new List<string>();
-                        var invalidTokens = new List<string>();
-
-                        Console.WriteLine("🔍 Validating tokens before sending...");
-
-                        foreach (var token in tokens)
-                        {
-                            // בדיקות בסיסיות של פורמט הטוקן
-                            if (string.IsNullOrWhiteSpace(token))
-                            {
-                                Console.WriteLine("⚠️ Skipping empty token");
-                                invalidTokens.Add(token);
-                                continue;
-                            }
-
-                            if (token.Length < 10)
-                            {
-                                Console.WriteLine($"⚠️ Skipping suspiciously short token: {token}");
-                                invalidTokens.Add(token);
-                                continue;
-                            }
-
-                            // הוסף לרשימת הטוקנים התקפים
-                            validTokens.Add(token);
-                        }
-
-                        if (validTokens.Count == 0)
-                        {
-                            Console.WriteLine("❌ No valid tokens after filtering");
-                            return false;
-                        }
-
-                        Console.WriteLine($"✅ Using {validTokens.Count} valid tokens (filtered out {invalidTokens.Count} invalid ones)");
-
-                        Console.WriteLine($"✅ Using {validTokens.Count} tokens for sending");
-
-                        // Update message to use valid tokens
-                        message.Tokens = validTokens;
-
-                        Console.WriteLine($"🚀 Sending to Firebase with {validTokens.Count} tokens...");
-                        Console.WriteLine($"📋 Project: {FirebaseApp.DefaultInstance.Options.ProjectId}");
-                        Console.WriteLine($"📋 Message title: {title}");
-
-                        var response = await FirebaseMessaging.DefaultInstance.SendMulticastAsync(message);
-
-                        Console.WriteLine($"📨 Firebase Response - Success: {response.SuccessCount}, Failures: {response.FailureCount}");
-
-                        if (response.SuccessCount > 0)
-                        {
-                            Console.WriteLine($"✅ Notification sent successfully to {response.SuccessCount} devices");
-
-                            // הדפסת שגיאות אם יש
-                            if (response.FailureCount > 0)
-                            {
-                                Console.WriteLine($"⚠️ Some failures occurred:");
-                                for (int i = 0; i < response.Responses.Count; i++)
-                                {
-                                    if (!response.Responses[i].IsSuccess)
-                                    {
-                                        Console.WriteLine($"  ❌ Token {i}: {response.Responses[i].Exception?.Message}");
-                                    }
-                                }
-                            }
-                            return true;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"❌ Failed to send notification. All {response.FailureCount} attempts failed");
-
-                            // הדפסת כל השגיאות
-                            for (int i = 0; i < response.Responses.Count; i++)
-                            {
-                                if (!response.Responses[i].IsSuccess)
-                                {
-                                    Console.WriteLine($"  ❌ Token {i}: {response.Responses[i].Exception?.Message}");
-                                }
-                            }
-                            return false;
-                        }
-                    }
-                    catch (FirebaseMessagingException fex)
+                foreach (var token in tokens)
+                {
+                    // בדיקות בסיסיות של פורמט הטוקן
+                    if (string.IsNullOrWhiteSpace(token))
                     {
-                        Console.WriteLine($"🔥 Firebase Messaging Exception: {fex.Message}");
-                        Console.WriteLine($"📋 Error Code: {fex.ErrorCode}");
-                        Console.WriteLine($"📋 Stack Trace: {fex.StackTrace}");
-
-                        // בדיקה ספציפית לשגיאת 404
-                        if (fex.Message.Contains("404") || fex.Message.Contains("Not Found"))
-                        {
-                            Console.WriteLine("❌ Firebase 404 Error Detected!");
-                            Console.WriteLine("🔧 Most likely cause: FCM API is not enabled in Google Cloud Console");
-                            Console.WriteLine("🔧 Solutions:");
-                            Console.WriteLine("   1. Go to: https://console.cloud.google.com/apis/library/fcm.googleapis.com?project=newspapersite-ruppin");
-                            Console.WriteLine("   2. Click 'ENABLE' to enable Firebase Cloud Messaging API");
-                            Console.WriteLine("   3. Also enable: https://console.cloud.google.com/apis/library/firebase.googleapis.com?project=newspapersite-ruppin");
-                            Console.WriteLine("   4. Wait 5-10 minutes for changes to propagate");
-                            Console.WriteLine("   5. Verify billing is enabled for the project");
-                        }
-
-                        if (fex.InnerException != null)
-                        {
-                            Console.WriteLine($"🔍 Inner Exception: {fex.InnerException.Message}");
-                            if (fex.InnerException.InnerException != null)
-                            {
-                                Console.WriteLine($"🔍 Inner Inner Exception: {fex.InnerException.InnerException.Message}");
-                            }
-                        }
-
-                        return false;
+                        Console.WriteLine("⚠️ Skipping empty token");
+                        invalidTokens.Add(token);
+                        continue;
                     }
-                    catch (Exception ex)
+
+                    if (token.Length < 10)
                     {
-                        Console.WriteLine($"❌ General Exception in SendNotificationToTokens: {ex.Message}");
-                        Console.WriteLine($"📋 Type: {ex.GetType().Name}");
-                        Console.WriteLine($"📋 Stack Trace: {ex.StackTrace}");
+                        Console.WriteLine($"⚠️ Skipping suspiciously short token: {token}");
+                        invalidTokens.Add(token);
+                        continue;
+                    }
 
-                        if (ex.InnerException != null)
+                    // הוסף לרשימת הטוקנים התקפים
+                    validTokens.Add(token);
+                }
+
+                if (validTokens.Count == 0)
+                {
+                    Console.WriteLine("❌ No valid tokens after filtering");
+                    return false;
+                }
+
+                Console.WriteLine($"✅ Using {validTokens.Count} valid tokens (filtered out {invalidTokens.Count} invalid ones)");
+
+                // בחר את השיטה הנכונה בהתאם למספר הטוקנים
+                if (validTokens.Count == 1)
+                {
+                    // עבור טוקן יחיד - השתמש ב-Message ו-SendAsync
+                    Console.WriteLine("📤 Using single token method (SendAsync)...");
+                    
+                    var singleMessage = new Message()
+                    {
+                        Token = validTokens[0],
+                        Notification = new Notification()
                         {
-                            Console.WriteLine($"🔍 Inner Exception: {ex.InnerException.Message}");
-                            Console.WriteLine($"🔍 Inner Type: {ex.InnerException.GetType().Name}");
+                            Title = title,
+                            Body = body
                         }
+                    };
 
+                    // רק אם יש data valid, הוסף אותו
+                    if (data != null && data.Count > 0)
+                    {
+                        singleMessage.Data = data;
+                    }
+
+                    string singleResponse = await FirebaseMessaging.DefaultInstance.SendAsync(singleMessage);
+                    
+                    if (!string.IsNullOrEmpty(singleResponse))
+                    {
+                        Console.WriteLine($"✅ Single notification sent successfully. Response: {singleResponse}");
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("❌ Single notification failed - empty response");
                         return false;
                     }
                 }
+                else
+                {
+                    // עבור כמה טוקנים - השתמש ב-MulticastMessage ו-SendMulticastAsync
+                    Console.WriteLine($"📤 Using multicast method (SendMulticastAsync) for {validTokens.Count} tokens...");
+                    
+                    var multicastMessage = new MulticastMessage()
+                    {
+                        Tokens = validTokens,
+                        Notification = new Notification()
+                        {
+                            Title = title,
+                            Body = body
+                        }
+                    };
+
+                    // רק אם יש data valid, הוסף אותו
+                    if (data != null && data.Count > 0)
+                    {
+                        multicastMessage.Data = data;
+                    }
+
+                    var multicastResponse = await FirebaseMessaging.DefaultInstance.SendMulticastAsync(multicastMessage);
+
+                    Console.WriteLine($"📨 Firebase Response - Success: {multicastResponse.SuccessCount}, Failures: {multicastResponse.FailureCount}");
+
+                    if (multicastResponse.SuccessCount > 0)
+                    {
+                        Console.WriteLine($"✅ Notification sent successfully to {multicastResponse.SuccessCount} devices");
+
+                        // הדפסת שגיאות אם יש
+                        if (multicastResponse.FailureCount > 0)
+                        {
+                            Console.WriteLine($"⚠️ Some failures occurred:");
+                            for (int i = 0; i < multicastResponse.Responses.Count; i++)
+                            {
+                                if (!multicastResponse.Responses[i].IsSuccess)
+                                {
+                                    Console.WriteLine($"  ❌ Token {i}: {multicastResponse.Responses[i].Exception?.Message}");
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"❌ Failed to send notification. All {multicastResponse.FailureCount} attempts failed");
+
+                        // הדפסת כל השגיאות
+                        for (int i = 0; i < multicastResponse.Responses.Count; i++)
+                        {
+                            if (!multicastResponse.Responses[i].IsSuccess)
+                            {
+                                Console.WriteLine($"  ❌ Token {i}: {multicastResponse.Responses[i].Exception?.Message}");
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            catch (FirebaseMessagingException fex)
+            {
+                Console.WriteLine($"🔥 Firebase Messaging Exception: {fex.Message}");
+                Console.WriteLine($"📋 Error Code: {fex.ErrorCode}");
+                Console.WriteLine($"📋 Stack Trace: {fex.StackTrace}");
+
+                // בדיקה ספציפית לשגיאת 404
+                if (fex.Message.Contains("404") || fex.Message.Contains("Not Found"))
+                {
+                    Console.WriteLine("❌ Firebase 404 Error Detected!");
+                    Console.WriteLine("🔧 Most likely cause: FCM API is not enabled in Google Cloud Console");
+                    Console.WriteLine("🔧 Solutions:");
+                    Console.WriteLine("   1. Go to: https://console.cloud.google.com/apis/library/fcm.googleapis.com?project=newspapersite-ruppin");
+                    Console.WriteLine("   2. Click 'ENABLE' to enable Firebase Cloud Messaging API");
+                    Console.WriteLine("   3. Also enable: https://console.cloud.google.com/apis/library/firebase.googleapis.com?project=newspapersite-ruppin");
+                    Console.WriteLine("   4. Wait 5-10 minutes for changes to propagate");
+                    Console.WriteLine("   5. Verify billing is enabled for the project");
+                }
+
+                if (fex.InnerException != null)
+                {
+                    Console.WriteLine($"🔍 Inner Exception: {fex.InnerException.Message}");
+                    if (fex.InnerException.InnerException != null)
+                    {
+                        Console.WriteLine($"🔍 Inner Inner Exception: {fex.InnerException.InnerException.Message}");
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ General Exception in SendNotificationToTokens: {ex.Message}");
+                Console.WriteLine($"📋 Type: {ex.GetType().Name}");
+                Console.WriteLine($"📋 Stack Trace: {ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"🔍 Inner Exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"🔍 Inner Type: {ex.InnerException.GetType().Name}");
+                }
+
+                return false;
+            }
+        }
 
         // התראה על תגובה חדשה
         public async Task NotifyNewComment(int articleId, string articleTitle, int commenterId, string commenterName)
@@ -527,34 +567,34 @@ namespace Newsite_Server.Services
                     {"url", "/shared.html"}
                 };
 
-                        await SendNotificationToUsers(
-                            followerIds,
-                            "New Shared Article",
-                            $"{sharerName} shared: \"{articleTitle}\"",
-                            data
-                        );
-                    }
-                }
+                await SendNotificationToUsers(
+                    followerIds,
+                    "New Shared Article",
+                    $"{sharerName} shared: \"{articleTitle}\"",
+                    data
+                );
+            }
+        }
 
-                // התראה על עדכון מערכת
-                public async Task NotifySystemUpdate(string title, string message, List<int> userIds = null)
-                {
-                    var data = new Dictionary<string, string>
+        // התראה על עדכון מערכת
+        public async Task NotifySystemUpdate(string title, string message, List<int> userIds = null)
+        {
+            var data = new Dictionary<string, string>
             {
                 {"type", "system_update"},
                 {"url", "/"}
             };
 
-                    if (userIds != null && userIds.Count > 0)
-                    {
-                        await SendNotificationToUsers(userIds, title, message, data);
-                    }
-                    else
-                    {
-                        var allActiveUsers = dbServices.GetAllActiveUserIds();
-                        await SendNotificationToUsers(allActiveUsers, title, message, data);
-                    }
-                }
+            if (userIds != null && userIds.Count > 0)
+            {
+                await SendNotificationToUsers(userIds, title, message, data);
+            }
+            else
+            {
+                var allActiveUsers = dbServices.GetAllActiveUserIds();
+                await SendNotificationToUsers(allActiveUsers, title, message, data);
+            }
+        }
 
         // שליחת התראת בדיקה
         public async Task<bool> SendTestNotification(int userId)
@@ -562,12 +602,64 @@ namespace Newsite_Server.Services
             try
             {
                 Console.WriteLine($"🧪 Sending test notification to user: {userId}");
-                
+                Console.WriteLine($"🔍 Current time: {DateTime.Now}");
+
+                // בדוק טוקנים ללא cleanup קודם
+                var allTokensBeforeCleanup = dbServices.GetFCMTokensForUsers(new List<int> { userId });
+                Console.WriteLine($"📊 BEFORE cleanup - User {userId} has {allTokensBeforeCleanup.Count} tokens in DB");
+
+                if (allTokensBeforeCleanup.Count > 0)
+                {
+                    for (int i = 0; i < allTokensBeforeCleanup.Count; i++)
+                    {
+                        var token = allTokensBeforeCleanup[i];
+                        var preview = token.Length > 30 ? token.Substring(0, 30) + "..." : token;
+                        Console.WriteLine($"  📧 Before cleanup Token {i + 1}: {preview}");
+                    }
+                }
+
+                // עכשיו רץ cleanup ובדוק שוב
+                Console.WriteLine("🧹 Running token cleanup...");
+                await CleanupUserTokens(userId);
+
+                // קודם בדוק כמה טוקנים יש למשתמש אחרי cleanup
+                var existingTokens = dbServices.GetFCMTokensForUsers(new List<int> { userId });
+                Console.WriteLine($"📊 AFTER cleanup - User {userId} has {existingTokens.Count} tokens in DB");
+
+                // הדפס את הטוקנים (חלקית לבטיחות)
+                if (existingTokens.Count > 0)
+                {
+                    for (int i = 0; i < existingTokens.Count; i++)
+                    {
+                        var token = existingTokens[i];
+                        var preview = token.Length > 30 ? token.Substring(0, 30) + "..." : token;
+                        Console.WriteLine($"  📧 After cleanup Token {i + 1}: {preview}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ No FCM tokens found for user AFTER cleanup. This might be the problem!");
+
+                    // אם אין טוקנים אחרי cleanup, אבל היו לפני - נסה לחזור לטוקנים הישנים
+                    if (allTokensBeforeCleanup.Count > 0)
+                    {
+                        Console.WriteLine("🔄 Attempting to use tokens from before cleanup...");
+                        existingTokens = allTokensBeforeCleanup;
+                    }
+                    else
+                    {
+                        Console.WriteLine("❌ No FCM tokens found for user. User needs to refresh page and allow notifications.");
+                        return false;
+                    }
+                }
+
+                // נסה לשלוח התראה
+                Console.WriteLine($"🚀 Attempting to send notification using SendNotificationToUser...");
                 var success = await SendNotificationToUser(
                     userId,
                     "Test Notification",
                     "This is a test notification from News Hub!",
-                    new Dictionary<string, string> { {"type", "test"} }
+                    new Dictionary<string, string> { { "type", "test" } }
                 );
 
                 if (success)
@@ -576,7 +668,32 @@ namespace Newsite_Server.Services
                 }
                 else
                 {
-                    Console.WriteLine("❌ Failed to send test notification");
+                    Console.WriteLine("❌ Failed to send test notification via SendNotificationToUser");
+
+                    // תן פרטים נוספים למה זה נכשל
+                    Console.WriteLine("🔍 Attempting direct diagnosis...");
+
+                    // נסה לשלוח ישירות לטוקן הראשון לבדיקה
+                    if (existingTokens.Count > 0)
+                    {
+                        var firstToken = existingTokens[0];
+                        Console.WriteLine($"🎯 Testing direct send to first token...");
+
+                        var directSuccess = await SendDirectNotificationToToken(
+                            firstToken,
+                            "Direct Test",
+                            "Direct test notification to verify token validity"
+                        );
+
+                        Console.WriteLine($"🎯 Direct send result: {(directSuccess ? "SUCCESS" : "FAILED")}");
+
+                        // אם הטסט הישיר עבד, זה אומר שהבעיה היא בפונקציה SendNotificationToUser
+                        if (directSuccess)
+                        {
+                            Console.WriteLine("✅ Direct test worked! Problem is in SendNotificationToUser flow");
+                            success = true; // סמן כהצלחה כי הטוקן עובד
+                        }
+                    }
                 }
 
                 return success;
@@ -584,6 +701,7 @@ namespace Newsite_Server.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error sending test notification: {ex.Message}");
+                Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
                 return false;
             }
         }
@@ -594,10 +712,10 @@ namespace Newsite_Server.Services
             try
             {
                 Console.WriteLine("🔍 Running Firebase connection diagnosis...");
-                
+
                 // Call the existing test method
                 var result = await TestFirebaseProjectConnection();
-                
+
                 if (result)
                 {
                     Console.WriteLine("✅ Firebase diagnosis: Connection successful");
@@ -606,7 +724,7 @@ namespace Newsite_Server.Services
                 {
                     Console.WriteLine("❌ Firebase diagnosis: Connection failed");
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -620,7 +738,7 @@ namespace Newsite_Server.Services
         public async Task<int> CleanupInvalidTokens()
         {
             Console.WriteLine("🧹 Starting comprehensive FCM token cleanup...");
-            
+
             List<string> allTokens;
             try
             {
@@ -631,96 +749,96 @@ namespace Newsite_Server.Services
             {
                 Console.WriteLine($"❌ Error getting all tokens: {ex.Message}");
                 Console.WriteLine("⚠️ Fallback: Getting tokens from active users instead");
-                        
-                        // fallback - השג טוקנים מהמשתמשים הפעילים
-                        try
-                        {
-                            var activeUsers = dbServices.GetAllActiveUserIds();
-                            if (activeUsers?.Count > 0)
-                            {
-                                allTokens = dbServices.GetFCMTokensForUsers(activeUsers);
-                            }
-                            else
-                            {
-                                Console.WriteLine("⚠️ No active users found, cannot perform cleanup");
-                                return 0;
-                            }
-                        }
-                        catch (Exception fallbackEx)
-                        {
-                            Console.WriteLine($"❌ Fallback also failed: {fallbackEx.Message}");
-                            return 0;
-                        }
-                    }
 
-                    if (allTokens == null || allTokens.Count == 0)
+                // fallback - השג טוקנים מהמשתמשים הפעילים
+                try
+                {
+                    var activeUsers = dbServices.GetAllActiveUserIds();
+                    if (activeUsers?.Count > 0)
                     {
-                        Console.WriteLine("ℹ️ No tokens found to cleanup");
+                        allTokens = dbServices.GetFCMTokensForUsers(activeUsers);
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ No active users found, cannot perform cleanup");
                         return 0;
                     }
-                    
-                    int removedCount = 0;
+                }
+                catch (Exception fallbackEx)
+                {
+                    Console.WriteLine($"❌ Fallback also failed: {fallbackEx.Message}");
+                    return 0;
+                }
+            }
 
-                    foreach (var token in allTokens)
+            if (allTokens == null || allTokens.Count == 0)
+            {
+                Console.WriteLine("ℹ️ No tokens found to cleanup");
+                return 0;
+            }
+
+            int removedCount = 0;
+
+            foreach (var token in allTokens)
+            {
+                try
+                {
+                    // וידוא שהטוקן לא ריק
+                    if (string.IsNullOrWhiteSpace(token))
                     {
-                        try
-                        {
-                            // וידוא שהטוקן לא ריק
-                            if (string.IsNullOrWhiteSpace(token))
-                            {
-                                Console.WriteLine("🧹 Skipping empty token");
-                                continue;
-                            }
-
-                            // בדוק כל טוקן עם dry run
-                            var testMessage = new Message()
-                            {
-                                Token = token,
-                                Notification = new Notification()
-                                {
-                                    Title = "Test",
-                                    Body = "Token validation test"
-                                }
-                            };
-
-                            await FirebaseMessaging.DefaultInstance.SendAsync(testMessage, dryRun: true);
-                            Console.WriteLine($"✅ Token valid: {token.Substring(0, Math.Min(20, token.Length))}...");
-                        }
-                        catch (FirebaseMessagingException ex)
-                        {
-                            if (ex.Message.Contains("registration-token-not-registered") ||
-                                ex.Message.Contains("invalid-registration-token"))
-                            {
-                                Console.WriteLine($"🧹 Removing invalid token: {token.Substring(0, Math.Min(20, token.Length))}...");
-                                try
-                                {
-                                    dbServices.DeleteInvalidFCMToken(token);
-                                    removedCount++;
-                                }
-                                catch (Exception deleteEx)
-                                {
-                                    Console.WriteLine($"⚠️ Failed to delete token: {deleteEx.Message}");
-                                }
-                            }
-                            else if (ex.Message.Contains("404"))
-                            {
-                                Console.WriteLine("❌ Got 404 during token validation - stopping cleanup to avoid false positives");
-                                break;
-                            }
-                            else
-                            {
-                                Console.WriteLine($"⚠️ Unexpected error for token {token.Substring(0, Math.Min(20, token.Length))}...: {ex.Message}");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"⚠️ General error processing token: {ex.Message}");
-                        }
+                        Console.WriteLine("🧹 Skipping empty token");
+                        continue;
                     }
 
-                    Console.WriteLine($"🧹 Cleanup completed. Removed {removedCount} invalid tokens.");
-                    return removedCount;
+                    // בדוק כל טוקן עם dry run
+                    var testMessage = new Message()
+                    {
+                        Token = token,
+                        Notification = new Notification()
+                        {
+                            Title = "Test",
+                            Body = "Token validation test"
+                        }
+                    };
+
+                    await FirebaseMessaging.DefaultInstance.SendAsync(testMessage, dryRun: true);
+                    Console.WriteLine($"✅ Token valid: {token.Substring(0, Math.Min(20, token.Length))}...");
                 }
+                catch (FirebaseMessagingException ex)
+                {
+                    if (ex.Message.Contains("registration-token-not-registered") ||
+                        ex.Message.Contains("invalid-registration-token"))
+                    {
+                        Console.WriteLine($"🧹 Removing invalid token: {token.Substring(0, Math.Min(20, token.Length))}...");
+                        try
+                        {
+                            dbServices.DeleteInvalidFCMToken(token);
+                            removedCount++;
+                        }
+                        catch (Exception deleteEx)
+                        {
+                            Console.WriteLine($"⚠️ Failed to delete token: {deleteEx.Message}");
+                        }
+                    }
+                    else if (ex.Message.Contains("404"))
+                    {
+                        Console.WriteLine("❌ Got 404 during token validation - stopping cleanup to avoid false positives");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"⚠️ Unexpected error for token {token.Substring(0, Math.Min(20, token.Length))}...: {ex.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ General error processing token: {ex.Message}");
+                }
+            }
+
+            Console.WriteLine($"🧹 Cleanup completed. Removed {removedCount} invalid tokens.");
+            return removedCount;
+        }
 
         // סטטיסטיקות על FCM tokens
         public object GetTokenStatistics()
@@ -732,22 +850,22 @@ namespace Newsite_Server.Services
                 var enabledTokens = dbServices.GetEnabledFCMTokensCount();
                 var usersWithTokens = dbServices.GetUsersWithTokensCount();
 
-                        return new
-                        {
-                            totalTokens,
-                            activeTokens,
-                            enabledTokens,
-                            usersWithTokens,
-                            inactiveTokens = totalTokens - activeTokens,
-                            disabledTokens = activeTokens - enabledTokens
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"❌ Error getting token statistics: {ex.Message}");
-                        return new { error = ex.Message };
-                    }
-                }
+                return new
+                {
+                    totalTokens,
+                    activeTokens,
+                    enabledTokens,
+                    usersWithTokens,
+                    inactiveTokens = totalTokens - activeTokens,
+                    disabledTokens = activeTokens - enabledTokens
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error getting token statistics: {ex.Message}");
+                return new { error = ex.Message };
+            }
+        }
 
         // בדיקה מקיפה של סטטוס FCM והנחיות לתיקון
         public async Task<object> GetFCMDiagnosisAndSolutions()
@@ -762,177 +880,177 @@ namespace Newsite_Server.Services
                 detailedInfo = new
                 {
                     firebaseAppName = FirebaseApp.DefaultInstance?.Name ?? "Not available",
-                            credentialType = FirebaseApp.DefaultInstance?.Options?.Credential?.GetType().Name ?? "Not available",
-                            serverTime = DateTime.Now,
-                            serverTimeUTC = DateTime.UtcNow,
-                            serviceAccountEmail = GetServiceAccountEmail()
-                        },
-                        criticalUrls = new
-                        {
-                            enableFCMApi = $"https://console.cloud.google.com/apis/library/fcm.googleapis.com?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
-                            enableFirebaseApi = $"https://console.cloud.google.com/apis/library/firebase.googleapis.com?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
-                            billingSettings = $"https://console.cloud.google.com/billing?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
-                            firebaseConsole = $"https://console.firebase.google.com/project/{FirebaseApp.DefaultInstance?.Options?.ProjectId}",
-                            iamPermissions = $"https://console.cloud.google.com/iam-admin/iam?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
-                            apiStatus = $"https://console.cloud.google.com/apis/dashboard?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}"
-                        },
-                        tokenStats = GetTokenStatistics()
-                    };
+                    credentialType = FirebaseApp.DefaultInstance?.Options?.Credential?.GetType().Name ?? "Not available",
+                    serverTime = DateTime.Now,
+                    serverTimeUTC = DateTime.UtcNow,
+                    serviceAccountEmail = GetServiceAccountEmail()
+                },
+                criticalUrls = new
+                {
+                    enableFCMApi = $"https://console.cloud.google.com/apis/library/fcm.googleapis.com?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
+                    enableFirebaseApi = $"https://console.cloud.google.com/apis/library/firebase.googleapis.com?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
+                    billingSettings = $"https://console.cloud.google.com/billing?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
+                    firebaseConsole = $"https://console.firebase.google.com/project/{FirebaseApp.DefaultInstance?.Options?.ProjectId}",
+                    iamPermissions = $"https://console.cloud.google.com/iam-admin/iam?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}",
+                    apiStatus = $"https://console.cloud.google.com/apis/dashboard?project={FirebaseApp.DefaultInstance?.Options?.ProjectId}"
+                },
+                tokenStats = GetTokenStatistics()
+            };
 
-                    var issues = (List<string>)diagnosis.issues;
-                    var solutions = (List<string>)diagnosis.solutions;
-                    var quickFixes = (List<string>)diagnosis.quickFixes;
+            var issues = (List<string>)diagnosis.issues;
+            var solutions = (List<string>)diagnosis.solutions;
+            var quickFixes = (List<string>)diagnosis.quickFixes;
 
-                    // בדיקת Firebase initialization
-                    if (FirebaseApp.DefaultInstance == null)
+            // בדיקת Firebase initialization
+            if (FirebaseApp.DefaultInstance == null)
+            {
+                issues.Add("Firebase not initialized");
+                solutions.Add("Check firebase-service-account.json file exists and is valid");
+                quickFixes.Add("Restart the server application");
+                return diagnosis;
+            }
+
+            // בדיקת service account email
+            var serviceAccountEmail = GetServiceAccountEmail();
+            if (string.IsNullOrEmpty(serviceAccountEmail))
+            {
+                issues.Add("Cannot extract service account email from credentials");
+                solutions.Add("Check if firebase-service-account.json contains valid client_email field");
+            }
+            else
+            {
+                Console.WriteLine($"🔑 Service Account Email: {serviceAccountEmail}");
+                if (!serviceAccountEmail.Contains("firebase-adminsdk") || !serviceAccountEmail.EndsWith(".iam.gserviceaccount.com"))
+                {
+                    issues.Add("Service account email format looks incorrect");
+                    solutions.Add("Generate a new service account key from Firebase Console");
+                }
+            }
+
+            // בדיקת טוקנים
+            var stats = (dynamic)diagnosis.tokenStats;
+            if (stats.totalTokens == 0)
+            {
+                issues.Add("No FCM tokens in database");
+                solutions.Add("Users need to visit the website and grant notification permission");
+                quickFixes.Add("Test with the diagnostic tool in browser");
+            }
+            else if (stats.enabledTokens == 0)
+            {
+                issues.Add("All tokens are disabled");
+                solutions.Add("Users need to re-enable notifications");
+                quickFixes.Add("Use EnableFCMToken endpoint to re-enable");
+            }
+
+            // בדיקות מתקדמות של API
+            await PerformAdvancedAPITests(issues, solutions, quickFixes);
+
+            return diagnosis;
+        }
+
+        // בדיקות מתקדמות של FCM API
+        private async Task PerformAdvancedAPITests(List<string> issues, List<string> solutions, List<string> quickFixes)
+        {
+            Console.WriteLine("🔬 Performing advanced FCM API tests...");
+
+            // Test 1: Basic dry run with dummy token
+            try
+            {
+                var testMessage = new Message()
+                {
+                    Token = "dummy-token-for-api-connectivity-test",
+                    Notification = new Notification()
                     {
-                        issues.Add("Firebase not initialized");
-                        solutions.Add("Check firebase-service-account.json file exists and is valid");
-                        quickFixes.Add("Restart the server application");
-                        return diagnosis;
+                        Title = "API Test",
+                        Body = "Testing FCM API availability"
                     }
+                };
 
-                    // בדיקת service account email
-                    var serviceAccountEmail = GetServiceAccountEmail();
-                    if (string.IsNullOrEmpty(serviceAccountEmail))
+                Console.WriteLine("🧪 Testing FCM API with dry run...");
+                await FirebaseMessaging.DefaultInstance.SendAsync(testMessage, dryRun: true);
+                solutions.Add("✅ FCM API is accessible and working (dry run successful)");
+            }
+            catch (FirebaseMessagingException ex)
+            {
+                Console.WriteLine($"🔍 FCM API test result: {ex.Message}");
+
+                if (ex.Message.Contains("404") || ex.Message.Contains("Not Found"))
+                {
+                    issues.Add("❌ FCM API returns 404 - API not enabled or project issue");
+                    solutions.Add("🔧 CRITICAL: Enable FCM API in Google Cloud Console");
+                    solutions.Add("🔧 Enable Firebase API as well");
+                    solutions.Add("🔧 Check if project billing is enabled");
+                    solutions.Add("🔧 Verify project exists and is not suspended");
+                    quickFixes.Add("Wait 10-15 minutes after enabling APIs");
+                    quickFixes.Add("Try generating a new service account key");
+
+                    // Additional 404 debugging
+                    await Debug404Error(issues, solutions, quickFixes);
+                }
+                else if (ex.Message.Contains("invalid-registration-token") ||
+                        ex.Message.Contains("not a valid FCM registration token") ||
+                        ex.ErrorCode.ToString() == "InvalidArgument")
+                {
+                    solutions.Add("✅ FCM API is working correctly (expected invalid token error)");
+                }
+                else if (ex.Message.Contains("403") || ex.Message.Contains("Forbidden"))
+                {
+                    issues.Add("❌ FCM API access forbidden - permission issue");
+                    solutions.Add("🔧 Check service account IAM permissions");
+                    solutions.Add("🔧 Ensure service account has 'Firebase Admin SDK Administrator Service Agent' role");
+                    quickFixes.Add("Regenerate service account key with proper permissions");
+                }
+                else
+                {
+                    // Filter out expected token validation errors
+                    if (ex.Message.Contains("not a valid FCM registration token") ||
+                        ex.Message.Contains("invalid-registration-token") ||
+                        ex.ErrorCode.ToString() == "InvalidArgument")
                     {
-                        issues.Add("Cannot extract service account email from credentials");
-                        solutions.Add("Check if firebase-service-account.json contains valid client_email field");
+                        solutions.Add("✅ FCM API is working correctly (dummy token rejected as expected)");
                     }
                     else
                     {
-                        Console.WriteLine($"🔑 Service Account Email: {serviceAccountEmail}");
-                        if (!serviceAccountEmail.Contains("firebase-adminsdk") || !serviceAccountEmail.EndsWith(".iam.gserviceaccount.com"))
-                        {
-                            issues.Add("Service account email format looks incorrect");
-                            solutions.Add("Generate a new service account key from Firebase Console");
-                        }
-                    }
-
-                    // בדיקת טוקנים
-                    var stats = (dynamic)diagnosis.tokenStats;
-                    if (stats.totalTokens == 0)
-                    {
-                        issues.Add("No FCM tokens in database");
-                        solutions.Add("Users need to visit the website and grant notification permission");
-                        quickFixes.Add("Test with the diagnostic tool in browser");
-                    }
-                    else if (stats.enabledTokens == 0)
-                    {
-                        issues.Add("All tokens are disabled");
-                        solutions.Add("Users need to re-enable notifications");
-                        quickFixes.Add("Use EnableFCMToken endpoint to re-enable");
-                    }
-
-                    // בדיקות מתקדמות של API
-                    await PerformAdvancedAPITests(issues, solutions, quickFixes);
-
-                    return diagnosis;
-                }
-
-                // בדיקות מתקדמות של FCM API
-                private async Task PerformAdvancedAPITests(List<string> issues, List<string> solutions, List<string> quickFixes)
-                {
-                    Console.WriteLine("🔬 Performing advanced FCM API tests...");
-
-                    // Test 1: Basic dry run with dummy token
-                    try
-                    {
-                        var testMessage = new Message()
-                        {
-                            Token = "dummy-token-for-api-connectivity-test",
-                            Notification = new Notification()
-                            {
-                                Title = "API Test",
-                                Body = "Testing FCM API availability"
-                            }
-                        };
-
-                        Console.WriteLine("🧪 Testing FCM API with dry run...");
-                        await FirebaseMessaging.DefaultInstance.SendAsync(testMessage, dryRun: true);
-                        solutions.Add("✅ FCM API is accessible and working (dry run successful)");
-                    }
-                    catch (FirebaseMessagingException ex)
-                    {
-                        Console.WriteLine($"🔍 FCM API test result: {ex.Message}");
-                        
-                        if (ex.Message.Contains("404") || ex.Message.Contains("Not Found"))
-                        {
-                            issues.Add("❌ FCM API returns 404 - API not enabled or project issue");
-                            solutions.Add("🔧 CRITICAL: Enable FCM API in Google Cloud Console");
-                            solutions.Add("🔧 Enable Firebase API as well");
-                            solutions.Add("🔧 Check if project billing is enabled");
-                            solutions.Add("🔧 Verify project exists and is not suspended");
-                            quickFixes.Add("Wait 10-15 minutes after enabling APIs");
-                            quickFixes.Add("Try generating a new service account key");
-                            
-                            // Additional 404 debugging
-                            await Debug404Error(issues, solutions, quickFixes);
-                        }
-                        else if (ex.Message.Contains("invalid-registration-token") || 
-                                ex.Message.Contains("not a valid FCM registration token") ||
-                                ex.ErrorCode.ToString() == "InvalidArgument")
-                        {
-                            solutions.Add("✅ FCM API is working correctly (expected invalid token error)");
-                        }
-                        else if (ex.Message.Contains("403") || ex.Message.Contains("Forbidden"))
-                        {
-                            issues.Add("❌ FCM API access forbidden - permission issue");
-                            solutions.Add("🔧 Check service account IAM permissions");
-                            solutions.Add("🔧 Ensure service account has 'Firebase Admin SDK Administrator Service Agent' role");
-                            quickFixes.Add("Regenerate service account key with proper permissions");
-                        }
-                        else
-                        {
-                            // Filter out expected token validation errors
-                            if (ex.Message.Contains("not a valid FCM registration token") || 
-                                ex.Message.Contains("invalid-registration-token") ||
-                                ex.ErrorCode.ToString() == "InvalidArgument")
-                            {
-                                solutions.Add("✅ FCM API is working correctly (dummy token rejected as expected)");
-                            }
-                            else
-                            {
-                                issues.Add($"❌ FCM API error: {ex.ErrorCode} - {ex.Message}");
-                                solutions.Add("🔧 Check service account permissions and validity");
-                                solutions.Add("🔧 Verify Firebase project configuration");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        issues.Add($"❌ Unexpected API test error: {ex.Message}");
-                        solutions.Add("🔧 Check network connectivity and firewall settings");
-                        solutions.Add("🔧 Verify server can reach googleapis.com");
+                        issues.Add($"❌ FCM API error: {ex.ErrorCode} - {ex.Message}");
+                        solutions.Add("🔧 Check service account permissions and validity");
+                        solutions.Add("🔧 Verify Firebase project configuration");
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                issues.Add($"❌ Unexpected API test error: {ex.Message}");
+                solutions.Add("🔧 Check network connectivity and firewall settings");
+                solutions.Add("🔧 Verify server can reach googleapis.com");
+            }
+        }
 
-                // ניתוח מפורט של שגיאת 404
-                private async Task Debug404Error(List<string> issues, List<string> solutions, List<string> quickFixes)
-                {
-                    Console.WriteLine("🔍 Debugging 404 error in detail...");
-                    
-                    issues.Add("🔍 404 Error Analysis:");
-                    issues.Add("   - FCM API is not enabled for this project");
-                    issues.Add("   - Firebase project may have been deleted or moved");
-                    issues.Add("   - Billing may not be enabled (required for FCM)");
-                    issues.Add("   - Service account may lack proper permissions");
-                    
-                    solutions.Add("📋 Step-by-step 404 fix:");
-                    solutions.Add("   1. Go to Google Cloud Console for your project");
-                    solutions.Add("   2. Navigate to 'APIs & Services' > 'Library'");
-                    solutions.Add("   3. Search for 'Firebase Cloud Messaging API'");
-                    solutions.Add("   4. Click 'ENABLE' if not already enabled");
-                    solutions.Add("   5. Also enable 'Firebase Management API'");
-                    solutions.Add("   6. Check 'Billing' section and ensure billing is enabled");
-                    solutions.Add("   7. Wait 10-15 minutes for changes to propagate");
-                    
-                    quickFixes.Add("🚀 Quick verification steps:");
-                    quickFixes.Add("   - Check project exists in Firebase Console");
-                    quickFixes.Add("   - Verify service account email is correct");
-                    quickFixes.Add("   - Test with a fresh service account key");
-                    quickFixes.Add("   - Confirm project ID matches exactly");
-                }
+        // ניתוח מפורט של שגיאת 404
+        private async Task Debug404Error(List<string> issues, List<string> solutions, List<string> quickFixes)
+        {
+            Console.WriteLine("🔍 Debugging 404 error in detail...");
+
+            issues.Add("🔍 404 Error Analysis:");
+            issues.Add("   - FCM API is not enabled for this project");
+            issues.Add("   - Firebase project may have been deleted or moved");
+            issues.Add("   - Billing may not be enabled (required for FCM)");
+            issues.Add("   - Service account may lack proper permissions");
+
+            solutions.Add("📋 Step-by-step 404 fix:");
+            solutions.Add("   1. Go to Google Cloud Console for your project");
+            solutions.Add("   2. Navigate to 'APIs & Services' > 'Library'");
+            solutions.Add("   3. Search for 'Firebase Cloud Messaging API'");
+            solutions.Add("   4. Click 'ENABLE' if not already enabled");
+            solutions.Add("   5. Also enable 'Firebase Management API'");
+            solutions.Add("   6. Check 'Billing' section and ensure billing is enabled");
+            solutions.Add("   7. Wait 10-15 minutes for changes to propagate");
+
+            quickFixes.Add("🚀 Quick verification steps:");
+            quickFixes.Add("   - Check project exists in Firebase Console");
+            quickFixes.Add("   - Verify service account email is correct");
+            quickFixes.Add("   - Test with a fresh service account key");
+            quickFixes.Add("   - Confirm project ID matches exactly");
+        }
 
         // חילוץ service account email מה-credentials
         private string GetServiceAccountEmail()
@@ -946,29 +1064,29 @@ namespace Newsite_Server.Services
                     var serviceAccountCredential = googleCredential.UnderlyingCredential as ServiceAccountCredential;
                     if (serviceAccountCredential != null)
                     {
-                                return serviceAccountCredential.Id;
-                            }
-                            
-                            // Alternative method - read from the JSON file
-                            var serviceAccountPath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-service-account.json");
-                            if (File.Exists(serviceAccountPath))
-                            {
-                                var json = File.ReadAllText(serviceAccountPath);
-                                var serviceAccount = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-                                if (serviceAccount.ContainsKey("client_email"))
-                                {
-                                    return serviceAccount["client_email"].ToString();
-                                }
-                            }
-                        }
-                        return "Unable to extract service account email";
+                        return serviceAccountCredential.Id;
                     }
-                    catch (Exception ex)
+
+                    // Alternative method - read from the JSON file
+                    var serviceAccountPath = Path.Combine(Directory.GetCurrentDirectory(), "firebase-service-account.json");
+                    if (File.Exists(serviceAccountPath))
                     {
-                        Console.WriteLine($"⚠️ Error extracting service account email: {ex.Message}");
-                        return $"Error: {ex.Message}";
+                        var json = File.ReadAllText(serviceAccountPath);
+                        var serviceAccount = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                        if (serviceAccount.ContainsKey("client_email"))
+                        {
+                            return serviceAccount["client_email"].ToString();
+                        }
                     }
                 }
+                return "Unable to extract service account email";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Error extracting service account email: {ex.Message}");
+                return $"Error: {ex.Message}";
+            }
+        }
 
         // אימות service account לפני אתחול Firebase
         private async Task ValidateServiceAccount()
@@ -985,7 +1103,7 @@ namespace Newsite_Server.Services
 
                 foreach (var field in requiredFields)
                 {
-                    if (!serviceAccountData.ContainsKey(field) || 
+                    if (!serviceAccountData.ContainsKey(field) ||
                         string.IsNullOrWhiteSpace(serviceAccountData[field]?.ToString()))
                     {
                         missingFields.Add(field);

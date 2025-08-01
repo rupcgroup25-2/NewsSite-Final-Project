@@ -30,6 +30,20 @@ namespace Newsite_Server.BL
             }
         }
 
+        // בדיקת חיבור ל-Firebase APIs
+        public async Task<bool> TestFirebaseConnection()
+        {
+            try
+            {
+                return await notificationService.TestFirebaseProjectConnection();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Firebase connection test failed: {ex.Message}");
+                return false;
+            }
+        }
+
         // שמירת FCM Token
         public int SaveFCMToken(int userId, string fcmToken)
         {
@@ -72,6 +86,33 @@ namespace Newsite_Server.BL
             }
             catch (Exception ex)
             {
+                throw;
+            }
+        }
+
+        // שליחת התראה ישירה לטוקן ספציפי (בלי בדיקה ב-DB)
+        public async Task<bool> SendDirectTokenNotification(string fcmToken, string title, string body)
+        {
+            try
+            {
+                Console.WriteLine($"🎯 Sending direct notification to token: {fcmToken?.Substring(0, Math.Min(30, fcmToken?.Length ?? 0))}...");
+                
+                bool result = await notificationService.SendDirectNotificationToToken(fcmToken, title, body);
+                
+                if (result)
+                {
+                    Console.WriteLine("✅ Direct token notification sent successfully");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Failed to send direct token notification");
+                }
+                
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error sending direct token notification: {ex.Message}");
                 throw;
             }
         }

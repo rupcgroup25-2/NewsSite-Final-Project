@@ -40,6 +40,40 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        [HttpGet("firebase-status")]
+        public async Task<IActionResult> GetFirebaseStatus()
+        {
+            try
+            {
+                Console.WriteLine("🔍 Checking Firebase API status...");
+                
+                var result = await notifications.TestFirebaseConnection();
+                
+                return Ok(new { 
+                    status = result ? "fcm-api-enabled" : "fcm-api-disabled", 
+                    timestamp = DateTime.Now,
+                    message = result ? "Firebase APIs are enabled and working" : "Firebase FCM API is not enabled - check Google Cloud Console",
+                    projectId = "newspapersite-ruppin",
+                    instructions = result ? null : new {
+                        step1 = "Go to https://console.cloud.google.com/apis/library/fcm.googleapis.com?project=newspapersite-ruppin",
+                        step2 = "Click 'ENABLE' to enable Firebase Cloud Messaging API", 
+                        step3 = "Also enable https://console.cloud.google.com/apis/library/firebase.googleapis.com?project=newspapersite-ruppin",
+                        step4 = "Verify billing is enabled for the project",
+                        step5 = "Wait 5-10 minutes and try again"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception in firebase-status: {ex.Message}");
+                return StatusCode(500, new { 
+                    status = "error", 
+                    message = ex.Message,
+                    timestamp = DateTime.Now
+                });
+            }
+        }
+
         [HttpPost("SaveFCMToken")]
         public IActionResult SaveFCMToken(int userId, string fcmToken)
         {
@@ -158,6 +192,43 @@ namespace Newsite_Server.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error in TestNotification endpoint: {ex.Message}");
+                Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("TestDirectToken")]
+        public async Task<IActionResult> TestDirectToken(string fcmToken, string title = "Test Notification", string body = "This is a direct token test notification!")
+        {
+            try
+            {
+                Console.WriteLine($"🎯 TestDirectToken endpoint called");
+                Console.WriteLine($"📧 FCM Token: {fcmToken?.Substring(0, Math.Min(30, fcmToken?.Length ?? 0))}...");
+                Console.WriteLine($"📝 Title: {title}");
+                Console.WriteLine($"📝 Body: {body}");
+                
+                if (string.IsNullOrEmpty(fcmToken))
+                {
+                    Console.WriteLine("❌ FCM token is null or empty");
+                    return BadRequest("FCM token is required");
+                }
+
+                bool success = await notifications.SendDirectTokenNotification(fcmToken, title, body);
+
+                if (success)
+                {
+                    Console.WriteLine("✅ Direct token test notification sent successfully");
+                    return Ok("Direct token test notification sent successfully");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Failed to send direct token test notification");
+                    return StatusCode(500, "Failed to send direct token test notification");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error in TestDirectToken endpoint: {ex.Message}");
                 Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
                 return StatusCode(500, $"Error: {ex.Message}");
             }

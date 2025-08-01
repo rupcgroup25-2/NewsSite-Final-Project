@@ -705,39 +705,13 @@ function clearSearchResults() {
 
 // Initialize Firebase and notifications when the page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Index page loaded, initializing Firebase and notifications...');
+    console.log('🚀 Index page loaded, initializing notifications...');
     
     // הפעל את המערכת החדשה להתראות
     if (typeof window.initNotificationsOnPageLoad === 'function') {
         console.log('🔔 Using new notification system...');
         window.initNotificationsOnPageLoad();
     } else {
-        console.log('⚠️ New notification system not found, trying legacy method...');
-        // Legacy method - יישאר לתמיכה לאחור
-        setTimeout(() => {
-            if (typeof firebaseConfig !== 'undefined') {
-                try {
-                    // Initialize Firebase if not already initialized
-                    if (!window.app) {
-                        const { initializeApp } = firebase;
-                        window.app = initializeApp(firebaseConfig);
-                        console.log('✅ Firebase initialized in index.js');
-                    }
-                    
-                    // Initialize notifications if available
-                    if (typeof initializeNotifications === 'function') {
-                        console.log('🔔 Initializing notifications...');
-                        initializeNotifications();
-                    } else {
-                        console.log('⚠️ initializeNotifications function not found');
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Error initializing Firebase in index.js:', error);
-                }
-            } else {
-                console.error('❌ Firebase config not found in index.js');
-            }
-        }, 100);
+        console.log('⚠️ Notification system not found, will be initialized when available...');
     }
 });

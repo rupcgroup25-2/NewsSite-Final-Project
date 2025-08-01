@@ -16,6 +16,9 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Set VAPID key for the service worker
+messaging.useVapidKey('BCdWzeCpQqfFwlm-DewwVRxvJSY4W6Bb1kjI7zJqIISS0JN3rRs8QBHngu2-9otoW90KPcsn1C2idqatxxlDunc');
+
 console.log('🔥 Firebase messaging service worker initialized');
 
 // Handle background messages

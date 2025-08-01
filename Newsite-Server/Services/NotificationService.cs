@@ -448,7 +448,7 @@ namespace Newsite_Server.Services
                         multicastMessage.Data = data;
                     }
 
-                    var multicastResponse = await FirebaseMessaging.DefaultInstance.SendMulticastAsync(multicastMessage);
+                    var multicastResponse = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(multicastMessage);
 
                     Console.WriteLine($"📨 Firebase Response - Success: {multicastResponse.SuccessCount}, Failures: {multicastResponse.FailureCount}");
 

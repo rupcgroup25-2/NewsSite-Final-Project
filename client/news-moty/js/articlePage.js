@@ -7,6 +7,72 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 // Import will be done via script tag in HTML
 
+// Create article-specific modals
+function createArticleModals() {
+    if ($('#shareModal').length > 0 || $('#reportModal').length > 0) {
+        return; // Modals already exist
+    }
+
+    const modalsHtml = `
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareModalLabel">Share Article</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="shareComment" class="form-label">Add a comment (optional)</label>
+                        <textarea class="form-control" id="shareComment" rows="3" placeholder="What do you think about this article?"></textarea>
+                    </div>
+                    <div id="shareError" class="alert alert-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnShareArticle">Share Article</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">Report Article</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="reportReason" class="form-label">Reason for reporting</label>
+                        <select class="form-select" id="reportReason">
+                            <option value="">Select a reason...</option>
+                            <option value="inappropriate">Inappropriate content</option>
+                            <option value="spam">Spam</option>
+                            <option value="misinformation">Misinformation</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reportComment" class="form-label">Additional details (optional)</label>
+                        <textarea class="form-control" id="reportComment" rows="3" placeholder="Please provide more details..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="btnReportArticle">Submit Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    $('body').append(modalsHtml);
+}
+
 
 // Import Firebase configuration
 // Firebase configuration will be imported from firebaseConfig.js
@@ -327,6 +393,14 @@ function findArticleInDB(url) {
 }
 
 $(document).ready(async function () {
+    // Initialize auth modals first
+    if (typeof createAuthModals === 'function') {
+        createAuthModals();
+    }
+    
+    // Create article-specific modals
+    createArticleModals();
+    
     const id = getArticleIdFromUrl();
 
     let articles;

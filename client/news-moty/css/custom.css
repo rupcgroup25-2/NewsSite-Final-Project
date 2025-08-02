@@ -1,10 +1,285 @@
 /* ===== Custom News Site Styles ===== */
+
+/* ===== MODERN AUTH MODALS ===== */
+.modern-auth-modal {
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.modern-auth-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    color: white;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+
+.auth-icon-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.modern-close-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    font-size: 1.2rem !important;
+    opacity: 1 !important;
+    transition: all 0.2s ease !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    position: relative !important;
+}
+
+.modern-close-btn::before {
+    content: "×" !important;
+    font-size: 24px !important;
+    font-weight: bold !important;
+    color: white !important;
+    line-height: 1 !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+.modern-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    opacity: 1 !important;
+    color: white !important;
+    transform: scale(1.1) !important;
+}
+
+.modern-close-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.modern-close-btn::before {
+    content: '×';
+    font-size: 1.5rem;
+    line-height: 1;
+    font-weight: bold;
+}
+
+.modern-label {
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.modern-input {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(var(--bs-body-bg-rgb), 0.8);
+}
+
+.modern-input:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.15);
+    background: var(--bs-body-bg);
+}
+
+.modern-btn-primary {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+}
+
+.modern-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+    background: linear-gradient(135deg, #138496 0%, #17a673 100%);
+}
+
+.modern-link {
+    color: #17a2b8;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.modern-link:hover {
+    color: #138496;
+}
+
+.modern-alert {
+    border-radius: 12px;
+    border: none;
+}
+
+/* Dark Mode Support */
+[data-bs-theme="dark"] .modern-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #495057;
+    color: #f8f9fa;
+}
+
+[data-bs-theme="dark"] .modern-input:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #667eea;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ===== ACCESS REQUIRED STYLING ===== */
+.access-required-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 2rem;
+}
+
+.access-required-card {
+    text-align: center;
+    background: var(--bs-body-bg);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.access-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+}
+
+.access-required-card h4 {
+    color: var(--bs-body-color);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.access-required-card p {
+    color: var(--bs-secondary-color);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.access-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.access-actions .btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.access-actions .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.access-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.access-actions .btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+}
+
+.access-actions .btn-outline-primary:hover {
+    background: #667eea;
+    transform: translateY(-1px);
+}
+
+/* Dark Mode Support */
+[data-bs-theme="dark"] .access-required-card {
+    background: rgba(33, 37, 41, 0.95);
+    border-color: rgba(111, 66, 193, 0.3);
+}
+
+[data-bs-theme="dark"] .access-icon {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+    box-shadow: 0 8px 25px rgba(111, 66, 193, 0.4);
+}
+
 .jqvmap-label {
     color: black !important; /* Text color */
     background: #fff !important; /* Background color */
     border: 1px solid #ccc !important;
     font-weight: bold;
     z-index: 9999 !important;
+}
+
+/* ===== ADMIN-STYLE BUTTON EFFECTS ===== */
+/* Admin table background highlight style for buttons */
+.admin-table .btn:not(.btn-close), 
+.interests-tags-container .btn {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1) 0%, rgba(var(--bs-primary-rgb), 0.05) 100%) !important;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2) !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-table .btn:hover:not(.btn-close), 
+.interests-tags-container .btn:hover {
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.15) 0%, rgba(var(--bs-primary-rgb), 0.08) 100%) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Popular tags admin style */
+.popular-tags .badge,
+.hashtag-button {
+    background: linear-gradient(135deg, rgba(var(--bs-info-rgb), 0.1) 0%, rgba(var(--bs-info-rgb), 0.05) 100%) !important;
+    border: 1px solid rgba(var(--bs-info-rgb), 0.2) !important;
+    transition: all 0.2s ease !important;
+}
+
+.popular-tags .badge:hover,
+.hashtag-button:hover {
+    background: linear-gradient(135deg, rgba(var(--bs-info-rgb), 0.15) 0%, rgba(var(--bs-info-rgb), 0.08) 100%) !important;
+    border-color: rgba(var(--bs-info-rgb), 0.3) !important;
 }
 
 
@@ -906,4 +1181,27 @@ footer.bg-body {
 #hero-article {
     min-height: 300px;
     transition: all 0.3s ease;
+}
+
+/* Dark Mode Auth Modal Styles */
+[data-bs-theme="dark"] .modern-auth-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+}
+
+[data-bs-theme="dark"] .modern-btn-primary {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+}
+
+[data-bs-theme="dark"] .modern-btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(111, 66, 193, 0.4);
+    background: linear-gradient(135deg, #5a2d91 0%, #7c3aed 100%);
+}
+
+[data-bs-theme="dark"] .modern-link {
+    color: #8b5cf6;
+}
+
+[data-bs-theme="dark"] .modern-link:hover {
+    color: #7c3aed;
 }

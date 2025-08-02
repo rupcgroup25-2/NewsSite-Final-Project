@@ -2,12 +2,30 @@
     const $tab = $('#saved');
 
     if (!currentUser) {
-        $tab.html('<div class="alert alert-info text-center">Please login to view your saved articles.</div>');
+        $tab.html(`
+            <div class="access-required-container">
+                <div class="access-required-card">
+                    <div class="access-icon">
+                        <i class="bi bi-bookmark-fill"></i>
+                    </div>
+                    <h4>Access Required</h4>
+                    <p>Please log in to view your saved articles and manage your personal news collection.</p>
+                    <div class="access-actions">
+                        <button class="btn modern-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                        <button class="btn modern-btn-outline" data-bs-toggle="modal" data-bs-target="#registerModal">
+                            <i class="bi bi-person-plus me-2"></i>Sign Up
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `);
         return;
     }
 
     if (!savedArticles || savedArticles.length === 0) {
-        $tab.html('<div class="alert alert-secondary text-center">No saved articles found.</div>');
+        $tab.html('<div class="saved-alert alert-secondary"><i class="bi bi-bookmark"></i> No saved articles found.</div>');
         return;
     }
 
@@ -16,11 +34,11 @@
     if ($articlesContainer.length === 0) {
         // יצירת המבנה הראשוני רק פעם אחת
         let html = `
-            <div class="container px-2 px-md-4">
-                <div class="mb-3">
+            <div class="saved-container">
+                <div class="saved-search-container">
                     <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${searchTerm}">
                 </div>
-                <div id="articles-container"></div>
+                <div id="articles-container" class="saved-articles-container"></div>
             </div>
         `;
         $tab.html(html);
@@ -35,31 +53,33 @@
     };
 
     let articlesHtml = '';
-    savedArticles.forEach(article => {
+    savedArticles.forEach((article, index) => {
         const tag = { color: "secondary", name: article.tags?.[0] || article.category || "General" };
 
         articlesHtml += `
-        <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-secondary-subtle">
+        <div class="saved-article-card">
             <div class="row g-0">
                 <div class="col-md-5">
-                    <div style="aspect-ratio: 16 / 9; overflow: hidden;">
-                        <img src="${article.urlToImage}" alt="${article.title}" class="img-fluid w-100 h-100 object-fit-cover">
+                    <div class="saved-article-image">
+                        <img src="${article.urlToImage}" alt="${article.title}">
                     </div>
                 </div>
-                <div class="col-md-7 d-flex flex-column p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-${tag.color}">${tag.name}</span>
-                        <span class="text-muted small">${formatDate(article.publishedAt)}</span>
+                <div class="col-md-7 saved-article-content">
+                    <div class="saved-article-header">
+                        <span class="saved-article-tag badge bg-${tag.color}">${tag.name}</span>
+                        <span class="saved-article-date">${formatDate(article.publishedAt)}</span>
                     </div>
 
-                    <h5 class="fw-semibold mb-2">${highlight(article.title)}</h5>
-                    <p class="text-muted small mb-2">${highlight(article.description || article.preview)}</p>
-                    <div class="text-secondary small mb-3">Source: ${article.sourceName || article.source || ''}</div>
+                    <h5 class="saved-article-title">${highlight(article.title)}</h5>
+                    <p class="saved-article-description">${highlight(article.description || article.preview)}</p>
+                    <div class="saved-article-source">Source: ${article.sourceName || article.source || ''}</div>
 
-                    <div class="mt-auto d-flex gap-2">
-                            <a href="article.html?id=${article.id}&collection=Saved" class="btn btn-outline-primary" style="text-decoration:none" target="_blank">View</a>
-                        <button class="btn btn-outline-danger unsave-btn" data-id="${article.id}">
-                            <i class="fas fa-trash-alt me-1"></i>Remove
+                    <div class="saved-article-actions">
+                        <a href="article.html?id=${article.id}&collection=Saved" class="saved-btn saved-btn-view" target="_blank">
+                            <i class="bi bi-eye"></i>View
+                        </a>
+                        <button class="saved-btn saved-btn-remove unsave-btn" data-id="${article.id}">
+                            <i class="bi bi-trash-alt"></i>Remove
                         </button>
                     </div>
                 </div>
@@ -141,18 +161,18 @@ function renderError(message) {
     if ($articlesContainer.length === 0) {
         const currentSearchTerm = "";
         let html = `
-            <div class="container px-2 px-md-4">
-                <div class="mb-3">
+            <div class="saved-container">
+                <div class="saved-search-container">
                     <input type="text" id="savedSearchInput" class="form-control" placeholder="Search saved articles..." value="${currentSearchTerm}">
                 </div>
-                <div id="articles-container"></div>
+                <div id="articles-container" class="saved-articles-container"></div>
             </div>
         `;
         $tab.html(html);
         $articlesContainer = $('#articles-container');
     }
     
-    $articlesContainer.html(`<div class="alert alert-danger text-center">${message}</div>`);
+    $articlesContainer.html(`<div class="saved-alert alert-danger">${message}</div>`);
 }
 
 // Event handlers

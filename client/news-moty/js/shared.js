@@ -2,64 +2,86 @@
     const $tab = $('#shared');
 
     if (!currentUser) {
-        $tab.html('<div class="alert alert-info text-center">Please login to view your shared articles.</div>');
+        $tab.html(`
+            <div class="access-required-container">
+                <div class="access-required-card">
+                    <div class="access-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h4>Access Required</h4>
+                    <p>Please log in to view and share articles with the community.</p>
+                    <div class="access-actions">
+                        <button class="btn modern-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                        <button class="btn modern-btn-outline" data-bs-toggle="modal" data-bs-target="#registerModal">
+                            <i class="bi bi-person-plus me-2"></i>Sign Up
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `);
         return;
     }
 
     if (!sharedArticles || sharedArticles.length === 0) {
-        $tab.html('<div class="alert alert-secondary text-center">No shared articles yet.</div>');
+        $tab.html('<div class="shared-alert alert-secondary"><i class="bi bi-share"></i>No shared articles yet.</div>');
         return;
     }
 
-    let html = '<div class="container px-2 px-md-4">';
-    sharedArticles.forEach(article => {
+    let html = '<div class="shared-container">';
+    sharedArticles.forEach((article, index) => {
         const tag = availableTags.find(t => t.name === article.tags[0]) || { color: "secondary", name: "General" };
+        const isMyArticle = article.sharedById === currentUser.id;
+        const cardClass = isMyArticle ? 'shared-article-card my-shared-article' : 'shared-article-card';
 
         html += `
-        <div class="card mb-4 shadow-sm rounded-4 overflow-hidden border border-info">
+        <div class="${cardClass}">
+            ${isMyArticle ? '<div class="my-article-badge"><i class="bi bi-star-fill me-1"></i>My Share</div>' : ''}
             <div class="row g-0">
                 <div class="col-md-5">
-                    <div style="aspect-ratio: 16 / 9; overflow: hidden;">
-                        <img src="${article.urlToImage}" alt="${article.title}" class="img-fluid w-100 h-100 object-fit-cover">
+                    <div class="shared-article-image">
+                        <img src="${article.urlToImage}" alt="${article.title}">
                     </div>
                 </div>
-                <div class="col-md-7 d-flex flex-column p-3 position-relative">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-${tag.color}">${tag.name}</span>
-                        <span class="text-muted small">${formatDate(article.publishedAt)}</span>
+                <div class="col-md-7 shared-article-content">
+                    <div class="shared-article-header">
+                        <span class="shared-article-tag badge bg-${tag.color}">${tag.name}</span>
+                        <span class="shared-article-date">${formatDate(article.publishedAt)}</span>
                     </div>
 
-                    <div class="mb-2">
-                        <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded-1">
-                        👤 Shared by: ${article.sharedByName || (article.sharedById === currentUser.id ? currentUser.name : "Unknown")}
-                        </span>
+                    <div class="shared-by-badge">
+                        <i class="bi bi-person-fill me-1"></i>
+                        Shared by: ${article.sharedByName || (article.sharedById === currentUser.id ? currentUser.name : "Unknown")}
                     </div>
 
-                    <h5 class="fw-semibold mb-1">${article.title}</h5>
-                    <p class="text-muted small mb-2">${article.description || article.preview}</p>
-                    <div class="text-secondary small mb-2">Source: ${article.sourceName || article.source || ''}</div>
+                    <h5 class="shared-article-title">${article.title}</h5>
+                    <p class="shared-article-description">${article.description || article.preview}</p>
+                    <div class="shared-article-source">Source: ${article.sourceName || article.source || ''}</div>
 
-                    <div class="ps-3 py-2 border-start border-4 border-info bg-light small fst-italic fw-semibold text-dark mb-3">
+                    <div class="shared-article-comment">
                         ${article.comment || '(No comment provided)'}
                     </div>
 
- <div class="mt-auto d-flex justify-content-between align-items-center">
-    <div class="d-flex gap-2">
-        <a href="article.html?id=${article.id}&collection=Shared" class="btn btn-outline-primary" data-id="${article.id}" style="text-decoration:none" target="_blank">View</a>
-        ${article.sharedById === currentUser.id
-                ? `<button class="btn btn-outline-danger unshare-btn" data-id="${article.id}">
-                <i class="fas fa-trash-alt me-1"></i>Remove
-           </button>`
-                : ''
-            }
-    </div>
-    ${article.sharedById !== currentUser.id
-            ? `<button class="btn btn-danger report-article-btn" data-id="${article.id}" data-sharerId="${article.sharedById}" style="min-width: 50px;">
-                <i class="bi bi-flag-fill" style="font-size: 16px;"></i>
-            </button>`
-            : ''
-        }
-</div>
+                    <div class="shared-article-actions">
+                        <div class="shared-article-buttons">
+                            <a href="article.html?id=${article.id}&collection=Shared" class="shared-btn shared-btn-view" data-id="${article.id}" target="_blank">
+                                <i class="bi bi-eye"></i>View
+                            </a>
+                            ${article.sharedById === currentUser.id
+                                ? `<button class="shared-btn shared-btn-remove unshare-btn" data-id="${article.id}">
+                                    <i class="bi bi-trash-alt"></i>Remove
+                                   </button>`
+                                : ''
+                            }
+                        </div>
+                        ${article.sharedById !== currentUser.id
+                            ? `<button class="shared-btn shared-btn-report report-article-btn" data-id="${article.id}" data-sharerId="${article.sharedById}" title="Report Article">
+                                <i class="bi bi-flag-fill"></i>
+                            </button>`
+                            : ''
+                        }
+                    </div>
                 </div>
             </div>
         </div>`;

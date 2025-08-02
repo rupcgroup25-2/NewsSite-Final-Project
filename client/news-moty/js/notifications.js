@@ -382,6 +382,11 @@ async function initializeNotifications() {
         // סמן שהאתחול הושלם
         notificationsInitialized = true;
         console.log('✅ Notifications initialization completed');
+        
+        // טען את סטטוס התראות מיד לאחר האתחול
+        setTimeout(() => {
+            loadNotificationStatus();
+        }, 500);
     } catch (error) {
         console.error('❌ Error loading Firebase messaging:', error);
         showNotificationStatus('Error loading notification system', 'danger');
@@ -664,6 +669,10 @@ function showInAppNotification(payload) {
 
 // הצגת סטטוס notifications למשתמש
 function showNotificationStatus(message, type = 'info') {
+    // ביטול הצגת כל ההתראות כדי לא להפריע למשתמש
+    console.log(`Notification Status (${type}):`, message);
+    return;
+    
     // אל תציג התראות success אם הן עלולות להפריע ל-system notifications
     if (type === 'success' && localStorage.getItem('notificationStyle') === 'system') {
         console.log('✅ Notification Success (hidden for system notifications):', message);
@@ -779,12 +788,107 @@ function subscribeUserToNotifications(userId) {
     showNotificationButton();
 }
 
+// טעינת סטטוס התראות מיד כשהדף נטען
+function loadNotificationStatus() {
+    console.log('🔍 Loading notification status on page load...');
+    
+    const notificationBtn = document.getElementById('notifications-btn');
+    if (!notificationBtn) {
+        console.log('⚠️ Notification button not found, retrying in 1 second...');
+        setTimeout(loadNotificationStatus, 1000);
+        return;
+    }
+    
+    // קרא מ-localStorage כברירת מחדל
+    const savedStatus = localStorage.getItem('notificationStatus') || 'disabled';
+    const lastUpdate = localStorage.getItem('lastNotificationUpdate');
+    
+    console.log(`📊 Saved status: ${savedStatus}, Last update: ${lastUpdate}`);
+    
+    // הצג הודעה מיידית על הסטטוס הנוכחי
+    if (savedStatus === 'enabled') {
+        showNotificationStatus('🔔 Notifications are ENABLED', 'success');
+    } else {
+        showNotificationStatus('🔕 Notifications are DISABLED', 'warning');
+    }
+    
+    if (currentUser && currentUser.id) {
+        // אם יש משתמש מחובר, בדוק בשרת רק אם עבר זמן מהעדכון האחרון
+        const shouldCheckServer = !lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000; // 30 שניות
+        
+        if (shouldCheckServer) {
+            console.log('🌐 Checking server for latest status...');
+            checkNotificationStatus(currentUser.id).then(isEnabled => {
+                console.log(`📊 Server status for user ${currentUser.id}: ${isEnabled}`);
+                updateNotificationIcon(isEnabled);
+                localStorage.setItem('notificationStatus', isEnabled ? 'enabled' : 'disabled');
+                localStorage.setItem('lastNotificationUpdate', Date.now().toString());
+                
+                // עדכן הודעה אם השתנה
+                if ((isEnabled ? 'enabled' : 'disabled') !== savedStatus) {
+                    if (isEnabled) {
+                        showNotificationStatus('🔔 Notifications are ENABLED (updated from server)', 'success');
+                    } else {
+                        showNotificationStatus('🔕 Notifications are DISABLED (updated from server)', 'warning');
+                    }
+                }
+            }).catch(error => {
+                console.error('Error checking server status:', error);
+                // אם יש שגיאה בשרת, השתמש ב-localStorage
+                updateNotificationIcon(savedStatus === 'enabled');
+            });
+        } else {
+            console.log('📱 Using cached status (updated recently)');
+            updateNotificationIcon(savedStatus === 'enabled');
+        }
+    } else {
+        // אם אין משתמש מחובר, השתמש ב-localStorage
+        updateNotificationIcon(savedStatus === 'enabled');
+        console.log(`📊 No user logged in, using localStorage: ${savedStatus}`);
+    }
+}
+
+// פונקציה חדשה לאתחול סטטוס התראות בכל עמוד
+function initializeNotificationStatusGlobally() {
+    console.log('🌐 Initializing notification status globally...');
+    
+    // בדוק אם יש כפתור התראות בעמוד הנוכחי
+    const notificationBtn = document.getElementById('notifications-btn');
+    
+    if (notificationBtn) {
+        console.log('📍 Notification button found - loading full status');
+        loadNotificationStatus();
+    } else {
+        console.log('📍 No notification button on this page - checking cached status');
+        
+        // גם בעמודים ללא כפתור, נבדוק את הסטטוס השמור
+        const savedStatus = localStorage.getItem('notificationStatus');
+        const savedTimestamp = localStorage.getItem('lastNotificationUpdate');
+        
+        if (savedStatus) {
+            console.log(`📱 Found cached notification status: ${savedStatus} (updated: ${new Date(parseInt(savedTimestamp || 0)).toLocaleString()})`);
+            
+            // אם הסטטוס ישן מדי (יותר מיום), נסמן לבדיקה בעמוד הבא
+            const isOld = !savedTimestamp || (Date.now() - parseInt(savedTimestamp)) > 24 * 60 * 60 * 1000;
+            if (isOld) {
+                console.log('⏰ Cached status is old, will refresh on next page with notification button');
+                localStorage.removeItem('lastNotificationUpdate'); // כך נבדק בשרת בעמוד הבא
+            }
+        } else {
+            console.log('📭 No cached notification status found');
+        }
+    }
+}
+
 // הצגת כפתור התראות
 function showNotificationButton() {
     const notificationBtn = document.getElementById('notifications-btn');
     if (notificationBtn) {
         // הצג כפתור גם אם אין משתמש (לבדיקה)
         notificationBtn.style.display = 'inline-block';
+        
+        // טען סטטוס התראות
+        loadNotificationStatus();
         
         // הוסף event listener לכפתור רק אם אין כבר
         if (!notificationBtn.onclick) {
@@ -841,6 +945,34 @@ function hideNotificationButton() {
     const notificationBtn = document.getElementById('notifications-btn');
     if (notificationBtn) {
         notificationBtn.style.display = 'none';
+    }
+}
+
+// עדכון מראה כפתור התראות בהתאם לסטטוס
+function updateNotificationIcon(isEnabled) {
+    const notificationBtn = document.getElementById('notifications-btn');
+    if (notificationBtn) {
+        const icon = notificationBtn.querySelector('i');
+        if (icon) {
+            // הסר קלאסים קיימים
+            notificationBtn.classList.remove('notifications-enabled', 'notifications-disabled');
+            
+            // עדכן את האייקון בהתאם לסטטוס
+            if (isEnabled) {
+                icon.className = 'bi bi-bell-fill';
+                notificationBtn.classList.add('notifications-enabled');
+                notificationBtn.title = '🔔 Notifications ENABLED - Click to disable';
+                console.log('🔔 Notification icon updated: ENABLED');
+            } else {
+                icon.className = 'bi bi-bell-slash';
+                notificationBtn.classList.add('notifications-disabled');
+                notificationBtn.title = '🔕 Notifications DISABLED - Click to enable';
+                console.log('🔕 Notification icon updated: DISABLED');
+            }
+            
+            // שמור גם בכותרת העמוד
+            document.title = document.title.replace(/ - (Enabled|Disabled)$/, '') + ` - ${isEnabled ? 'Enabled' : 'Disabled'}`;
+        }
     }
 }
 
@@ -964,14 +1096,24 @@ function disableNotifications(userId) {
         null,
         function(response) {
             console.log('✅ Notifications disabled successfully:', response);
-            showNotificationStatus('Notifications disabled successfully', 'info');
+            
+            // הודעה ברורה למשתמש
+            alert('🔕 Notifications DISABLED\nYou will no longer receive notifications.');
+            showNotificationStatus('🔕 Notifications disabled successfully', 'info');
             
             // עדכן מצב מקומי
             subscribedUserId = null;
+            
+            // עדכן אייקון
+            updateNotificationIcon(false);
+            
+            // שמור סטטוס ב-localStorage
+            localStorage.setItem('notificationStatus', 'disabled');
+            localStorage.setItem('lastNotificationUpdate', Date.now().toString());
         },
         function(xhr) {
             console.error('❌ Error disabling notifications:', xhr.responseText);
-            showNotificationStatus('Error disabling notifications', 'danger');
+            showNotificationStatus('❌ Error disabling notifications', 'danger');
         }
     );
 }
@@ -986,14 +1128,24 @@ function enableNotifications(userId) {
         null,
         function(response) {
             console.log('✅ Notifications enabled successfully:', response);
-            showNotificationStatus('Notifications enabled successfully!', 'success');
+            
+            // הודעה ברורה למשתמש
+            alert('🔔 Notifications ENABLED\nYou will now receive notifications about new articles and updates.');
+            showNotificationStatus('🔔 Notifications enabled successfully!', 'success');
             
             // עדכן מצב מקומי
             subscribedUserId = userId;
+            
+            // עדכן אייקון
+            updateNotificationIcon(true);
+            
+            // שמור סטטוס ב-localStorage
+            localStorage.setItem('notificationStatus', 'enabled');
+            localStorage.setItem('lastNotificationUpdate', Date.now().toString());
         },
         function(xhr) {
             console.error('❌ Error enabling notifications:', xhr.responseText);
-            showNotificationStatus('Error enabling notifications', 'danger');
+            showNotificationStatus('❌ Error enabling notifications', 'danger');
         }
     );
 }
@@ -1844,4 +1996,20 @@ window.testDirectToken = function(title = "Direct Token Test", body = "This is a
             showNotificationStatus(`Direct token test failed: ${xhr.status} - ${xhr.responseText}`, 'danger');
         }
     );
-};
+}
+
+// טען סטטוס התראות כשהדף נטען
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 Page loaded, initializing notification status...');
+    setTimeout(() => {
+        initializeNotificationStatusGlobally();
+    }, 1500); // 1.5 שניות אחרי שהדף נטען
+});
+
+// טען גם כש-window נטען לגמרי
+window.addEventListener('load', function() {
+    console.log('🔄 Window fully loaded, checking notification status...');
+    setTimeout(() => {
+        initializeNotificationStatusGlobally();
+    }, 500);
+});;

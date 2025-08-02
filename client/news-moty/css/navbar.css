@@ -1,0 +1,456 @@
+/* Modern Navbar Styles */
+.navbar-modern {
+    background: var(--bs-body-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Brand Styling */
+.modern-brand {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.2s ease;
+}
+
+.modern-brand:hover {
+    transform: translateY(-1px);
+}
+
+.brand-logo-container {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+}
+
+.brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    filter: brightness(1.1) contrast(1.1);
+}
+
+.brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+/* Dark Mode Brand Colors */
+[data-bs-theme="dark"] .brand-logo-container {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+}
+
+[data-bs-theme="dark"] .brand-text {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Modern Icon Buttons */
+.modern-icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    background: rgba(var(--bs-body-bg-rgb), 0.8);
+    color: var(--bs-body-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-icon-btn:hover {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.15) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border-color: rgba(23, 162, 184, 0.4);
+    color: #17a2b8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2);
+}
+
+.modern-icon-btn i {
+    font-size: 1.1rem;
+}
+
+/* Notification Button States */
+#notifications-btn {
+    transition: all 0.3s ease;
+}
+
+#notifications-btn.notifications-enabled {
+    color: #20c997 !important;
+    border-color: rgba(32, 201, 151, 0.3);
+}
+
+#notifications-btn.notifications-disabled {
+    color: #6c757d !important;
+    border-color: rgba(108, 117, 125, 0.3);
+}
+
+#notifications-btn.notifications-enabled:hover {
+    background: linear-gradient(135deg, rgba(32, 201, 151, 0.15) 0%, rgba(23, 162, 184, 0.1) 100%);
+    border-color: rgba(32, 201, 151, 0.4);
+    color: #20c997 !important;
+}
+
+#notifications-btn.notifications-disabled:hover {
+    background: rgba(108, 117, 125, 0.1);
+    border-color: rgba(108, 117, 125, 0.4);
+    color: #6c757d !important;
+}
+
+/* Navbar Divider */
+.navbar-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(var(--bs-border-color-rgb), 0.3);
+    margin: 0 4px;
+}
+
+/* Modern Nav Buttons */
+.modern-btn-primary {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    border: 1px solid #17a2b8;
+    color: white;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+}
+
+.modern-btn-primary:hover {
+    background: linear-gradient(135deg, #138496 0%, #17a673 100%);
+    border-color: #138496;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+/* Dark Mode Button Colors */
+[data-bs-theme="dark"] .modern-icon-btn:hover {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: rgba(111, 66, 193, 0.4);
+    color: #8b5cf6;
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.2);
+}
+
+[data-bs-theme="dark"] .modern-btn-primary {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+    border: 1px solid #6f42c1;
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.2);
+}
+
+[data-bs-theme="dark"] .modern-btn-primary:hover {
+    background: linear-gradient(135deg, #5a2d91 0%, #7c3aed 100%);
+    border-color: #5a2d91;
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+
+.modern-btn-outline {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.modern-btn-outline:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-color: #5a67d8;
+    color: #5a67d8;
+    transform: translateY(-1px);
+}
+
+.modern-btn-logout {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.modern-btn-logout:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* Navbar User Greeting */
+.navbar-user-greeting {
+    color: var(--bs-body-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.navbar-user-greeting strong {
+    color: #17a2b8;
+    font-weight: 700;
+}
+
+/* Navbar Actions Layout */
+.navbar-user-actions:not(:empty) {
+    margin-left: 1rem;
+}
+
+.navbar-user-actions:empty {
+    margin-left: 0;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .navbar-user-greeting {
+    color: #f8f9fa;
+}
+
+[data-bs-theme="dark"] .navbar-user-greeting strong {
+    color: #8b5cf6;
+}
+
+/* Dark Mode Button Styles */
+[data-bs-theme="dark"] .modern-btn-outline {
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+[data-bs-theme="dark"] .modern-btn-outline:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(111, 66, 193, 0.05) 100%);
+    border-color: #7c3aed;
+    color: #7c3aed;
+}
+
+/* Notification Badge */
+.notification-badge {
+    top: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    border: 2px solid var(--bs-body-bg);
+    display: none;
+}
+
+/* Modern Toggler */
+.modern-toggler {
+    border: none;
+    padding: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(var(--bs-body-bg-rgb), 0.8);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.modern-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.modern-toggler:hover {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.modern-toggler span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--bs-body-color);
+    margin: 4px auto;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.modern-toggler[aria-expanded="true"] span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.modern-toggler[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+}
+
+.modern-toggler[aria-expanded="true"] span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Modern Navigation Pills */
+.modern-nav-pills {
+    gap: 4px;
+}
+
+.modern-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-nav-link:hover {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.15) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border-color: rgba(23, 162, 184, 0.3);
+    color: #17a2b8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.15);
+}
+
+.modern-nav-link.active {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.2) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border-color: rgba(23, 162, 184, 0.4);
+    color: #17a2b8;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(23, 162, 184, 0.2);
+}
+
+.modern-nav-link.admin-link {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.modern-nav-link.admin-link:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.modern-nav-link i {
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+    .navbar-modern {
+        padding: 12px 0;
+    }
+    
+    .modern-nav-pills {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
+    
+    .modern-nav-link {
+        justify-content: flex-start;
+        padding: 12px 16px;
+        margin: 2px 0;
+    }
+    
+    #user-actions {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+        justify-content: center;
+    }
+}
+
+/* Dark Mode Enhancements */
+[data-bs-theme="dark"] .navbar-modern {
+    background: rgba(33, 37, 41, 0.95);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .brand-logo-container {
+    background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+}
+
+[data-bs-theme="dark"] .modern-icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .modern-icon-btn:hover {
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+}
+
+[data-bs-theme="dark"] .modern-toggler {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .modern-nav-link.active {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.25) 0%, rgba(139, 92, 246, 0.1) 100%);
+}
+
+/* Dark Mode Navigation Link Colors */
+[data-bs-theme="dark"] .modern-nav-link:hover {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: rgba(111, 66, 193, 0.3);
+    color: #8b5cf6;
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.15);
+}
+
+[data-bs-theme="dark"] .modern-nav-link.active {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.25) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: rgba(111, 66, 193, 0.4);
+    color: #8b5cf6;
+}
+
+[data-bs-theme="dark"] .modern-nav-link.admin-link {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+[data-bs-theme="dark"] .modern-nav-link.admin-link:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Dark Mode Notification Button States */
+[data-bs-theme="dark"] #notifications-btn.notifications-enabled {
+    color: #8b5cf6 !important;
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+[data-bs-theme="dark"] #notifications-btn.notifications-disabled {
+    color: #6c757d !important;
+    border-color: rgba(108, 117, 125, 0.3);
+}
+
+[data-bs-theme="dark"] #notifications-btn.notifications-enabled:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(111, 66, 193, 0.15) 100%);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #8b5cf6 !important;
+}
+
+[data-bs-theme="dark"] #notifications-btn.notifications-disabled:hover {
+    background: rgba(108, 117, 125, 0.15);
+    border-color: rgba(108, 117, 125, 0.4);
+    color: #6c757d !important;
+}

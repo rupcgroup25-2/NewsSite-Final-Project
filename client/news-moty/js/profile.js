@@ -40,13 +40,22 @@ $(document).ready(function () {
 });
 function renderLoginRequired() {
     $('#profile').html(`
-        <div class="text-center py-5">
-            <i class="bi bi-person-circle display-1 text-muted"></i>
-            <h2 class="mt-3">Profile Access Required</h2>
-            <p class="text-muted">Please log in to view your profile.</p>
-            <button class="btn btn-primary" onclick="$('#loginModal').modal('show')">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Login
-            </button>
+        <div class="access-required-container">
+            <div class="access-required-card">
+                <div class="access-icon">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <h4>Access Required</h4>
+                <p>Please log in to view and manage your profile settings.</p>
+                <div class="access-actions">
+                    <button class="btn modern-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </button>
+                    <button class="btn modern-btn-outline" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <i class="bi bi-person-plus me-2"></i>Sign Up
+                    </button>
+                </div>
+            </div>
         </div>
     `);
 }
@@ -95,18 +104,21 @@ function loadFollowingUsersSCB(response) {
     try {
         const rawData = typeof response === 'string' ? JSON.parse(response) : response;
         
-        // Server returns flat array: [name1, email1, name2, email2, ...]
-        // Convert to array of objects: [{name: name1, email: email1}, {name: name2, email: email2}, ...]
+        // Server returns flat array: [id1, name1, email1, active1, id2, name2, email2, active2, ...]
+        // Convert to array of objects: [{id: id1, name: name1, email: email1, active: active1}, ...]
         followingUsers = [];
-        for (let i = 0; i < rawData.length; i += 2) {
-            if (i + 1 < rawData.length) {
+        for (let i = 0; i < rawData.length; i += 4) {
+            if (i + 3 < rawData.length) {
                 followingUsers.push({
-                    name: rawData[i],
-                    email: rawData[i + 1],
-                    id: i / 2 // Simple ID based on position, since server doesn't return user IDs
+                    id: rawData[i],
+                    name: rawData[i + 1],
+                    email: rawData[i + 2],
+                    active: rawData[i + 3] === 'True' || rawData[i + 3] === true
                 });
             }
         }
+        
+        console.log("Loaded following users:", followingUsers);
         
         // Cache the following users
         localStorage.setItem('cachedFollowingUsers', JSON.stringify(followingUsers));
@@ -237,7 +249,7 @@ function renderProfile() {
             </div>
 
             <div class="row g-0">
-                <!-- Left Column -->
+                <!-- Left Column - User Settings (Larger) -->
                 <div class="col-lg-8 px-3">
                     <!-- Notification Settings -->
                     <div class="profile-card mb-4">
@@ -326,8 +338,33 @@ function renderProfile() {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Following Users -->
+                </div>
+
+                <!-- Right Column - Recent Activities (Smaller) -->
+                <div class="col-lg-4 px-3">
+                    <div class="profile-activity-card">
+                        <div class="profile-card-header bg-gradient-warning">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="profile-section-title user-select-none mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>Recent Activities
+                                </h6>
+                                <select id="activityCountSelect" class="form-select form-select-sm w-auto shadow-sm" style="font-size: 0.8rem;">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="15">15</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="profile-activity-content" id="recent-activities-container">
+                            <!-- תוכן הפעולות נטען דינמית -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Following Users Section - Full Width Below -->
+            <div class="row g-0 mt-4">
+                <div class="col-12 px-3">
                     <div class="profile-card">
                         <div class="profile-card-header bg-gradient-success">
                             <h5 class="profile-section-title user-select-none">
@@ -355,28 +392,6 @@ function renderProfile() {
                                 </div>
                             </div>
                             ${renderFollowingUsers()}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column - Recent Activities -->
-                <div class="col-lg-4 px-3">
-                    <div class="profile-activity-card">
-                        <div class="profile-card-header bg-gradient-warning">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="profile-section-title user-select-none">
-                                    <i class="bi bi-clock-history me-2"></i>Recent Activities
-                                </h5>
-                                <select id="activityCountSelect" class="form-select form-select-sm w-auto shadow-sm">
-                                    <option value="5">5</option>
-                                    <option value="10" selected>10</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="profile-activity-content" id="recent-activities-container">
-                            <!-- תוכן הפעולות נטען דינמית -->
                         </div>
                     </div>
                 </div>
@@ -512,16 +527,28 @@ function renderFollowingUsers() {
     }
 
     return `
-        <div class="row g-3">
-            ${followingUsers.map((user, index) => `
-                <div class="col-md-6 col-xl-4" style="animation-delay: ${index * 0.1}s;">
+        <div class="following-users-container">
+            <div class="row g-3">
+            ${followingUsers.map((user, index) => {
+                const imageUrl = user.imageUrl || `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg`;
+                const fallbackInitial = (user.name || 'U').charAt(0).toUpperCase();
+                const statusClass = user.active ? 'following-user-status-active' : 'following-user-status-blocked';
+                const statusTitle = user.active ? 'Active' : 'Blocked';
+                
+                return `
+                <div class="col-md-6 col-xl-4 following-user-card-wrapper" style="animation-delay: ${index * 0.1}s;">
                     <div class="profile-following-card">
                         <div class="card-body text-center p-4">
-                            <div class="position-relative d-inline-block mb-3">
-                                <div class="profile-user-avatar">
-                                    <i class="bi bi-person-fill text-white fs-3"></i>
+                            <div class="following-user-avatar-container">
+                                <div class="following-user-image-wrapper">
+                                    <img src="${imageUrl}" alt="Profile" 
+                                         class="following-user-profile-image"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                    <div class="following-user-fallback-avatar" style="display: none;">
+                                        ${fallbackInitial}
+                                    </div>
                                 </div>
-                                <div class="profile-user-status" title="Active"></div>
+                                <div class="following-user-status-indicator ${statusClass}" title="${statusTitle}"></div>
                             </div>
                             <h6 class="card-title fw-bold mb-2 user-select-none">${user.name}</h6>
                             <p class="card-text text-muted small mb-3 user-select-none">
@@ -534,7 +561,9 @@ function renderFollowingUsers() {
                         </div>
                     </div>
                 </div>
-            `).join('')}
+            `;
+            }).join('')}
+            </div>
         </div>
     `;
 }
@@ -916,7 +945,7 @@ function renderProfileError() {
             <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
             <h2 class="mt-3">Profile Load Error</h2>
             <p class="text-muted">Unable to load profile data. Please try again.</p>
-            <button class="btn btn-primary" onclick="loadUserProfile()">
+            <button class="btn modern-btn-primary" onclick="loadUserProfile()">
                 <i class="bi bi-arrow-clockwise me-2"></i>Retry
             </button>
         </div>
@@ -1087,7 +1116,7 @@ function addNotificationSettingsToProfile() {
                 <small class="text-muted d-block mb-3">
                     Get notified about new comments, article shares, and system updates
                 </small>
-                <button class="btn btn-outline-primary btn-sm" id="testNotificationBtn">
+                <button class="btn modern-btn-outline btn-sm" id="testNotificationBtn">
                     <i class="bi bi-bell"></i> Send Test Notification
                 </button>
             </div>

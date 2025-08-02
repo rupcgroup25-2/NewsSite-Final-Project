@@ -29,85 +29,7 @@ function AdminLinkIfNeeded() {
 
 document.addEventListener('DOMContentLoaded', AdminLinkIfNeeded);
 
-function renderHomeTab() {
-    $("#home").html(`
-    <div class="mb-4">
-      <h2 class="h4">Welcome to News Hub</h2>
-      <p class="text-muted">Stay updated with the latest news tailored to your interests.</p>
-    </div>
-    <div class="mb-3">
-      <div class="btn-group" role="group" aria-label="Category filter">
-        <button class="btn btn-outline-secondary btn-sm" data-category="all">All</button>
-        ${availableTags.map(tag => `
-          <button class="btn btn-outline-secondary btn-sm" data-category="${tag.id}">
-            ${tag.name}
-          </button>`).join("")}
-      </div>
-    </div>
-    <div class="row" id="articles-list"></div>
-  `);
-
-    // Render all articles by default
-    renderArticles("all");
-}
-
 // Renders the articles list filtered by a specific category
-function renderArticles(category) {
-    let filtered = sampleArticles;
-    if (category !== "all") {
-        filtered = filtered.filter(article => article.category === category);
-    }
-
-    const $list = $("#articles-list");
-    $list.empty();
-
-    filtered.forEach(article => {
-        const isSaved = savedArticles.includes(article.id);
-        const tagColor = availableTags.find(t => t.id === article.category)?.color || 'secondary';
-
-        $list.append(`
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <img src="${article.imageUrl}" class="card-img-top" alt="${article.title}">
-          <div class="card-body">
-            <h5 class="card-title">${article.title}</h5>
-            <p class="card-text">${article.preview}</p>
-            <span class="badge bg-${tagColor}">${article.category}</span>
-            <div class="mt-2 text-muted small">${formatDate(article.publishedAt)}</div>
-            <div class="mt-3 d-flex gap-2">
-              <button class="btn btn-outline-primary btn-sm flex-fill">
-                <a href="article.html?id=${article.id}" style="text-decoration:none" target="_blank">View</a>
-              </button>
-              <button class="btn btn-${isSaved ? 'success' : 'outline-success'} btn-sm save-article-btn" data-id="${article.id}">
-                ${isSaved ? 'Saved' : 'Save'}
-              </button>
-              <button class="btn btn-outline-info btn-sm share-article-btn" data-id="${article.id}">Share</button>
-              <button class="btn btn-outline-danger btn-sm report-article-btn" data-id="${article.id}">Report</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `);
-    });
-}
-
-// Event handlers
-$(document).ready(function () {
-    renderHomeTab();
-    loadFiveTrendingTags("United States");
-})
-
-// Category filter
-$(document).on('click', '[data-category]', function () {
-    const cat = $(this).data('category');
-    
-    // Clear search results when switching categories
-    clearSearchResults();
-    
-    // Render articles for the selected category
-    renderArticles(cat);
-});
-
 // Add NewsAPI category mapping
 const categoryMapping = {
     technology: "technology",
@@ -126,31 +48,31 @@ function renderHomeTab() {
     // Render the hero section placeholder
     $("#home").html(`
         <div id="hero-article"></div>
-        <div class="mb-4">
+        <div class="category-pills mb-4">
             <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-category="all" type="button" role="tab">All</button>
+                    <button class="nav-link category-pill active" data-category="all" type="button" role="tab">All</button>
                 </li>
                 ${availableTags.map(tag => `
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
+                        <button class="nav-link category-pill" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
                     </li>
                 `).join("")}
             </ul>
         </div>
-        <div class="mb-4">
+        <div class="search-section mb-4">
             <div class="row mb-2">
                 <div class="col-md-6">
-                    <input type="text" id="archiveQuery" class="form-control" placeholder="Search articles by topic...">
+                    <input type="text" id="archiveQuery" class="form-control search-input" placeholder="Search articles by topic...">
                 </div>
                 <div class="col-md-2">
-                    <input type="date" id="fromDate" class="form-control">
+                    <input type="date" id="fromDate" class="form-control search-date-input">
                 </div>
                 <div class="col-md-2">
-                    <input type="date" id="toDate" class="form-control">
+                    <input type="date" id="toDate" class="form-control search-date-input">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-primary w-100" onclick="searchArchive()">
+                    <button class="btn search-btn w-100" onclick="searchArchive()">
                         <i class="bi bi-search"></i> Search
                     </button>
                 </div>
@@ -162,6 +84,24 @@ function renderHomeTab() {
     // Fetch and render hero + articles
     renderArticlesWithHero("all");
 }
+
+// Event handlers
+$(document).ready(function () {
+    renderHomeTab();
+    loadFiveTrendingTags("United States");
+});
+
+// Category filter
+$(document).on('click', '[data-category]', function () {
+    const cat = $(this).data('category');
+    
+    // Clear search results when switching categories
+    clearSearchResults();
+    
+    // Render articles for the selected category
+    fetchArticlesByCategory(cat);
+});
+
 function renderArticlesWithHero(category) {
     // Try cache first
     let articles = getCachedArticles();
@@ -195,31 +135,27 @@ function renderHeroArticle(article) {
     }
     const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
     $("#hero-article").html(`
-        <div class="card mb-4 shadow-lg border-0 overflow-hidden">
+        <div class="card mb-4 shadow-lg border-0 overflow-hidden hero-article-card">
             <div class="row g-0 align-items-stretch flex-md-row flex-column-reverse">
-                <div class="col-md-7 d-flex flex-column justify-content-center p-4">
-                    <div class="mb-2">
-                        <span class="badge bg-${tag.color} me-2">${tag.name}</span>
-                        <span class="text-muted small">${formatDate(article.publishedAt)}</span>
+                <div class="col-md-7 d-flex flex-column justify-content-center p-4 hero-content">
+                    <div class="mb-3">
+                        <span class="badge bg-${tag.color} me-2 hero-tag">${tag.name}</span>
+                        <span class="text-muted small hero-date">${formatDate(article.publishedAt)}</span>
                     </div>
-                    <h2 class="card-title display-6 fw-bold mb-3">${article.title}</h2>
-                    <p class="card-text lead mb-4">${article.preview}</p>
+                    <h2 class="card-title display-5 fw-bold mb-3 hero-title">${article.title}</h2>
+                    <p class="card-text lead mb-4 hero-preview">${article.preview}</p>
                     <div>
-                        <a href="${article.url}" target="_blank" class="btn btn-primary btn-lg px-4">
-                            <i class="bi bi-box-arrow-up-right me-1"></i>Read Full Article
+                        <a href="${article.url}" target="_blank" class="btn btn-lg px-4 hero-btn">
+                            <i class="bi bi-box-arrow-up-right me-2"></i>Read Full Article
                         </a>
                     </div>
                 </div>
                 <div class="col-md-5 d-flex align-items-stretch">
-                    <img src="${article.imageUrl}" class="img-fluid w-100 object-fit-cover" alt="${article.title}" style="min-height: 280px;">
+                    <img src="${article.imageUrl}" class="img-fluid w-100 hero-article-image" alt="${article.title}">
                 </div>
             </div>
         </div>
     `);
-}
-
-function renderArticles(category) {
-    fetchArticlesByCategory(category);
 }
 
 async function fetchAllArticlesOncePerDay() {
@@ -334,29 +270,29 @@ function renderExternalArticles(articles) {
 
         $list.append(`
             <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
-                <div class="card shadow-sm rounded-4 h-100 border-0 overflow-hidden">
+                <div class="card article-card">
                     <div class="position-relative">
-                        <img src="${article.imageUrl}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
-                        <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
-                            <span class="badge bg-${tag.color} fs-6 shadow">${tag.name}</span>
-                            <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
+                        <img src="${article.imageUrl}" class="card-img-top article-card-image" alt="${article.title}">
+                        <div class="article-card-overlay">
+                            <span class="badge bg-${tag.color} article-card-tag">${tag.name}</span>
+                            <span class="badge article-card-date">${formatDate(article.publishedAt)}</span>
                         </div>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-2">${article.title}</h5>
-                        <p class="card-text text-muted flex-grow-1">${article.preview}</p>
-                        <div class="mb-2 text-end small text-secondary">Source: ${article.source}</div>
-                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                        <h5 class="article-card-title">${article.title}</h5>
+                        <p class="article-card-preview">${article.preview}</p>
+                        <div class="article-card-source">Source: ${article.source}</div>
+                        <div class="article-actions">
                             
-                            <a href="article.html?id=${article.id}" class="btn btn-outline-primary flex-fill" style="text-decoration:none" target="_blank">View</a>
+                            <a href="article.html?id=${article.id}" class="btn article-action-btn article-view-btn" target="_blank">View</a>
                             
-                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} save-article-btn flex-fill" data-id="${article.id}">
+                            <button class="btn article-action-btn article-save-btn ${isSaved ? 'saved' : ''} save-article-btn" data-id="${article.id}">
                                 <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
                             </button>
-                            <button class="btn btn-outline-info share-article-btn flex-fill" data-id="${article.id}">
+                            <button class="btn article-action-btn article-share-btn share-article-btn" data-id="${article.id}">
                                 <i class="fas fa-share me-1"></i>Share
                             </button>
-                            <button class="btn btn-outline-danger report-article-btn flex-fill" data-id="${article.id}">
+                            <button class="btn article-action-btn article-report-btn report-article-btn" data-id="${article.id}">
                                 <i class="fas fa-flag me-1"></i>Report
                             </button>
                         </div>
@@ -436,7 +372,7 @@ function showCountryMapModal() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <div id="countryMapContainer" style="width: 100%; height: 500px;"></div>
+                    <div id="countryMapContainer" class="country-map-container"></div>
                     <p class="mt-2 text-muted">Click a country to load trending tags.</p>
                 </div>
             </div>
@@ -486,7 +422,7 @@ $(document).on('click', '.hashtag-button', function () {
 // --- Save Article ---
 function saveSCB(responseText) {
     alert(responseText);
-    renderArticles(currentCategory);
+    fetchArticlesByCategory(currentCategory);
 }
 
 function saveECB() {
@@ -509,7 +445,7 @@ $(document).on('click', '.share-article-btn', function () { //inserting the arti
 
 function shareSCB(responseText) {
     alert(responseText);
-    renderArticles(currentCategory);
+    fetchArticlesByCategory(currentCategory);
 }
 
 function shareECB(xhr) {
@@ -637,29 +573,29 @@ function displayArchiveResults(articles, query) {
         
         html += `
             <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
-                <div class="card shadow-sm rounded-4 h-100 border-0 overflow-hidden">
+                <div class="card article-card">
                     <div class="position-relative">
-                        <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" class="card-img-top object-fit-cover" alt="${article.title}" style="height: 220px;">
-                        <div class="position-absolute top-0 start-0 w-100 px-3 pt-3 d-flex justify-content-between align-items-start" style="z-index:2;">
-                            <span class="badge bg-${tag.color} fs-6 shadow text-black">${tag.name}</span>
-                            <span class="badge bg-dark bg-opacity-75 text-light small">${formatDate(article.publishedAt)}</span>
+                        <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" class="card-img-top article-card-image" alt="${article.title}">
+                        <div class="article-card-overlay">
+                            <span class="badge bg-light text-dark article-card-tag">${tag.name}</span>
+                            <span class="badge article-card-date">${formatDate(article.publishedAt)}</span>
                         </div>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-2">${article.title}</h5>
-                        <p class="card-text text-muted flex-grow-1">${article.description || 'No description available'}</p>
-                        <div class="mb-2 text-end small text-secondary">Source: ${article.source || 'Unknown'}</div>
-                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                        <h5 class="article-card-title">${article.title}</h5>
+                        <p class="article-card-preview">${article.description || 'No description available'}</p>
+                        <div class="article-card-source">Source: ${article.source || 'Unknown'}</div>
+                        <div class="article-actions">
                             
-                            <a href="article.html?id=${articleId}" class="btn btn-outline-primary flex-fill" style="text-decoration:none" target="_blank">View</a>
+                            <a href="article.html?id=${articleId}" class="btn article-action-btn article-view-btn" target="_blank">View</a>
                             
-                            <button class="btn btn-${isSaved ? 'success' : 'outline-success'} save-article-btn flex-fill" data-id="${articleId}">
+                            <button class="btn article-action-btn article-save-btn ${isSaved ? 'saved' : ''} save-article-btn" data-id="${articleId}">
                                 <i class="fas fa-bookmark me-1"></i>${isSaved ? 'Saved' : 'Save'}
                             </button>
-                            <button class="btn btn-outline-info share-article-btn flex-fill" data-id="${articleId}">
+                            <button class="btn article-action-btn article-share-btn share-article-btn" data-id="${articleId}">
                                 <i class="fas fa-share me-1"></i>Share
                             </button>
-                            <button class="btn btn-outline-danger report-article-btn flex-fill" data-id="${articleId}">
+                            <button class="btn article-action-btn article-report-btn report-article-btn" data-id="${articleId}">
                                 <i class="fas fa-flag me-1"></i>Report
                             </button>
                         </div>

@@ -9,25 +9,46 @@ function createAuthModals() {
     const modalsHtml = `
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title" id="loginModalLabel">Login to News Hub</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg modern-auth-modal">
+                <div class="modal-header border-0 pb-2 modern-auth-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="auth-icon-container">
+                            <i class="bi bi-person-check-fill"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold mb-0" id="loginModalLabel">Welcome Back</h5>
+                    </div>
+                    <button type="button" class="btn-close modern-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body pt-0">
+                <div class="modal-body px-4 pb-4">
+                    <p class="text-muted small mb-4">Sign in to access your personalized news experience</p>
                     <form id="loginForm">
                         <div class="mb-3">
-                            <label for="loginEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="loginEmail" required>
+                            <label for="loginEmail" class="form-label modern-label">
+                                <i class="bi bi-envelope me-2"></i>Email Address
+                            </label>
+                            <input type="email" class="form-control modern-input" id="loginEmail" 
+                                   placeholder="Enter your email" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="loginPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="loginPassword" required>
+                        <div class="mb-4">
+                            <label for="loginPassword" class="form-label modern-label">
+                                <i class="bi bi-lock me-2"></i>Password
+                            </label>
+                            <input type="password" class="form-control modern-input" id="loginPassword" 
+                                   placeholder="Enter your password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                        <button type="submit" class="btn modern-btn-primary w-100 py-3 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                        <div class="text-center">
+                            <small class="text-muted">Don't have an account? 
+                                <a href="#" class="modern-link" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">
+                                    Create Account
+                                </a>
+                            </small>
+                        </div>
                     </form>
-                    <div id="loginMessage" class="alert mt-3 d-none"></div>
+                    <div id="loginMessage" class="alert mt-3 d-none modern-alert"></div>
                 </div>
             </div>
         </div>
@@ -35,29 +56,53 @@ function createAuthModals() {
 
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title" id="registerModalLabel">Create Account</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg modern-auth-modal">
+                <div class="modal-header border-0 pb-2 modern-auth-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="auth-icon-container">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold mb-0" id="registerModalLabel">Join News Hub</h5>
+                    </div>
+                    <button type="button" class="btn-close modern-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body pt-0">
+                <div class="modal-body px-4 pb-4">
+                    <p class="text-muted small mb-4">Create your account to save articles and join discussions</p>
                     <form id="registerForm">
                         <div class="mb-3">
-                            <label for="registerName" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="registerName" required>
+                            <label for="registerName" class="form-label modern-label">
+                                <i class="bi bi-person me-2"></i>Full Name
+                            </label>
+                            <input type="text" class="form-control modern-input" id="registerName" 
+                                   placeholder="Enter your full name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="registerEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="registerEmail" required>
+                            <label for="registerEmail" class="form-label modern-label">
+                                <i class="bi bi-envelope me-2"></i>Email Address
+                            </label>
+                            <input type="email" class="form-control modern-input" id="registerEmail" 
+                                   placeholder="Enter your email" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="registerPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="registerPassword" required>
+                        <div class="mb-4">
+                            <label for="registerPassword" class="form-label modern-label">
+                                <i class="bi bi-lock me-2"></i>Password
+                            </label>
+                            <input type="password" class="form-control modern-input" id="registerPassword" 
+                                   placeholder="Create a password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                        <button type="submit" class="btn modern-btn-primary w-100 py-3 mb-3">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+                        <div class="text-center">
+                            <small class="text-muted">Already have an account? 
+                                <a href="#" class="modern-link" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
+                                    Sign In
+                                </a>
+                            </small>
+                        </div>
                     </form>
-                    <div id="registerError" class="alert alert-danger mt-3 d-none"></div>
+                    <div id="registerError" class="alert alert-danger mt-3 d-none modern-alert"></div>
                 </div>
             </div>
         </div>
@@ -78,10 +123,16 @@ function renderUserActions() {
     const $actions = $("#user-actions");
     $actions.empty();
     if (currentUser) {
-        $actions.append(`<span class="me-3">${getGreeting()}, <strong>${currentUser.name}</strong>!</span><button class="btn btn-outline-secondary btn-sm" id="logout-btn">Logout</button>`);
+        $actions.append(`<span class="me-3 navbar-user-greeting">${getGreeting()}, <strong>${currentUser.name}</strong>!</span><button class="btn modern-btn-logout" id="logout-btn">
+                            <i class="bi bi-box-arrow-right me-1"></i>Logout
+                         </button>`);
     } else {
-        $actions.append(`<button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
-                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>`);
+        $actions.append(`<button class="btn modern-btn-outline me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                         </button>
+                         <button class="btn modern-btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                            <i class="bi bi-person-plus me-1"></i>Register
+                         </button>`);
 
     }
 }

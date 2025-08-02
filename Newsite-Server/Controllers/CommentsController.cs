@@ -62,6 +62,26 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        [HttpDelete("DeleteCommentByArticleAndUser")]
+        public IActionResult DeleteCommentByArticleAndUser(int userId, int articleId)
+        {
+            try
+            {
+                Comment c = new Comment();
+                int result = c.DeleteComment(userId, articleId);
+
+                if (result > 0)
+                    return Ok("Comment deleted successfully");
+                else
+                    return BadRequest("Failed to delete comment");
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("debug/notification-recipients/{articleId}")]
         [AllowAnonymous]
         public IActionResult GetNotificationRecipients(int articleId, int excludeUserId = 0)

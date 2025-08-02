@@ -152,7 +152,6 @@ namespace Newsite_Server.BL
             List<Dictionary<string, object>> recentActivities = dbs.GetRecentActivities(userId, numOfActivities);
             return recentActivities;
         }
-
             
         public User GetUserById(int userId)
         {
@@ -167,6 +166,16 @@ namespace Newsite_Server.BL
         public string GetUserNameById(int userId)
         {
             return dbs.SelectUserNameById(userId);
+        }
+
+        public int DeleteArticleById(int articleId)
+        {
+            return dbs.DeleteArticle(articleId);
+        }
+
+        public int DeleteReportByArticleAndUserId(int articleId, int userId)
+        {
+            return dbs.DeleteReport(articleId, userId);
         }
     }
 }

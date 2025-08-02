@@ -156,6 +156,43 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        [HttpDelete("DeleteReport")]
+        public IActionResult DeleteReport(int articleId, int userId)
+        {
+            try
+            {
+                User user = new User();
+                int result = user.DeleteReportByArticleAndUserId(articleId, userId);
+                if (result > 0)
+                    return Ok("Report deleted");
+                else
+                    return NotFound("Report not found.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("DeleteArticle/{articleId}")]
+        public IActionResult DeleteArticle(int articleId)
+        {
+            try
+            {
+                User user = new User();
+                int result = user.DeleteArticleById(articleId);
+                if (result > 0)
+                    return Ok("Article deleted");
+                else
+                    return NotFound("Article not found.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
 
 
     }

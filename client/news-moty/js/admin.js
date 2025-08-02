@@ -267,16 +267,16 @@ function renderAdminDashboard({
                         </div>
                         <div class="text-white">
                             <span class="badge bg-white bg-opacity-25 px-2 py-2 rounded-pill">
-                                <i class="bi bi-exclamation-triangle me-1"></i>${totalReports} reports
+                                 <i class="bi bi-exclamation-triangle me-1"></i>${totalReports} reports
                             </span>
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-0">`;
+                <div class="card-body p-0" id="reports-container">`;
 
     if (reports.length === 0) {
         html += `
-                    <div class="text-center py-5">
+                    <div class="text-center py-5"> 
                         <i class="bi bi-check-circle text-success mb-3" style="font-size: 3rem;"></i>
                         <h5 class="text-muted">No Reports Found</h5>
                         <p class="text-muted">All clear! No user reports at the moment.</p>
@@ -372,18 +372,29 @@ function renderAdminDashboard({
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             ${r.TotalReportsOnThisItem || 0}
                         </span>
-                    </td>
-                    <td class="py-3 text-center">
+                    </td>     
+                    <td class="py-3 text-center d-flex justify-content-center gap-2 flex-wrap">
                         ${r.ArticleId !== null ? `
-                            <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}" class="btn btn-outline-primary btn-sm" target="_blank" title="View Article">
+                            <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
+                               class="btn btn-outline-primary btn-sm"
+                               target="_blank" title="View Article">
                                 <i class="bi bi-eye me-1"></i>
                             </a>
-                        ` : `
-                            <span class="text-muted fst-italic">
-                                <i class="bi bi-x-circle me-1"></i>N/A
-                            </span>
-                        `}
+
+                            <button class="btn btn-outline-danger btn-sm delete-article-btn"
+                                    data-article-id="${r.ArticleId}"
+                                    title="Delete Article and all related reports">
+                                <i class="bi bi-trash3-fill me-1"></i>Delete Article
+                            </button>
+                        ` : ''}
+
+                        <button class="btn btn-outline-danger btn-sm delete-report-btn"
+                                data-report-id="${r.Id}"
+                                title="Delete Report Only">
+                            <i class="bi bi-flag-fill me-1"></i>Delete Report
+                        </button>
                     </td>
+
                     <td class="py-3">
                         <div class="date-info">
                             <div class="fw-semibold text-dark">${reportDate}</div>
@@ -863,3 +874,60 @@ function loadTopTags(topCount) {
         }
     );
 }
+
+
+function loadAllReports() {
+    getWithAuthJson("Reports")
+        .then(reports => {
+            allReports = reports;
+            const html = renderReportsTable(allReports);
+            $("#reports-container").html(html);
+            bindAdminReportActions(); // מחבר את כפתורי המחיקה מחדש
+        })
+        .catch(err => {
+            console.error("Failed to reload reports:", err);
+            $("#reports-container").html('<p class="text-muted">Failed to load reports.</p>');
+        });
+}
+
+function bindAdminReportActions() {
+    $(".delete-report-btn").off("click").on("click", function () {
+        const reportId = $(this).data("report-id");
+        if (confirm("Are you sure you want to delete this report?")) {
+            deleteReport(reportId);
+        }
+    });
+
+    $(".delete-article-btn").off("click").on("click", function () {
+        const articleId = $(this).data("article-id");
+        if (confirm("Are you sure you want to delete this article and all related reports?")) {
+            deleteArticle(articleId);
+        }
+    });
+}
+
+
+function deleteReport(reportId) {
+    ajaxCall("DELETE", `${serverUrl}Reports/DeleteReport/${reportId}`, null,
+        () => {
+            alert("Report deleted successfully");
+            loadAllReports(); 
+        },
+        (xhr) => {
+            alert("Failed to delete report: " + (xhr.responseText || xhr.statusText));
+        }
+    );
+}
+
+function deleteArticle(articleId) {
+    ajaxCall("DELETE", `${serverUrl}Articles/DeleteArticle/${articleId}`, null,
+        () => {
+            alert("Article and related reports deleted");
+            loadAllReports(); 
+        },
+        (xhr) => {
+            alert("Failed to delete article: " + (xhr.responseText || xhr.statusText));
+        }
+    );
+}
+

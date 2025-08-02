@@ -94,13 +94,6 @@ namespace Newsite_Server.DAL
                 Console.WriteLine("Execution Exception: " + ex.Message);
                 return null;
             }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
-            }
         }
 
         // פונקציה לקבלת משתמש ספציפי לפי Email
@@ -1118,13 +1111,13 @@ namespace Newsite_Server.DAL
                 }
             }
 
-            //--------------------------------------------------------------------------------------------------
-            // This method deletes all comments for a given article
-            //--------------------------------------------------------------------------------------------------
-            public int DeleteAllCommentsForArticle(int articleId)
-            {
-                SqlConnection con;
-                SqlCommand cmd;
+        //--------------------------------------------------------------------------------------------------
+        // This method deletes all comments for a given article
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteAllCommentsForArticle(int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
 
                 try
                 {
@@ -1158,18 +1151,106 @@ namespace Newsite_Server.DAL
                         con.Close();
                     }
                 }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method deletes report for a given article and user id
+        //--------------------------------------------------------------------------------------------------
+
+        public int DeleteReport(int articleId, int userId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
             }
 
-            //--------------------------------------------------------------------------------------------------
-            // This method adds comment to article
-            //--------------------------------------------------------------------------------------------------
-            public int AddComment(int articleId, int userId, string commentText)
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+            paramDic.Add("@UserId", userId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteReportByArticleAndUserFinal", con, paramDic);
+
+            try
             {
-                SqlConnection con = connect("myProjDB");
-                Dictionary<string, object> paramDic = new Dictionary<string, object>();
-                paramDic.Add("@ArticleId", articleId);
-                paramDic.Add("@UserId", userId);
-                paramDic.Add("@CommentText", commentText);
+                int numEffected = cmd.ExecuteNonQuery();
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
+        // This method deletes article with all its reports by id
+        //--------------------------------------------------------------------------------------------------
+        public int DeleteArticle(int articleId)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB"); // יצירת חיבור למסד הנתונים
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Connection Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteArticleById", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // ביצוע הפקודה
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Execution Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close(); // סגירת חיבור
+                }
+            }
+        }
+
+
+
+        //--------------------------------------------------------------------------------------------------
+        // This method adds comment to article
+        //--------------------------------------------------------------------------------------------------
+        public int AddComment(int articleId, int userId, string commentText)
+        {
+            SqlConnection con = connect("myProjDB");
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@ArticleId", articleId);
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@CommentText", commentText);
 
                 SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_AddCommentFinal", con, paramDic);
 

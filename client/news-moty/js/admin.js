@@ -55,6 +55,9 @@ function renderAdminDashboard({
                             <p class="text-muted mb-0">Comprehensive management and monitoring interface</p>
                         </div>
                         <div class="text-end">
+                            <button class="btn btn-outline-primary btn-sm me-2" id="refreshImagesBtn" title="Refresh Profile Images">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Images
+                            </button>
                             <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
                                 <i class="bi bi-clock me-1"></i>
                                 ${new Date().toLocaleDateString('en-US', { 
@@ -436,14 +439,27 @@ function renderAdminDashboard({
     $tab.html(html);
 }
 function getUserProfileImageHtml(user, size = 40) {
-    const imageUrl = user.imageUrl ||
+    const baseImageUrl = user.imageUrl ||
         `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg`;
+    
+    // השתמש ב-timestamp משותף או יצור חדש רק אם המשתמש הנוכחי
+    let timestamp;
+    if (currentUser && user.id === currentUser.id) {
+        // עבור המשתמש הנוכחי, השתמש ב-timestamp מעודכן
+        timestamp = localStorage.getItem('profileImageUpdated') || new Date().getTime();
+    } else {
+        // עבור משתמשים אחרים, השתמש ב-timestamp קבוע יחסית
+        timestamp = Math.floor(Date.now() / (1000 * 60 * 5)); // מתעדכן כל 5 דקות
+    }
+    
+    const imageUrl = baseImageUrl + '?t=' + timestamp;
     const fallbackInitial = (user.name || 'U').charAt(0).toUpperCase();
 
     return `
         <div class="position-relative d-inline-block" style="width:${size}px;height:${size}px;">
             <img src="${imageUrl}" alt="Profile" class="admin-profile-image" 
                 style="width:${size}px;height:${size}px;"
+                data-user-id="${user.id}"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
             <div class="admin-avatar-fallback position-absolute top-0 start-0" 
                 style="width:${size}px;height:${size}px;display:none;font-size:${size / 2.2}px;">${fallbackInitial}</div>
@@ -683,6 +699,27 @@ $(document).ready(function () {
 
         // עדכון מונה התוצאות
         $('#userSearchResults').text(`${visibleCount} users found`);
+    });
+    
+    // אירוע לכפתור רענון תמונות
+    $(document).on('click', '#refreshImagesBtn', function() {
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        
+        // הוסף אנימציית טעינה
+        $btn.html('<span class="spinner-border spinner-border-sm me-1"></span>Refreshing...').prop('disabled', true);
+        
+        // רענן תמונות ותן זמן לטעינה
+        setTimeout(() => {
+            refreshAdminProfileImages();
+            // אם זה לא עוזר, טען מחדש את כל הדשבורד
+            setTimeout(() => {
+                if (confirm('If images still appear old, reload entire dashboard?')) {
+                    loadAdminDashboardData();
+                }
+                $btn.html(originalHtml).prop('disabled', false);
+            }, 1500);
+        }, 500);
     });
 });
 
@@ -985,6 +1022,67 @@ function deleteArticleFromNewsApiCacheByUrl(urlToDelete) {
 
 // הקריאה ל-loadAllReports() הוסרה כדי למנוע שכפול של טבלת הדיווחים
 // הטבלה נוצרת כבר בתוך renderAdminDashboard() עם התמונות
+
+// פונקציה לרענון תמונות פרופיל בעמוד האדמין
+function refreshAdminProfileImages() {
+    if (!currentUser) return;
+    
+    const timestamp = localStorage.getItem('profileImageUpdated') || new Date().getTime();
+    
+    // רענן רק את התמונות של המשתמש הנוכחי
+    $('.admin-profile-image').each(function() {
+        const $img = $(this);
+        const userId = $img.data('user-id');
+        
+        // עדכן רק אם זה המשתמש הנוכחי
+        if (userId && userId.toString() === currentUser.id.toString()) {
+            const currentSrc = $img.attr('src');
+            if (currentSrc && currentSrc.includes('profile_pics')) {
+                // הסר את הtimestamp הישן ותוסיף את החדש
+                const baseSrc = currentSrc.split('?')[0];
+                const newSrc = baseSrc + '?t=' + timestamp;
+                $img.attr('src', newSrc);
+                console.log('Updated admin profile image for current user');
+            }
+        }
+    });
+}
+
+// האזן להודעות מעמודים אחרים באתר על עדכון תמונת פרופיל
+window.addEventListener('storage', function(e) {
+    if (e.key === 'profileImageUpdated') {
+        console.log('Profile image update detected via localStorage');
+        refreshAdminProfileImages();
+    } else if (e.key === 'profileImageUpdatedEvent') {
+        try {
+            const data = JSON.parse(e.newValue);
+            console.log('Profile image update event detected:', data);
+            refreshAdminProfileImages();
+        } catch (err) {
+            console.warn('Could not parse profileImageUpdatedEvent:', err);
+        }
+    } else if (e.key === 'userProfileUpdated') {
+        // טען מחדש את נתוני הדשבורד כשמשתמש מעדכן את הפרופיל שלו
+        console.log('User profile updated, refreshing admin dashboard...');
+        setTimeout(() => {
+            loadAdminDashboardData();
+        }, 1000); // השהייה קטנה כדי לוודא שהשרת עודכן
+    }
+});
+
+// האזן להודעות PostMessage מעמודים אחרים באתר
+window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'profileImageUpdated') {
+        console.log('Profile image update detected via PostMessage');
+        refreshAdminProfileImages();
+    } else if (e.data && e.data.type === 'userProfileUpdated') {
+        console.log('User profile updated via PostMessage, refreshing admin dashboard...');
+        setTimeout(() => {
+            loadAdminDashboardData();
+        }, 1000);
+    }
+});
+
 $(document).ready(function () {
     // אפשר להוסיף כאן פונקציונליות נוספת עבור הדף אם נדרש
 });

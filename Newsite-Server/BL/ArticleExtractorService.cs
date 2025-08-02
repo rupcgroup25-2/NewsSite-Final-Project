@@ -20,15 +20,26 @@ public static class ArticleExtractor
             // הסרה של סקריפטים וסטיילים
             RemoveNoiseNodes(doc);
 
-            // חיפוש אזור תוכן לפי article / main / class/id
+            // חיפוש אזור תוכן עם קריטריונים מורחבים
             HtmlNode contentNode =
                 doc.DocumentNode.SelectSingleNode("//article") ??
                 doc.DocumentNode.SelectSingleNode("//main") ??
-                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'content')]") ??
-                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'article')]") ??
-                doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'main')]");
+                doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'content') or contains(@class, 'article') or contains(@class, 'entry') or contains(@class, 'post') or contains(@class, 'story')]") ??
+                doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'content') or contains(@id, 'article') or contains(@id, 'main') or contains(@id, 'story')]") ??
+                doc.DocumentNode.SelectSingleNode("//section[contains(@class, 'content') or contains(@class, 'article')]");
 
-            // fallback: חפש div עם הכי הרבה טקסט
+            // fallback: חפש את האלמנט עם הכי הרבה פסקאות
+            if (contentNode == null)
+            {
+                contentNode = doc.DocumentNode
+                    .SelectNodes("//div | //section")
+                    ?.Where(node => node.SelectNodes(".//p")?.Count >= 3)
+                    .OrderByDescending(node => node.SelectNodes(".//p")?.Count ?? 0)
+                    .ThenByDescending(node => node.InnerText.Length)
+                    .FirstOrDefault();
+            }
+
+            // fallback אחרון: div עם הכי הרבה טקסט
             if (contentNode == null)
             {
                 contentNode = doc.DocumentNode
@@ -57,7 +68,9 @@ public static class ArticleExtractor
     {
         var noiseXpaths = new[]
         {
-            "//script", "//style", "//nav", "//footer", "//aside", "//form", "//noscript"
+            "//script", "//style", "//nav", "//footer", "//aside", "//form", "//noscript",
+            "//header[@class='site-header' or @id='header']", "//div[@class='sidebar' or @class='widget']",
+            "//div[contains(@class, 'comment') or contains(@class, 'social') or contains(@class, 'share')]"
         };
 
         foreach (var xpath in noiseXpaths)

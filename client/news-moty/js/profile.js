@@ -743,6 +743,11 @@ function saveProfileChanges() {
         localStorage.setItem('user', JSON.stringify(currentUser));
     }
 
+    // שלח הודעה לעמוד האדמין על עדכון פרופיל משתמש
+    const timestamp = new Date().getTime();
+    localStorage.setItem('userProfileUpdated', timestamp.toString());
+    window.postMessage({ type: 'userProfileUpdated', timestamp: timestamp }, '*');
+
     // Reload profile
     loadUserProfile();
 
@@ -1346,6 +1351,25 @@ function refreshProfileImageGlobally() {
     // עדכן גם במקומות אחרים אם יש (navbar, header וכו')
     $('.user-profile-image').attr('src', imageUrlWithCache);
     $('.current-user-avatar').attr('src', imageUrlWithCache);
+    
+    // שלח הודעה לעמוד האדמין על עדכון התמונה
+    localStorage.setItem('profileImageUpdated', timestamp.toString());
+    
+    // שלח גם PostMessage לכל הטאבים/חלונות הפתוחים
+    try {
+        // שלח לחלון הנוכחי
+        window.postMessage({ type: 'profileImageUpdated', timestamp: timestamp }, '*');
+        
+        // שלח לחלונות אחרים באמצעות localStorage event
+        localStorage.removeItem('profileImageUpdatedEvent');
+        localStorage.setItem('profileImageUpdatedEvent', JSON.stringify({
+            type: 'profileImageUpdated',
+            timestamp: timestamp,
+            userId: currentUser.id
+        }));
+    } catch (e) {
+        console.warn('Could not send cross-window message:', e);
+    }
     
     console.log('🖼️ Profile image refreshed globally with cache-busting');
 }

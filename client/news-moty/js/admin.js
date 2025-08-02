@@ -1,4 +1,5 @@
 ﻿// renderAdminDashboard.js - Modern Version
+let allArticles = [];
 
 function renderAdminDashboard({
     users,
@@ -274,141 +275,7 @@ function renderAdminDashboard({
                 </div>
                 <div class="card-body p-0" id="reports-container">`;
 
-    if (reports.length === 0) {
-        html += `
-                    <div class="text-center py-5"> 
-                        <i class="bi bi-check-circle text-success mb-3" style="font-size: 3rem;"></i>
-                        <h5 class="text-muted">No Reports Found</h5>
-                        <p class="text-muted">All clear! No user reports at the moment.</p>
-                    </div>`;
-    } else {
-        html += `
-                    <div class="table-responsive" style="overflow-x:auto; max-height:400px;">
-                        <table class="table table-hover mb-0 modern-table reports-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="fw-bold py-3 px-3 text-center">ID</th>
-                                    <th class="fw-bold py-3">Reporter Info</th>
-                                    <th class="fw-bold py-3">Report Details</th>
-                                    <th class="fw-bold py-3">Article Info</th>
-                                    <th class="fw-bold py-3 text-center">Share Comment</th>
-                                    <th class="fw-bold py-3 text-center">Reports Count</th>
-                                    <th class="fw-bold py-3 text-center">Actions</th>
-                                    <th class="fw-bold py-3">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-
-        reports.forEach((r, index) => {
-            const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
-            const reportDate = r.ReportedAt ? new Date(r.ReportedAt).toLocaleDateString('en-GB') : '-';
-            const reportTime = r.ReportedAt ? new Date(r.ReportedAt).toLocaleTimeString() : '';
-
-            html += `
-                <tr class="${rowClass}">
-                    <td class="py-3 px-3 text-center">
-                        <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">#${r.Id}</span>
-                    </td>
-                    <td class="py-3">
-                        <div class="reporter-info">
-                            <div class="d-flex align-items-center mb-1">
-                                <div class="avatar-small me-2">
-                                    ${(r.ReporterName || 'U').charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                    <div class="fw-semibold text-dark">${r.ReporterName || 'Unknown'}</div>
-                                    <small class="text-muted">${r.ReporterEmail || 'No email'}</small>
-                                </div>
-                            </div>
-                            <small class="text-muted">ID: ${r.ReporterId}</small>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="report-details">
-                            ${r.Comment ? `
-                                <div class="comment-box p-2 bg-light rounded mb-2">
-                                    <i class="bi bi-chat-quote text-muted me-1"></i>
-                                    <span class="text-dark">${r.Comment.length > 50 ? r.Comment.substring(0, 50) + '...' : r.Comment}</span>
-                                </div>
-                            ` : '<span class="text-muted fst-italic">No comment provided</span>'}
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        ${r.ArticleId !== null ? `
-                            <div class="article-info">
-                                <div class="fw-semibold text-primary mb-1">
-                                    <i class="bi bi-newspaper me-1"></i>
-                                    ${r.ArticleTitle || 'Untitled Article'}
-                                </div>
-                                <small class="text-muted">ID: ${r.ArticleId}</small>
-                                ${r.ArticlePreview ? `
-                                    <div class="mt-1">
-                                        <small class="text-muted">${r.ArticlePreview.length > 40 ? r.ArticlePreview.substring(0, 40) + '...' : r.ArticlePreview}</small>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        ` : '<span class="text-muted fst-italic">No article</span>'}
-                    </td>
-                    <td class="py-3 text-center">
-                        ${r.SharedArticleId !== null ? `
-                            <div class="shared-comment-info">
-                                ${r.SharerComment ? `
-                                    <div class="share-comment p-2 bg-info-subtle border border-info rounded mb-2">
-                                        <i class="bi bi-chat-quote text-info me-1"></i>
-                                        <span class="text-dark fw-semibold">"${r.SharerComment}"</span>
-                                    </div>
-                                ` : `
-                                    <div class="text-muted fst-italic mb-2">
-                                        <i class="bi bi-chat-x me-1"></i>
-                                        No comment attached
-                                    </div>
-                                `}
-                                <br><small class="text-muted"> ${r.SharerId != null ? "Sharer ID:" + r.SharerId : ''}</small>
-                            </div>
-                        ` : '<span class="text-muted fst-italic">Not shared</span>'}
-                    </td>
-                    <td class="py-3 text-center">
-                        <span class="badge bg-dark text-white rounded-pill px-2 py-2">
-                            <i class="bi bi-exclamation-triangle me-1"></i>
-                            ${r.TotalReportsOnThisItem || 0}
-                        </span>
-                    </td>     
-                    <td class="py-3 text-center d-flex justify-content-center gap-2 flex-wrap">
-                        ${r.ArticleId !== null ? `
-                            <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
-                               class="btn btn-outline-primary btn-sm"
-                               target="_blank" title="View Article">
-                                <i class="bi bi-eye me-1"></i>
-                            </a>
-
-                            <button class="btn btn-outline-danger btn-sm delete-article-btn"
-                                    data-article-id="${r.ArticleId}"
-                                    title="Delete Article and all related reports">
-                                <i class="bi bi-trash3-fill me-1"></i>Delete Article
-                            </button>
-                        ` : ''}
-
-                        <button class="btn btn-outline-danger btn-sm delete-report-btn"
-                                data-report-id="${r.Id}"
-                                title="Delete Report Only">
-                            <i class="bi bi-flag-fill me-1"></i>Delete Report
-                        </button>
-                    </td>
-
-                    <td class="py-3">
-                        <div class="date-info">
-                            <div class="fw-semibold text-dark">${reportDate}</div>
-                            ${reportTime && `<small class="text-muted">${reportTime}</small>`}
-                        </div>
-                    </td>
-                </tr>`;
-        });
-
-        html += `
-                            </tbody>
-                        </table>
-                    </div>`;
-    }
+    html += renderReportsTable(reports, articles);
 
     html += `
                 </div>
@@ -680,6 +547,7 @@ function parseCount(text) {
 
 // טעינת כל הנתונים לדשבורד
 async function loadAdminDashboardData() {
+
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
         $('#admin').html(`
             <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 60vh;">
@@ -740,6 +608,8 @@ async function loadAdminDashboardData() {
         const users = usersResponse;
         const articles = articlesResponse;
         const reports = reportsResponse;
+
+        allArticles = articlesResponse;
 
         const summaryData = {
             activeUsersCount: parseCount(activeUsersText),
@@ -875,14 +745,158 @@ function loadTopTags(topCount) {
     );
 }
 
+function renderReportsTable(reports, articles) {
+    html = "";
+    if (reports.length === 0) {
+        html += `
+                    <div class="text-center py-5"> 
+                        <i class="bi bi-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted">No Reports Found</h5>
+                        <p class="text-muted">All clear! No user reports at the moment.</p>
+                    </div>`;
+    } else {
+        html += `
+                    <div class="table-responsive" style="overflow-x:auto; max-height:400px;">
+                        <table class="table table-hover mb-0 modern-table reports-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-bold py-3 px-3 text-center">ID</th>
+                                    <th class="fw-bold py-3">Reporter Info</th>
+                                    <th class="fw-bold py-3">Report Details</th>
+                                    <th class="fw-bold py-3">Article Info</th>
+                                    <th class="fw-bold py-3 text-center">Share Comment</th>
+                                    <th class="fw-bold py-3 text-center">Reports Count</th>
+                                    <th class="fw-bold py-3 text-center">Actions</th>
+                                    <th class="fw-bold py-3">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+        reports.forEach((r, index) => {
+             const article = articles.find(a => a.id === r.ArticleId || a.Id === r.ArticleId);
+    const articleUrl = article ? article.url : '';
+
+            const rowClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+            const reportDate = r.ReportedAt ? new Date(r.ReportedAt).toLocaleDateString('en-GB') : '-';
+            const reportTime = r.ReportedAt ? new Date(r.ReportedAt).toLocaleTimeString() : '';
+
+            html += `
+                <tr class="${rowClass}">
+                    <td class="py-3 px-3 text-center">
+                        <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">#${r.Id}</span>
+                    </td>
+                    <td class="py-3">
+                        <div class="reporter-info">
+                            <div class="d-flex align-items-center mb-1">
+                                <div class="avatar-small me-2">
+                                    ${(r.ReporterName || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">${r.ReporterName || 'Unknown'}</div>
+                                    <small class="text-muted">${r.ReporterEmail || 'No email'}</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">ID: ${r.ReporterId}</small>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <div class="report-details">
+                            ${r.Comment ? `
+                                <div class="comment-box p-2 bg-light rounded mb-2">
+                                    <i class="bi bi-chat-quote text-muted me-1"></i>
+                                    <span class="text-dark">${r.Comment.length > 50 ? r.Comment.substring(0, 50) + '...' : r.Comment}</span>
+                                </div>
+                            ` : '<span class="text-muted fst-italic">No comment provided</span>'}
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        ${r.ArticleId !== null ? `
+                            <div class="article-info">
+                                <div class="fw-semibold text-primary mb-1">
+                                    <i class="bi bi-newspaper me-1"></i>
+                                    ${r.ArticleTitle || 'Untitled Article'}
+                                </div>
+                                <small class="text-muted">ID: ${r.ArticleId}</small>
+                                ${r.ArticlePreview ? `
+                                    <div class="mt-1">
+                                        <small class="text-muted">${r.ArticlePreview.length > 40 ? r.ArticlePreview.substring(0, 40) + '...' : r.ArticlePreview}</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : '<span class="text-muted fst-italic">No article</span>'}
+                    </td>
+                    <td class="py-3 text-center">
+                        ${r.SharedArticleId !== null ? `
+                            <div class="shared-comment-info">
+                                ${r.SharerComment ? `
+                                    <div class="share-comment p-2 bg-info-subtle border border-info rounded mb-2">
+                                        <i class="bi bi-chat-quote text-info me-1"></i>
+                                        <span class="text-dark fw-semibold">"${r.SharerComment}"</span>
+                                    </div>
+                                ` : `
+                                    <div class="text-muted fst-italic mb-2">
+                                        <i class="bi bi-chat-x me-1"></i>
+                                        No comment attached
+                                    </div>
+                                `}
+                                <br><small class="text-muted"> ${r.SharerId != null ? "Sharer ID:" + r.SharerId : ''}</small>
+                            </div>
+                        ` : '<span class="text-muted fst-italic">Not shared</span>'}
+                    </td>
+                    <td class="py-3 text-center">
+                        <span class="badge bg-dark text-white rounded-pill px-2 py-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            ${r.TotalReportsOnThisItem || 0}
+                        </span>
+                    </td>     
+                    <td class="py-3 text-center d-flex justify-content-center gap-2 flex-wrap">
+                        ${r.ArticleId !== null ? `
+                            <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
+                               class="btn btn-outline-primary btn-sm"
+                               target="_blank" title="View Article">
+                                <i class="bi bi-eye me-1"></i>
+                            </a>
+
+                            <button class="btn btn-outline-danger btn-sm delete-article-btn"
+                                    data-article-id="${r.ArticleId}"
+                                     data-article-url="${articleUrl || ''}"
+                                    title="Delete Article and all related reports">
+                                <i class="bi bi-trash3-fill me-1"></i>Delete Article
+                            </button>
+                        ` : ''}
+
+                        <button class="btn btn-outline-danger btn-sm delete-report-btn"
+                                data-report-id="${r.Id}"
+                                data-article-id="${r.ArticleId}" 
+                                data-user-id="${r.ReporterId}" 
+                                title="Delete Report Only">
+                            <i class="bi bi-flag-fill me-1"></i>Delete Report
+                        </button>
+                    </td>
+
+                    <td class="py-3">
+                        <div class="date-info">
+                            <div class="fw-semibold text-dark">${reportDate}</div>
+                            ${reportTime && `<small class="text-muted">${reportTime}</small>`}
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+        html += `
+                            </tbody>
+                        </table>
+                    </div>`;
+    }
+    return html;
+}  
 
 function loadAllReports() {
     getWithAuthJson("Reports")
         .then(reports => {
             allReports = reports;
-            const html = renderReportsTable(allReports);
+            const html = renderReportsTable(allReports, allArticles);
             $("#reports-container").html(html);
-            bindAdminReportActions(); // מחבר את כפתורי המחיקה מחדש
         })
         .catch(err => {
             console.error("Failed to reload reports:", err);
@@ -890,44 +904,82 @@ function loadAllReports() {
         });
 }
 
-function bindAdminReportActions() {
-    $(".delete-report-btn").off("click").on("click", function () {
-        const reportId = $(this).data("report-id");
-        if (confirm("Are you sure you want to delete this report?")) {
-            deleteReport(reportId);
-        }
-    });
+// מחברים אירועים דרך delegated event על ה-container (משפר ביצועים ונותן טיפול לדינמיים)
+$(document).on("click", ".delete-report-btn", function () {
+    const articleId = $(this).data("article-id");
+    const reporterId = $(this).data("user-id");
 
-    $(".delete-article-btn").off("click").on("click", function () {
-        const articleId = $(this).data("article-id");
-        if (confirm("Are you sure you want to delete this article and all related reports?")) {
-            deleteArticle(articleId);
-        }
-    });
-}
+    if (confirm("Are you sure you want to delete this report?")) {
+        deleteReport(articleId, reporterId);
+    }
+});
 
+$(document).on("click", ".delete-article-btn", function () {
+    const articleId = $(this).data("article-id");
+    const articleUrl = $(this).data("article-url");
 
-function deleteReport(reportId) {
-    ajaxCall("DELETE", `${serverUrl}Reports/DeleteReport/${reportId}`, null,
-        () => {
+    if (confirm("Are you sure you want to delete this article and all related reports?")) {
+        deleteArticle(articleId, articleUrl);
+    }
+});
+
+function deleteReport(articleId, reporterId) {
+    const url = serverUrl + `Admin/DeleteReport?articleId=${articleId}&userId=${reporterId}`;
+
+    ajaxCall("DELETE", url, null,
+        function (response) {
             alert("Report deleted successfully");
-            loadAllReports(); 
+            loadAllReports();
         },
-        (xhr) => {
+        function (xhr){
             alert("Failed to delete report: " + (xhr.responseText || xhr.statusText));
         }
     );
 }
 
-function deleteArticle(articleId) {
-    ajaxCall("DELETE", `${serverUrl}Articles/DeleteArticle/${articleId}`, null,
-        () => {
+function deleteArticle(articleId, articleUrl) {
+    const url = serverUrl + `Admin/DeleteArticle/${articleId}`;
+
+    ajaxCall("DELETE", url, null,
+        function (response) {
+            console.log("hii");
             alert("Article and related reports deleted");
-            loadAllReports(); 
+            deleteArticleFromNewsApiCacheByUrl(articleUrl);
+          
+            loadAllReports();
         },
-        (xhr) => {
+        function (xhr) {
             alert("Failed to delete article: " + (xhr.responseText || xhr.statusText));
         }
     );
 }
 
+function deleteArticleFromNewsApiCacheByUrl(urlToDelete) {
+    if (!urlToDelete) {
+        console.warn("No article URL provided to delete.");
+        return;
+    }
+
+    const savedData = localStorage.getItem("newsApiCacheV2");
+    if (!savedData) return;
+
+    let parsedData = JSON.parse(savedData);
+    if (!parsedData.articles || !Array.isArray(parsedData.articles)) return;
+
+    const originalLength = parsedData.articles.length;
+
+    parsedData.articles = parsedData.articles.filter(article => article.url !== urlToDelete);
+
+    const newLength = parsedData.articles.length;
+
+    if (originalLength === newLength) {
+        console.log("No matching article found by URL in localStorage.");
+    } else {
+        console.log(`Deleted ${originalLength - newLength} article(s) from localStorage by URL.`);
+        localStorage.setItem("newsApiCacheV2", JSON.stringify(parsedData));
+    }
+}
+
+$(document).ready(function () {
+    loadAllReports();
+});

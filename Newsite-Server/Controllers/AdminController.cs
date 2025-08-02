@@ -191,9 +191,5 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
-
-
-
     }
 }

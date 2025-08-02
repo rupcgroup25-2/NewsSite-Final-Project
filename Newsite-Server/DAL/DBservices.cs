@@ -1218,12 +1218,16 @@ namespace Newsite_Server.DAL
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@ArticleId", articleId);
 
-            cmd = CreateCommandWithStoredProcedureGeneral("sp_DeleteArticleById", con, paramDic);
+            cmd = CreateCommandWithStoredProcedureGeneral("SP_DeleteArticleAndReportsFinal", con, paramDic);
 
             try
             {
-                int numEffected = cmd.ExecuteNonQuery(); // ביצוע הפקודה
-                return numEffected;
+                object result = cmd.ExecuteScalar(); // קריאה שמחזירה ערך בודד מה-SP
+                if (result != null && int.TryParse(result.ToString(), out int deleted))
+                {
+                    return deleted; // 1 אם נמחקה כתבה, 0 אם לא נמצאה כתבה
+                }
+                return 0;
             }
             catch (Exception ex)
             {
@@ -1238,8 +1242,6 @@ namespace Newsite_Server.DAL
                 }
             }
         }
-
-
 
         //--------------------------------------------------------------------------------------------------
         // This method adds comment to article

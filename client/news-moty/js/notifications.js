@@ -1,5 +1,239 @@
 ﻿// ניהול push notifications עם Firebase
 
+// פונקציה לבדיקת מצב התראות מפורט
+function debugNotificationStatus() {
+    console.log('🔍 === NOTIFICATION DEBUG STATUS ===');
+    console.log('📱 Notification permission:', Notification.permission);
+    console.log('🔧 Notification style:', localStorage.getItem('notificationStyle') || 'auto');
+    console.log('👁️ Page visible:', !document.hidden && document.visibilityState === 'visible');
+    console.log('🔥 Firebase initialized:', typeof messaging !== 'undefined' && !!messaging);
+    console.log('⚙️ Service Worker registered:', navigator.serviceWorker?.controller ? 'Yes' : 'No');
+    console.log('🔑 Current FCM Token:', currentFCMToken ? 'Available (' + currentFCMToken.length + ' chars)' : 'None');
+    console.log('✅ Notifications initialized:', notificationsInitialized);
+    console.log('👤 Current user:', typeof currentUser !== 'undefined' && currentUser ? currentUser.email : 'Not logged in');
+    console.log('🔗 Subscribed user ID:', subscribedUserId || 'None');
+    
+    // בדוק אם יש FCM token רק אם messaging מוכן
+    if (typeof messaging !== 'undefined' && messaging && messaging.getToken) {
+        console.log('🔄 Checking FCM token from Firebase...');
+        import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js')
+            .then(messagingModule => {
+                return messagingModule.getToken(messaging, { vapidKey: 'BLQJzYUECwCieCgz4kPIpKs8wF5fNB8k6PZu8W7Q4V9tN7vNhA5TKnUzBvBXFJ3YxrJKDQ2vWnP4M5k3uT1Qr8M' });
+            })
+            .then((currentToken) => {
+                if (currentToken) {
+                    console.log('🔑 FCM Token from Firebase (length):', currentToken.length);
+                    console.log('🔑 Token match:', currentToken === currentFCMToken ? 'Yes' : 'No');
+                } else {
+                    console.log('❌ No FCM token available from Firebase');
+                }
+            })
+            .catch((err) => {
+                console.log('❌ Error getting FCM token from Firebase:', err.message);
+            });
+    } else {
+        console.log('⚠️ Firebase messaging not ready for token check');
+    }
+    
+    console.log('==============================');
+}
+
+// הוסף את הפונקציה לglobal scope לשימוש בconsole
+window.debugNotificationStatus = debugNotificationStatus;
+
+// פונקציית debug מהירה
+window.quickNotificationCheck = function() {
+    console.log('⚡ QUICK NOTIFICATION CHECK');
+    console.log('Permission:', Notification.permission);
+    console.log('Style:', localStorage.getItem('notificationStyle') || 'auto');
+    console.log('FCM Token:', currentFCMToken ? 'Yes' : 'No');
+    console.log('User:', currentUser ? currentUser.email : 'None');
+    console.log('Initialized:', notificationsInitialized);
+    
+    // בדוק Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            console.log('Service Workers found:', registrations.length);
+            if (registrations.length === 0) {
+                console.log('⚠️ No Service Worker registered! Attempting to register...');
+                registerServiceWorker();
+            }
+        });
+    }
+    
+    // טסט התראה לפי ההגדרה הנוכחית (לא תמיד system)
+    const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
+    const isPageVisible = !document.hidden && document.visibilityState === 'visible';
+    
+    let useSystemNotification = false;
+    switch(notificationStyle) {
+        case 'system':
+            useSystemNotification = true;
+            break;
+        case 'inpage':
+            useSystemNotification = false;
+            break;
+        case 'auto':
+        default:
+            useSystemNotification = !isPageVisible;
+            break;
+    }
+    
+    console.log('🔔 Will use system notification:', useSystemNotification);
+    
+    if (useSystemNotification) {
+        if (Notification.permission === 'granted') {
+            const testNotif = new Notification('Quick Test - System', {
+                body: 'System notifications are working!',
+                icon: '/favicon.ico',
+                tag: 'quick-test'
+            });
+            setTimeout(() => testNotif.close(), 3000);
+            console.log('✅ Test system notification sent');
+        } else {
+            console.log('❌ No notification permission for system notification');
+        }
+    } else {
+        // הצג התראת in-page
+        showCustomNotification('Quick Test - In-Page', 'In-page notifications are working!');
+        console.log('✅ Test in-page notification sent');
+    }
+};
+
+// הוסף הוראות debug לconsole
+console.log(`
+🔧 === NOTIFICATION DEBUG COMMANDS ===
+Use these commands in the browser console:
+
+1. quickNotificationCheck() - Quick status check + test
+2. debugNotificationStatus() - Detailed status report  
+3. localStorage.setItem('notificationStyle', 'system') - Force system notifications
+4. localStorage.setItem('notificationStyle', 'inpage') - Force in-page notifications
+5. localStorage.setItem('notificationStyle', 'auto') - Auto mode (default)
+6. registerServiceWorker() - Manually register Service Worker
+7. switchNotificationStyle('system'|'inpage'|'auto') - Quick style switch
+
+Test buttons in profile page:
+- Click notification bell button to toggle notifications
+- Click test notification button to send test message
+
+Current status: ${notificationsInitialized ? 'Ready' : 'Loading...'}
+=====================================
+`);
+
+// פונקציה לרישום Service Worker ידני
+window.registerServiceWorker = async function() {
+    if ('serviceWorker' in navigator) {
+        try {
+            console.log('🔄 Manually registering Service Worker...');
+            
+            // נסה נתיבים שונים
+            const possiblePaths = [
+                './firebase-messaging-sw.js',
+                '/firebase-messaging-sw.js',
+                '../firebase-messaging-sw.js',
+                '/client/news-moty/firebase-messaging-sw.js'
+            ];
+            
+            let registration = null;
+            let lastError = null;
+            
+            for (const path of possiblePaths) {
+                try {
+                    console.log(`🔄 Trying path: ${path}`);
+                    registration = await navigator.serviceWorker.register(path);
+                    console.log('✅ Service Worker registered successfully with path:', path, registration.scope);
+                    break;
+                } catch (error) {
+                    console.log(`❌ Failed with path ${path}:`, error.message);
+                    lastError = error;
+                }
+            }
+            
+            if (!registration) {
+                throw lastError || new Error('All Service Worker paths failed');
+            }
+            
+            // חכה שיהיה active
+            if (registration.installing) {
+                console.log('⏳ Service Worker installing...');
+                registration.installing.addEventListener('statechange', function() {
+                    if (this.state === 'activated') {
+                        console.log('✅ Service Worker activated!');
+                        location.reload(); // רענן דף כדי שהSW יעבוד
+                    }
+                });
+            } else if (registration.active) {
+                console.log('✅ Service Worker already active');
+            }
+            
+            return registration;
+        } catch (error) {
+            console.error('❌ Error registering Service Worker:', error);
+            console.log('💡 Make sure firebase-messaging-sw.js exists in the root directory');
+            console.log('🔍 Available Service Worker files found:');
+            console.log('- ./firebase-messaging-sw.js');
+            console.log('- /firebase-messaging-sw.js');
+            console.log('- ../firebase-messaging-sw.js');
+        }
+    } else {
+        console.log('❌ Service Workers not supported in this browser');
+    }
+};
+
+// פונקציה להחלפת סגנון התראות בקלות
+window.switchNotificationStyle = function(style) {
+    const validStyles = ['system', 'inpage', 'auto'];
+    if (!validStyles.includes(style)) {
+        console.log('❌ Invalid style. Use: system, inpage, or auto');
+        return;
+    }
+    
+    localStorage.setItem('notificationStyle', style);
+    console.log(`✅ Notification style changed to: ${style}`);
+    
+    // בצע בדיקה מיידית
+    setTimeout(() => {
+        console.log('🔄 Testing new style...');
+        quickNotificationCheck();
+    }, 500);
+};
+
+// פונקציה לסימולציה של דף לא פעיל (לבדיקת auto mode)
+window.simulatePageHidden = function() {
+    console.log('🙈 Simulating page hidden for auto mode test...');
+    
+    // שמור מצב מקורי
+    const originalVisibilityState = document.visibilityState;
+    const originalHidden = document.hidden;
+    
+    // דמה דף מוסתר
+    Object.defineProperty(document, 'visibilityState', {
+        value: 'hidden',
+        writable: true
+    });
+    Object.defineProperty(document, 'hidden', {
+        value: true,
+        writable: true
+    });
+    
+    console.log('📋 Page now appears hidden. Testing notification...');
+    showCustomNotification('Auto Mode Test', 'This should show as system notification because page appears hidden');
+    
+    // החזר מצב מקורי אחרי 3 שניות
+    setTimeout(() => {
+        Object.defineProperty(document, 'visibilityState', {
+            value: originalVisibilityState,
+            writable: true
+        });
+        Object.defineProperty(document, 'hidden', {
+            value: originalHidden,
+            writable: true
+        });
+        console.log('👁️ Page visibility restored to normal');
+    }, 3000);
+};
+
 // בדיקת התאמת VAPID Key לפרויקט
 async function validateVAPIDKeyAndProject() {
     try {
@@ -75,10 +309,18 @@ async function fixVAPIDKeyIssues() {
 }
 
 // Firebase messaging functions - need to be imported globally
-let messaging;
-let currentFCMToken = null;
-let notificationsInitialized = false; // דגל למניעת אתחול כפול
-let subscribedUserId = null; // דגל לזכירת מי מנוי כבר להתראות
+if (typeof messaging === 'undefined') {
+    var messaging;
+}
+if (typeof currentFCMToken === 'undefined') {
+    var currentFCMToken = null;
+}
+if (typeof notificationsInitialized === 'undefined') {
+    var notificationsInitialized = false; // דגל למניעת אתחול כפול
+}
+if (typeof subscribedUserId === 'undefined') {
+    var subscribedUserId = null; // דגל לזכירת מי מנוי כבר להתראות
+}
 
 // אתחול FCM - תיקרא מ-articlePage.js אחרי שFirebase מאותחל
 async function initializeNotifications() {
@@ -197,6 +439,15 @@ async function setupMessaging(messagingModule) {
         // הגדר מאזין להתראות שמגיעות כשהאפליקציה פתוחה
         messagingModule.onMessage(messaging, (payload) => {
             console.log('🔔 Message received while app is open:', payload);
+            console.log('📱 Current notification style:', localStorage.getItem('notificationStyle') || 'auto');
+            console.log('👁️ Page visible:', !document.hidden && document.visibilityState === 'visible');
+            
+            // בדוק אם זה התראה עבור המשתמש הנוכחי (למנוע התראות על פעולות שלו)
+            if (payload.data && payload.data.excludeUserId && currentUser && 
+                payload.data.excludeUserId === currentUser.id.toString()) {
+                console.log('🚫 Skipping notification - user is the action performer');
+                return;
+            }
             
             // הצג התראה מותאמת בתוך האתר
             if (payload.notification) {
@@ -413,6 +664,12 @@ function showInAppNotification(payload) {
 
 // הצגת סטטוס notifications למשתמש
 function showNotificationStatus(message, type = 'info') {
+    // אל תציג התראות success אם הן עלולות להפריע ל-system notifications
+    if (type === 'success' && localStorage.getItem('notificationStyle') === 'system') {
+        console.log('✅ Notification Success (hidden for system notifications):', message);
+        return;
+    }
+    
     const statusHtml = `
         <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
              style="top: 80px; right: 20px; z-index: 9999; max-width: 300px;" role="alert">
@@ -424,9 +681,10 @@ function showNotificationStatus(message, type = 'info') {
     
     $('body').append(statusHtml);
     
+    // זמן ארוך יותר לקריאה
     setTimeout(() => {
         $('.alert').fadeOut();
-    }, 4000);
+    }, 5000);
 }
 
 // פונקציה לוידוא שהטוקן תקין
@@ -870,6 +1128,15 @@ function sendTestNotification(userId) {
                     function (response) {
                         console.log('✅ Test notification sent successfully:', response);
                         showNotificationStatus('Test notification sent! Check your device.', 'success');
+                        
+                        // הצג גם התראה מקומית לבדיקה
+                        setTimeout(() => {
+                            showCustomNotification(
+                                "Test Notification", 
+                                "This is a test notification to verify your settings!",
+                                { url: window.location.href }
+                            );
+                        }, 1000);
                     },
                     function (xhr) {
                         console.error('❌ Error sending test notification:', xhr.status, xhr.responseText);
@@ -955,8 +1222,11 @@ async function checkFirebaseStatus() {
 
 // הצגת התראה מותאמת אישית כשהאפליקציה פתוחה
 function showCustomNotification(title, body, data) {
+    console.log('📢 Custom notification called:', title, body);
+    
     // קבל הגדרת סוג התראה מהמשתמש
     const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
+    console.log('🔧 Notification style:', notificationStyle);
     
     // החלט איזה סוג התראה להציג
     const isPageVisible = !document.hidden && document.visibilityState === 'visible';
@@ -975,24 +1245,36 @@ function showCustomNotification(title, body, data) {
             break;
     }
     
+    console.log('🔔 Use system notification:', useSystemNotification);
+    
     // הצג התראת מערכת אם נדרש
     if (useSystemNotification) {
         if (Notification.permission === 'granted') {
+            console.log('✅ Creating system notification');
             const notification = new Notification(title, {
                 body: body,
-                icon: '/public/newsSite.png',
-                tag: 'comment-notification', // מנע התראות כפולות
-                requireInteraction: true
+                icon: '/favicon.ico',
+                tag: 'news-notification',
+                requireInteraction: true,
+                silent: false
             });
             
             // טיפול בלחיצה על התראת מערכת
             notification.onclick = function() {
+                console.log('🖱️ System notification clicked');
                 window.focus();
                 if (data && data.url) {
                     window.location.href = data.url;
                 }
                 notification.close();
             };
+            
+            // סגור התראה אחרי 10 שניות
+            setTimeout(() => {
+                notification.close();
+            }, 10000);
+        } else {
+            console.warn('⚠️ Notification permission not granted');
         }
         return;
     }
@@ -1547,6 +1829,15 @@ window.testDirectToken = function(title = "Direct Token Test", body = "This is a
         function(response) {
             console.log('✅ Direct token test successful:', response);
             showNotificationStatus('Direct token test sent successfully! Check your device.', 'success');
+            
+            // הצג גם התראה מקומית לבדיקה
+            setTimeout(() => {
+                showCustomNotification(
+                    title, 
+                    body,
+                    { url: window.location.href }
+                );
+            }, 1000);
         },
         function(xhr) {
             console.error('❌ Direct token test failed:', xhr.status, xhr.responseText);

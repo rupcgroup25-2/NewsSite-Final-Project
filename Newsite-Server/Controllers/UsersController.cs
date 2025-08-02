@@ -130,7 +130,7 @@ namespace Newsite_Server.Controllers
                     if (!string.IsNullOrEmpty(followerName) && followedUser != null)
                     {
                         // שלח התראה למשתמש שעליו עוקבים
-                        await notifications.NotifyNewFollower(followedUser.Id, followerName);
+                        await notifications.NotifyNewFollower(followedUser.Id, followerName, followerId);
                     }
                 }
                 catch (Exception ex)

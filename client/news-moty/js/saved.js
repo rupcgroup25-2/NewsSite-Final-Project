@@ -94,7 +94,9 @@ $(document).on('click', '.unsave-btn', function () {
 
 
 // Debounced search handler
-let debounceTimer;
+if (typeof debounceTimer === 'undefined') {
+    var debounceTimer;
+}
 $(document).on('input', '#savedSearchInput', function () {
     const searchTerm = $(this).val(); 
 

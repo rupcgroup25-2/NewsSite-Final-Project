@@ -25,6 +25,18 @@ $(document).ready(function () {
     });
 
     loadEmails();
+    
+    // פונקציית debug לבדיקת העדפות התראות
+    window.checkNotificationPreferences = function() {
+        console.log('🔍 === NOTIFICATION PREFERENCES DEBUG ===');
+        console.log('📱 localStorage notificationStyle:', localStorage.getItem('notificationStyle'));
+        console.log('📱 Selected radio value:', $('input[name="notificationStyle"]:checked').val());
+        console.log('📱 Radio buttons state:');
+        $('input[name="notificationStyle"]').each(function() {
+            console.log(`  - ${$(this).val()}: ${$(this).is(':checked') ? 'CHECKED' : 'unchecked'}`);
+        });
+        console.log('=====================================');
+    };
 });
 function renderLoginRequired() {
     $('#profile').html(`
@@ -149,116 +161,223 @@ function renderProfile() {
     const profile = userProfile || currentUser;
     
     $('#profile').html(`
-        <div class="row">
-            <!-- Profile Header -->
-            <div class="col-12">
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <!-- Simple user icon instead of image -->
-                                <div class="position-relative">
-                                <img id="profilePic" src="${`https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg` || '/img/default-profile.png'}" 
-                                     alt="Profile Image" class="rounded-circle border" 
-                                     style="width: 120px; height: 120px; object-fit: cover;">
-                                <input type="file" id="profileImageInput" accept="image/*" style="display:none;">
-                                <button class="btn btn-sm btn-outline-secondary position-absolute bottom-0 end-0" 
-                                        id="uploadProfileImageBtn" title="Change profile image">
-                                    <i class="bi bi-camera"></i>
-                                </button>
-                            </div>
-                                                    <div class="input-group mt-2">
-                            <input type="text" id="profileImagePrompt" class="form-control" placeholder="Describe your profile image...">
-                            <button class="btn btn-outline-success" id="generateProfileImageBtn" type="button">
-                                <i class="bi bi-magic"></i> Generate Image
-                            </button>
-                        </div>
-                            </div>
-                            <div class="col">
-                                <h2 class="mb-1">${profile.name || 'Unknown User'}</h2>
-                                <p class="text-muted mb-2">
-                                    <i class="bi bi-envelope me-1"></i>${profile.email || ''}
-                                </p>
-                                <div class="d-flex gap-3 mb-3">
-                                    <div class="text-center">
-                                        <div class="fw-bold fs-5">${followingUsers.length}</div>
-                                        <small class="text-muted">Following</small>
+        <div class="container-fluid px-0">
+            <!-- Profile Header with Cover -->
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="profile-header-card">
+                        <div class="card-body p-4 text-white position-relative">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="position-relative">
+                                        ${getProfileImageHtml(currentUser)}
+                                        <input type="file" id="profileImageInput" accept="image/*" style="display:none;">
+                                        <button class="profile-image-edit-btn" 
+                                                id="uploadProfileImageBtn" title="Change profile image">
+                                            <i class="bi bi-camera"></i>
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-outline-primary" id="editProfileBtn">
-                                        <i class="bi bi-pencil me-1"></i>Edit Profile
-                                    </button>
-                                    <button class="btn btn-outline-warning" id="changePasswordBtn">
-                                        <i class="bi bi-key me-1"></i>Change Password
-                                    </button>
+                                <div class="col">
+                                    <h1 class="profile-title user-select-none">${profile.name || 'Unknown User'}</h1>
+                                    <p class="profile-email user-select-none">
+                                        <i class="bi bi-envelope me-2"></i>${profile.email || ''}
+                                    </p>
+                                    <div class="d-flex gap-4 mb-3">
+                                        <div class="text-center user-select-none">
+                                            <div class="profile-stat-number">${followingUsers.length}</div>
+                                            <small class="profile-stat-label">Following</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="profile-btn profile-btn-primary" id="editProfileBtn">
+                                            <i class="bi bi-pencil me-2"></i>Edit Profile
+                                        </button>
+                                        <button class="profile-btn profile-btn-secondary" id="changePasswordBtn">
+                                            <i class="bi bi-key me-2"></i>Change Password
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Following Users -->
-            <div class="col-12">
 
-            <!-- Recent Activities -->
-            <div class="col-12">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-clock-history me-2"></i>Recent Activities
-                        </h5>
-                        <select id="activityCountSelect" class="form-select form-select-sm w-auto">
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                        </select>
-                    </div>
-                    <div class="card-body" id="recent-activities-container">
-                        <!-- תוכן הפעולות נטען דינמית -->
+            <!-- AI Image Generator Section -->
+            <div class="row g-0 mb-4">
+                <div class="col-12">
+                    <div class="profile-card mx-3">
+                        <div class="profile-card-header bg-gradient-success">
+                            <h5 class="profile-section-title user-select-none">
+                                <i class="bi bi-magic me-2"></i>AI Profile Image Generator
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="bi bi-lightbulb text-warning"></i>
+                                </span>
+                                <input type="text" id="profileImagePrompt" 
+                                       class="form-control border-0 shadow-sm" 
+                                       placeholder="Describe your ideal profile image (e.g., 'Professional headshot with blue background')...">
+                                <button class="profile-btn profile-btn-success" 
+                                        id="generateProfileImageBtn" type="button">
+                                    <i class="bi bi-stars me-2"></i>Generate Image
+                                </button>
+                            </div>
+                            <small class="text-muted mt-2 d-block user-select-none">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Tip: Be specific with colors, style, and background for best results. 
+                                <strong>Generation takes 2-3 minutes.</strong>
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
 
-                <!-- Interests Section -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-heart me-2"></i>Your Interests
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">Your interests:</div>
-                        <div class="mb-3" id="interests-container">
-                            ${renderInterestsButtons()}
+            <div class="row g-0">
+                <!-- Left Column -->
+                <div class="col-lg-8 px-3">
+                    <!-- Notification Settings -->
+                    <div class="profile-card mb-4">
+                        <div class="profile-card-header bg-gradient-primary">
+                            <h5 class="profile-section-title user-select-none">
+                                <i class="bi bi-bell me-2"></i>Notification Preferences
+                            </h5>
                         </div>
-                        <div class="mb-3">
-                            <label for="new-interest" class="form-label">Add new interest</label>
-                            <input type="text" id="new-interest" class="form-control" placeholder="Type a new interest and press Add">
-                            <button class="btn btn-primary mt-2" id="add-interest-btn">Add</button>
+                        <div class="card-body p-4">
+                            <div class="form-check form-switch mb-4">
+                                <input class="form-check-input" type="checkbox" id="notificationsSwitch" style="transform: scale(1.2);">
+                                <label class="form-check-label fw-semibold fs-6 user-select-none" for="notificationsSwitch">
+                                    Enable Push Notifications
+                                </label>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold user-select-none">Notification Display Style:</label>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <div class="profile-notification-option">
+                                            <input class="form-check-input" type="radio" name="notificationStyle" id="styleAuto" value="auto">
+                                            <label class="form-check-label fw-semibold user-select-none" for="styleAuto">
+                                                Auto Mode
+                                            </label>
+                                            <small class="text-muted d-block user-select-none">Smart detection</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="profile-notification-option">
+                                            <input class="form-check-input" type="radio" name="notificationStyle" id="styleInPage" value="inpage">
+                                            <label class="form-check-label fw-semibold user-select-none" for="styleInPage">
+                                                In-Page
+                                            </label>
+                                            <small class="text-muted d-block user-select-none">Inside website</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="profile-notification-option">
+                                            <input class="form-check-input" type="radio" name="notificationStyle" id="styleSystem" value="system">
+                                            <label class="form-check-label fw-semibold user-select-none" for="styleSystem">
+                                                System
+                                            </label>
+                                            <small class="text-muted d-block user-select-none">Browser notifications</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted user-select-none">
+                                    Get notified about comments, shares, and updates<br>
+                                    <span id="currentStyleHint" class="fw-semibold"></span>
+                                </small>
+                                <button class="profile-btn profile-btn-outline-primary" id="testNotificationBtn">
+                                    <i class="bi bi-bell-fill me-2"></i>Test Notification
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interests Section -->
+                    <div class="profile-card mb-4">
+                        <div class="profile-card-header bg-gradient-info">
+                            <h5 class="profile-section-title user-select-none">
+                                <i class="bi bi-heart me-2"></i>Your Interests
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold user-select-none">Current Interests:</label>
+                                <div class="interests-tags-container">
+                                    ${renderInterestsButtons()}
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <input type="text" id="new-interest" class="form-control form-control-lg shadow-sm" 
+                                           placeholder="Add a new interest...">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="profile-btn profile-btn-info w-100" id="add-interest-btn">
+                                        <i class="bi bi-plus-lg me-2"></i>Add Interest
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Following Users -->
+                    <div class="profile-card">
+                        <div class="profile-card-header bg-gradient-success">
+                            <h5 class="profile-section-title user-select-none">
+                                <i class="bi bi-people me-2"></i>Following Users (${followingUsers.length})
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Follow users section -->
+                            <div class="profile-follow-section">
+                                <label for="emailSearch" class="form-label fw-semibold user-select-none">Follow New Users</label>
+                                <div class="row g-2">
+                                    <div class="col-md-8">
+                                        <div class="position-relative">
+                                            <input type="text" id="emailSearch" class="form-control form-control-lg shadow-sm" 
+                                                   placeholder="Search by email address..." autocomplete="off" />
+                                            <ul id="suggestions" class="list-group position-absolute w-100 shadow-lg" 
+                                                style="z-index: 1050; top: 100%;"></ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="profile-btn profile-btn-success w-100" id="follow-user-btn">
+                                            <i class="bi bi-person-plus me-2"></i>Follow
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            ${renderFollowingUsers()}
                         </div>
                     </div>
                 </div>
-                
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-people me-2"></i>Following (${followingUsers.length})
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Follow users section -->
-                        <div class="mb-4 p-3 bg-light rounded">
-                            <label for="emailSearch" class="form-label">Follow users</label>
-                            <div class="position-relative">
-                                <input type="text" id="emailSearch" class="form-control" placeholder="Search by email..." autocomplete="off" />
-                                <ul id="suggestions" class="list-group position-absolute w-100" style="z-index: 1050; top: 100%;"></ul>
+
+                <!-- Right Column - Recent Activities -->
+                <div class="col-lg-4 px-3">
+                    <div class="profile-activity-card">
+                        <div class="profile-card-header bg-gradient-warning">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="profile-section-title user-select-none">
+                                    <i class="bi bi-clock-history me-2"></i>Recent Activities
+                                </h5>
+                                <select id="activityCountSelect" class="form-select form-select-sm w-auto shadow-sm">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
                             </div>
-                            <button class="btn btn-primary mt-2" id="follow-user-btn">Follow</button>
                         </div>
-                        ${renderFollowingUsers()}
+                        <div class="profile-activity-content" id="recent-activities-container">
+                            <!-- תוכן הפעולות נטען דינמית -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -281,11 +400,17 @@ function renderProfile() {
     // Bind events
     bindProfileEvents();
     
-    // הוסף הגדרות התראות לפרופיל
-    addNotificationSettingsToProfile();
-
-
+    // טען הגדרות התראות
+    loadNotificationSettings();
+    
     bindProfileImageUploadEvents();
+    
+    // רענן את תמונת הפרופיל כדי למנוע בעיות cache
+    if (currentUser && currentUser.imageUrl) {
+        setTimeout(() => {
+            refreshProfileImageGlobally();
+        }, 500); // המתן קצת כדי שה-DOM יטען
+    }
 
 }
 
@@ -307,52 +432,105 @@ function loadRecentActivities(userId, count = 10) {
 
 function renderRecentActivities(activities) {
     if (!activities || activities.length === 0) {
-        return '<p class="text-muted">No recent activities.</p>';
+        return `
+            <div class="text-center p-4">
+                <i class="bi bi-clock-history display-4 text-muted mb-3 user-select-none"></i>
+                <p class="text-muted user-select-none">No recent activities found.</p>
+            </div>
+        `;
     }
 
-    return `
-        <ul class="list-group list-group-flush">
-            ${activities.map(activity => `
-                <li class="list-group-item">
-                    <i class="bi bi-dot me-2 text-primary"></i>
-                    ${activity.ActivityType}
-                    <br><small class="text-muted">${new Date(activity.ActivityDate).toLocaleString()}</small>
-                </li>
-            `).join('')}
-        </ul>
-    `;
+    const getActivityIcon = (activityType) => {
+        const type = activityType.toLowerCase();
+        if (type.includes('login')) return 'bi-box-arrow-in-right text-success';
+        if (type.includes('comment')) return 'bi-chat-dots text-primary';
+        if (type.includes('share')) return 'bi-share text-info';
+        if (type.includes('save')) return 'bi-bookmark text-warning';
+        if (type.includes('follow')) return 'bi-person-plus text-success';
+        return 'bi-circle-fill text-secondary';
+    };
+
+    const getActivityColor = (activityType) => {
+        const type = activityType.toLowerCase();
+        if (type.includes('login')) return 'success';
+        if (type.includes('comment')) return 'primary';
+        if (type.includes('share')) return 'info';
+        if (type.includes('save')) return 'warning';
+        if (type.includes('follow')) return 'success';
+        return 'secondary';
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInHours = (now - date) / (1000 * 60 * 60);
+        
+        if (diffInHours < 1) {
+            return 'Just now';
+        } else if (diffInHours < 24) {
+            return `${Math.floor(diffInHours)}h ago`;
+        } else if (diffInHours < 48) {
+            return 'Yesterday';
+        } else {
+            return date.toLocaleDateString();
+        }
+    };
+
+    return activities.map((activity, index) => `
+        <div class="activity-item user-select-none" style="animation-delay: ${index * 0.1}s;">
+            <div class="d-flex align-items-start">
+                <div class="flex-shrink-0 me-3">
+                    <div class="rounded-circle bg-${getActivityColor(activity.ActivityType)} bg-opacity-10 p-2 d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px;">
+                        <i class="bi ${getActivityIcon(activity.ActivityType)} fs-6"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold mb-1" style="font-size: 0.9rem; line-height: 1.3;">
+                        ${activity.ActivityType}
+                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        ${formatDate(activity.ActivityDate)}
+                    </small>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 
 function renderFollowingUsers() {
     if (followingUsers.length === 0) {
         return `
-            <div class="text-center py-4">
-                <i class="bi bi-people display-4 text-muted"></i>
-                <h6 class="mt-3">Not following anyone yet</h6>
-                <p class="text-muted">Start following other users to see their shared articles!</p>
+            <div class="text-center py-5">
+                <i class="bi bi-people display-4 text-muted mb-3 user-select-none"></i>
+                <h6 class="fw-semibold user-select-none">Not following anyone yet</h6>
+                <p class="text-muted user-select-none">Start following other users to see their shared articles!</p>
             </div>
         `;
     }
 
     return `
         <div class="row g-3">
-            ${followingUsers.map(user => `
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body text-center">
-                            <!-- Simple user icon for each user -->
-                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
-                                 style="width: 80px; height: 80px; font-size: 2rem;">
-                                <i class="bi bi-person-fill"></i>
+            ${followingUsers.map((user, index) => `
+                <div class="col-md-6 col-xl-4" style="animation-delay: ${index * 0.1}s;">
+                    <div class="profile-following-card">
+                        <div class="card-body text-center p-4">
+                            <div class="position-relative d-inline-block mb-3">
+                                <div class="profile-user-avatar">
+                                    <i class="bi bi-person-fill text-white fs-3"></i>
+                                </div>
+                                <div class="profile-user-status" title="Active"></div>
                             </div>
-                            <h6 class="card-title">${user.name}</h6>
-                            <p class="card-text text-muted small">${user.email}</p>
-                            <div class="d-flex gap-2 justify-content-center">
-                                <button class="btn btn-sm btn-outline-danger unfollow-btn" data-user-email="${user.email}">
-                                    <i class="bi bi-person-dash me-1"></i>Unfollow
-                                </button>
-                            </div>
+                            <h6 class="card-title fw-bold mb-2 user-select-none">${user.name}</h6>
+                            <p class="card-text text-muted small mb-3 user-select-none">
+                                <i class="bi bi-envelope me-1"></i>${user.email}
+                            </p>
+                            <button class="profile-btn profile-btn-outline-danger unfollow-btn" 
+                                    data-user-email="${user.email}">
+                                <i class="bi bi-person-dash me-1"></i>Unfollow
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -363,14 +541,33 @@ function renderFollowingUsers() {
 
 function renderInterestsButtons() {
     if (!currentUser || !currentUser.tags || currentUser.tags.length === 0) {
-        return '<div class="text-muted">No interests added yet.</div>';
+        return `
+            <div class="text-center p-4 bg-light rounded-3">
+                <i class="bi bi-heart display-6 text-muted mb-2 user-select-none"></i>
+                <p class="text-muted mb-0 user-select-none">No interests added yet.</p>
+                <small class="text-muted user-select-none">Add your first interest below!</small>
+            </div>
+        `;
     }
 
-    return currentUser.tags.map(tag => `
-        <button type="button" class="btn btn-outline-primary btn-sm me-1 mb-1 interest-tag" data-id="${tag.id}">
-            ${tag.name} <span aria-hidden="true">&times;</span>
-        </button>
-    `).join('');
+    const colors = ['primary', 'success', 'info', 'warning', 'danger', 'secondary'];
+    
+    return `
+        <div class="interests-grid">
+            ${currentUser.tags.map((tag, index) => {
+                const color = colors[index % colors.length];
+                return `
+                    <button type="button" 
+                            class="btn btn-${color} btn-sm me-2 mb-2 interest-tag profile-interest-tag user-select-none" 
+                            data-id="${tag.id}">
+                        <span class="fw-semibold">${tag.name}</span>
+                        <i class="bi bi-x-circle-fill ms-2 text-white interest-remove-icon" 
+                           title="Remove interest"></i>
+                    </button>
+                `;
+            }).join('')}
+        </div>
+    `;
 }
 
 function bindProfileEvents() {
@@ -382,6 +579,29 @@ function bindProfileEvents() {
     // Change password button
     $(document).off('click', '#changePasswordBtn').on('click', '#changePasswordBtn', function () {
         openChangePasswordModal();
+    });
+
+    // Notification option selection - click entire div
+    $(document).off('click', '.profile-notification-option').on('click', '.profile-notification-option', function () {
+        const radio = $(this).find('input[type="radio"]');
+        radio.prop('checked', true);
+        radio.trigger('change');
+    });
+
+    // Notification style change handler
+    $(document).off('change', 'input[name="notificationStyle"]').on('change', 'input[name="notificationStyle"]', function() {
+        const selectedStyle = $(this).val();
+        console.log('📱 Notification style changed to:', selectedStyle);
+        localStorage.setItem('notificationStyle', selectedStyle);
+        
+        // עדכן את הטקסט המסביר
+        updateStyleHint(selectedStyle);
+        
+        // הצג הודעה על השינוי
+        $('.notification-status').removeClass('text-warning text-success text-muted text-danger')
+            .addClass('text-success').text(`Notification style updated to: ${selectedStyle}`);
+            
+        console.log('✅ Notification style saved to localStorage');
     });
 
     // Unfollow user
@@ -418,7 +638,7 @@ function bindProfileEvents() {
                 currentUser.tags.push(newTag);
                 localStorage.setItem('user', JSON.stringify(currentUser));
                 $('#new-interest').val('');
-                $('#interests-container').html(renderInterestsButtons());
+                $('.interests-tags-container').html(renderInterestsButtons());
             },
             function error(xhr) {
                 alert("Failed to add interest: " + (xhr.responseText || xhr.statusText));
@@ -443,7 +663,7 @@ function bindProfileEvents() {
                 // Update local user object
                 currentUser.tags = currentUser.tags.filter(t => t.id !== tagId);
                 localStorage.setItem("user", JSON.stringify(currentUser));
-                $('#interests-container').html(renderInterestsButtons());
+                $('.interests-tags-container').html(renderInterestsButtons());
             },
             function error(xhr) {
                 alert("Failed to remove interest: " + (xhr.responseText || xhr.statusText));
@@ -703,6 +923,32 @@ function renderProfileError() {
     `);
 }
 
+// פונקציה ליצירת HTML של תמונת פרופיל עם ברירת מחדל
+function getProfileImageHtml(profile) {
+    const baseImageUrl = currentUser.imageUrl || 
+                        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
+    
+    // הוסף cache-busting parameter כדי למנוע בעיות cache בדפדפן
+    const imageUrl = baseImageUrl + '?t=' + new Date().getTime();
+    
+    const fallbackInitial = (profile.name || 'User').charAt(0).toUpperCase();
+    
+    return `
+        <div class="profile-image-container position-relative">
+            <img id="profilePic" 
+                 src="${imageUrl}" 
+                 alt="Profile Image" 
+                 class="rounded-circle border border-4 border-white shadow-lg profile-image-animated" 
+                 style="width: 140px; height: 140px; object-fit: cover; display: block;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="default-profile-image shadow-lg position-absolute top-0 start-0" 
+                 style="display: none;">
+                ${fallbackInitial}
+            </div>
+        </div>
+    `;
+}
+
 //Searching user's for following
 function loadEmails() {
     ajaxCall(
@@ -864,23 +1110,40 @@ function addNotificationSettingsToProfile() {
     // טען הגדרות נוכחיות
     loadNotificationSettings();
     
-    // הוסף מאזינים לשינוי הגדרות
-    $(document).on('change', 'input[name="notificationStyle"]', function() {
-        const selectedStyle = $(this).val();
-        localStorage.setItem('notificationStyle', selectedStyle);
-        
-        // הצג הודעה על השינוי
-        $('.notification-status').removeClass('text-warning text-success text-muted text-danger')
-            .addClass('text-success').text(`Notification style updated to: ${selectedStyle}`);
-    });
+    // עדכן את ההסבר הראשוני
+    const currentStyle = localStorage.getItem('notificationStyle') || 'auto';
+    updateStyleHint(currentStyle);
+}
+
+// פונקציה לעדכון הטקסט המסביר
+function updateStyleHint(style) {
+    const hints = {
+        'auto': '🤖 Auto: System notifications when page hidden, in-page when visible',
+        'system': '💻 System: Will always show browser/OS notifications',
+        'inpage': '🌐 In-Page: Will always show notifications inside the website'
+    };
+    
+    $('#currentStyleHint').text(hints[style] || hints['auto']);
+    console.log('🎨 Style hint updated to:', style);
 }
 
 // טעינת הגדרות התראות
 function loadNotificationSettings() {
     if (!currentUser) return;
     
+    // טען הגדרת סוג התראה מ-localStorage קודם כל
+    const savedStyle = localStorage.getItem('notificationStyle') || 'auto';
+    console.log('🔄 Loading notification style from localStorage:', savedStyle);
+    
+    // בחר את הרדיו הנכון
+    $(`input[name="notificationStyle"][value="${savedStyle}"]`).prop('checked', true);
+    
+    // עדכן את ההסבר
+    updateStyleHint(savedStyle);
+    
     // בדוק שהפונקציות הנדרשות קיימות
     if (typeof checkNotificationStatus !== 'function') {
+        console.log('⏳ checkNotificationStatus not ready, retrying...');
         setTimeout(loadNotificationSettings, 1000); // נסה שוב אחרי שנייה
         return;
     }
@@ -891,11 +1154,7 @@ function loadNotificationSettings() {
 
     checkNotificationStatus(currentUser.id).then(isEnabled => {
         $('#notificationsSwitch').prop('checked', isEnabled).prop('disabled', false);
-        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell"></i> Send Test Notification');
-        
-        // טען הגדרת סוג התראה מ-localStorage
-        const savedStyle = localStorage.getItem('notificationStyle') || 'auto';
-        $(`input[name="notificationStyle"][value="${savedStyle}"]`).prop('checked', true);
+        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell-fill me-2"></i>Test Notification');
         
         // הצג סטטוס נוכחי
         const statusText = isEnabled ? 'enabled' : 'disabled';
@@ -903,12 +1162,15 @@ function loadNotificationSettings() {
         $('.notification-status').remove();
         $('#notificationsSwitch').parent().append(`
             <small class="notification-status ${statusClass} d-block mt-1">
-                Notifications are currently ${statusText} (${savedStyle} style)
+                Notifications are currently ${statusText}
             </small>
         `);
+        
+        console.log('✅ Notification settings loaded successfully');
     }).catch(err => {
+        console.error('❌ Error loading notification status:', err);
         $('#notificationsSwitch').prop('disabled', false);
-        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell"></i> Send Test Notification');
+        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell-fill me-2"></i>Test Notification');
         
         $('.notification-status').remove();
         $('#notificationsSwitch').parent().append(`
@@ -973,11 +1235,67 @@ $(document).on('click', '#testNotificationBtn', function () {
     // הוסף loading state
     $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Sending...');
     
-    // בדוק שהפונקציה קיימת
-    if (typeof sendTestNotification === 'function') {
-        sendTestNotification(currentUser.id);
+    // קבל הגדרת סוג התראה מהמשתמש
+    const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
+    console.log('🔧 Testing notification with style:', notificationStyle);
+    
+    // החלט איזה סוג התראה להציג (בדיוק כמו ב-showCustomNotification)
+    const isPageVisible = !document.hidden && document.visibilityState === 'visible';
+    let useSystemNotification = false;
+    
+    switch(notificationStyle) {
+        case 'system':
+            useSystemNotification = true;
+            break;
+        case 'inpage':
+            useSystemNotification = false;
+            break;
+        case 'auto':
+        default:
+            useSystemNotification = !isPageVisible;
+            break;
+    }
+    
+    console.log('🔔 Will use system notification:', useSystemNotification);
+    
+    // הצג התראה לפי הבחירה
+    if (useSystemNotification) {
+        if (Notification.permission === 'granted') {
+            console.log('🔔 Testing system notification');
+            const testNotification = new Notification('Test - System Notification', {
+                body: 'This is a test system notification based on your settings!',
+                icon: '/favicon.ico',
+                tag: 'profile-test',
+                requireInteraction: true
+            });
+            
+            testNotification.onclick = function() {
+                console.log('Profile test notification clicked!');
+                testNotification.close();
+            };
+            
+            setTimeout(() => testNotification.close(), 8000);
+        } else {
+            alert('Please allow notifications in your browser first!');
+            $btn.prop('disabled', false).html(originalText);
+            return;
+        }
     } else {
-        alert('Test notification function is not available. Please make sure notifications are properly loaded.');
+        // הצג התראת in-page
+        console.log('🔔 Testing in-page notification');
+        if (typeof showCustomNotification === 'function') {
+            showCustomNotification(
+                'Test - In-Page Notification',
+                'This is a test in-page notification based on your settings!',
+                { url: window.location.href }
+            );
+        }
+    }
+    
+    // גם שלח דרך השרת (אם יש) לבדיקת Firebase
+    if (typeof sendTestNotification === 'function') {
+        console.log('🚀 Also sending server test notification...');
+        sendTestNotification(currentUser.id);
     }
     
     // החזר למצב הרגיל אחרי 3 שניות
@@ -985,6 +1303,44 @@ $(document).on('click', '#testNotificationBtn', function () {
         $btn.prop('disabled', false).html(originalText);
     }, 3000);
 });
+
+// פונקציה לרענון תמונת פרופיל בכל האתר
+function refreshProfileImageGlobally() {
+    const timestamp = new Date().getTime();
+    const baseImageUrl = currentUser.imageUrl || 
+                        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
+    const imageUrlWithCache = baseImageUrl + '?t=' + timestamp;
+    
+    // עדכן את תמונת הפרופיל בכל מקום שהיא מופיעה
+    $('#profilePic').attr('src', imageUrlWithCache);
+    
+    // עדכן גם במקומות אחרים אם יש (navbar, header וכו')
+    $('.user-profile-image').attr('src', imageUrlWithCache);
+    $('.current-user-avatar').attr('src', imageUrlWithCache);
+    
+    console.log('🖼️ Profile image refreshed globally with cache-busting');
+}
+
+// פונקציה למחיקת cache של תמונות בדפדפן
+function clearImageCache() {
+    // יצירת תמונה חדשה כדי לאלץ טעינה מחדש
+    const img = new Image();
+    const baseImageUrl = currentUser.imageUrl || 
+                        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
+    
+    img.onload = function() {
+        console.log('🗑️ Image cache cleared and reloaded');
+        refreshProfileImageGlobally();
+    };
+    
+    img.onerror = function() {
+        console.log('⚠️ Image reload failed, but cache cleared');
+        refreshProfileImageGlobally();
+    };
+    
+    // טען את התמונה עם timestamp חדש
+    img.src = baseImageUrl + '?clear=' + new Date().getTime();
+}
 
 //adding profile picture
 function getAuthToken() {
@@ -1033,9 +1389,12 @@ function bindProfileImageUploadEvents() {
             })
             .then(data => {
                 if (data && data.imageUrl) {
-                    $('#profilePic').attr('src', data.imageUrl);
+                    // עדכן את המידע המקומי
                     currentUser.imageUrl = data.imageUrl;
                     localStorage.setItem('user', JSON.stringify(currentUser));
+                    
+                    // נקה את ה-cache ורענן את התמונה
+                    clearImageCache();
                 } else if (data) {
                     alert('Image upload failed');
                 }
@@ -1059,6 +1418,12 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
         token = null;
     }
 
+    // Disable button and show loading state
+    const $generateBtn = $('#generateProfileImageBtn');
+    const originalText = $generateBtn.html();
+    $generateBtn.prop('disabled', true)
+               .html('<i class="bi bi-hourglass-split me-2"></i>Generating... (2-3 minutes)');
+    
     $('#profilePic').css('opacity', 0.5);
 
     fetch(serverUrl + 'Users/GenerateProfileImage', {
@@ -1081,13 +1446,22 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
         })
         .then(data => {
             if (data && data.imageUrl) {
-                $('#profilePic').attr('src', data.imageUrl);
+                // עדכן את המידע המקומי
                 currentUser.imageUrl = data.imageUrl;
                 localStorage.setItem('user', JSON.stringify(currentUser));
+                
+                // נקה את ה-cache ורענן את התמונה
+                clearImageCache();
+                
+                alert('Profile image generated successfully!');
             } else {
                 alert('Image generation failed');
             }
         })
         .catch(() => alert('Image generation failed'))
-        .finally(() => $('#profilePic').css('opacity', 1));
+        .finally(() => {
+            // Restore button state
+            $generateBtn.prop('disabled', false).html(originalText);
+            $('#profilePic').css('opacity', 1);
+        });
 });

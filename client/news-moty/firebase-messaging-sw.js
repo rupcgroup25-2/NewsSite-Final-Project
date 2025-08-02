@@ -1,4 +1,4 @@
-// Firebase Messaging Service Worker
+﻿// Firebase Messaging Service Worker
 importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js');
 
@@ -23,24 +23,24 @@ console.log('🔥 Firebase messaging service worker initialized successfully!');
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('Background message received:', payload);
+    console.log('[firebase-messaging-sw.js] Received background message:', payload);
     
-    // בדוק אם צריך לסנן את ההתראה עבור המשתמש הנוכחי
+    // בדוק אם זה התראה שצריכה להיסנן (למנוע התראות על פעולות של המשתמש הנוכחי)
     if (payload.data && payload.data.excludeUserId) {
-        // נסה לקבל את פרטי המשתמש הנוכחי מ-localStorage
-        try {
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                const currentUser = JSON.parse(storedUser);
-                if (currentUser && currentUser.id && 
-                    payload.data.excludeUserId === currentUser.id.toString()) {
-                    console.log('🚫 Skipping background notification - user is the action performer');
-                    return; // אל תציג את ההתראה
-                }
-            }
-        } catch (error) {
-            console.log('⚠️ Could not parse user from localStorage, showing notification anyway');
-        }
+        console.log('🚫 Service Worker: Filtering notification for user:', payload.data.excludeUserId);
+        
+        // נמנע מהצגת התראה כי זה למשתמש הנוכחי
+        return Promise.resolve();
+    }
+    
+    // בדוק הגדרות התראה מlocalStorage
+    const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
+    console.log('[SW] Notification style from localStorage:', notificationStyle);
+    
+    // אם זה inpage only, אל תציג התראת מערכת
+    if (notificationStyle === 'inpage') {
+        console.log('[SW] Skipping system notification - inpage mode only');
+        return Promise.resolve();
     }
     
     const notificationTitle = payload.notification?.title || 'News Update';
@@ -48,8 +48,10 @@ messaging.onBackgroundMessage((payload) => {
         body: payload.notification?.body || 'You have a new update',
         icon: '/favicon.ico',
         badge: '/favicon.ico',
+        data: payload.data || {},
         tag: 'news-notification',
-        requireInteraction: false,
+        requireInteraction: true,
+        vibrate: [200, 100, 200],
         actions: [
             {
                 action: 'view',
@@ -62,7 +64,8 @@ messaging.onBackgroundMessage((payload) => {
         ]
     };
     
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    console.log('[SW] Showing system notification:', notificationTitle);
+    return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Handle notification clicks

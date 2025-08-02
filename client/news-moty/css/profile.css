@@ -1,0 +1,742 @@
+/* Profile Page Custom Styles */
+
+/* מניעת סימון טקסט לא רצוי */
+.user-select-none {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* כותרות אחידות בסגול */
+.gradient-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+}
+
+/* צבעים אחידים בסגול */
+.soft-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.soft-success {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.soft-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.soft-warning {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* התראות נשארות באדום */
+.soft-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+/* אפקטים מתקדמים */
+.text-shadow {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.profile-image-animated {
+    transition: all 0.3s ease;
+    border: 4px solid rgba(255,255,255,0.9);
+}
+
+.profile-image-animated:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border-color: #fff;
+}
+
+.profile-btn-hover {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-btn-hover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.profile-btn-hover:hover::before {
+    left: 100%;
+}
+
+.profile-btn-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.card-hover {
+    transition: all 0.4s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+/* כפתורי עניינים */
+.interests-tags-container .btn {
+    margin: 3px;
+    transition: all 0.3s ease;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.interests-tags-container .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* פעילויות אחרונות - תמיכה במצב לילה */
+.activity-item {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.activity-item:hover {
+    border-left-color: #6a82fb;
+    transform: translateX(8px);
+    background-color: rgba(106, 130, 251, 0.05);
+}
+
+/* מצב לילה */
+[data-bs-theme="dark"] .activity-item {
+    background-color: rgba(255,255,255,0.05);
+    color: #e9ecef;
+}
+
+[data-bs-theme="dark"] .activity-item:hover {
+    background-color: rgba(106, 130, 251, 0.15);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .activity-item .text-muted {
+    color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: #2d3748;
+    border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .card-header {
+    background-color: #1a202c;
+    border-color: #4a5568;
+    color: #fff;
+}
+
+/* אנימציות כניסה */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.profile-card {
+    animation: slideInUp 0.6s ease forwards;
+}
+
+.profile-card:nth-child(1) { animation-delay: 0s; }
+.profile-card:nth-child(2) { animation-delay: 0.1s; }
+.profile-card:nth-child(3) { animation-delay: 0.2s; }
+.profile-card:nth-child(4) { animation-delay: 0.3s; }
+
+.profile-image-animated {
+    animation: fadeInScale 0.8s ease forwards;
+}
+
+/* container לתמונת פרופיל */
+.profile-image-container {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: inline-block;
+}
+
+/* הגדרת תמונת ברירת מחדל */
+.default-profile-image {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 140px;
+    height: 140px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border: 4px solid rgba(255,255,255,0.9);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* תיקון בעיות רנדור */
+.profile-container {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-container.loaded {
+    opacity: 1;
+}
+
+/* שיפור רכיבי טופס */
+.form-control:focus {
+    border-color: #6a82fb;
+    box-shadow: 0 0 0 0.2rem rgba(106, 130, 251, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: #6a82fb;
+    border-color: #6a82fb;
+}
+
+/* כפתור העלאת תמונה */
+.profile-upload-btn {
+    background: rgba(255,255,255,0.9);
+    border: 2px solid #6a82fb;
+    color: #6a82fb;
+    transition: all 0.3s ease;
+}
+
+.profile-upload-btn:hover {
+    background: #6a82fb;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* מונע בחירת טקסט בכותרות ולחצנים */
+.card-header,
+.btn,
+.badge,
+.alert,
+h1, h2, h3, h4, h5, h6 {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* אפקט הולוגרם לכותרות */
+.hologram-title {
+    background: linear-gradient(
+        45deg,
+        #667eea 0%,
+        #764ba2 25%, 
+        #f093fb 50%, 
+        #667eea 75%,
+        #764ba2 100%
+    );
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* מצב לילה - תיקונים נוספים */
+[data-bs-theme="dark"] .bg-light {
+    background-color: #343a40 !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+    color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] .border {
+    border-color: #495057 !important;
+}
+
+/* התראות מותאמות */
+.notification-switch {
+    transform: scale(1.3);
+}
+
+.notification-test-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.notification-test-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* מניעת flash במצב לילה */
+.activity-container {
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+[data-bs-theme="dark"] .activity-container {
+    background-color: #1a1d23;
+}
+
+/* עדכון צבעי גרדיאנט רכים יותר */
+.soft-gradient-primary {
+    background: linear-gradient(135deg, #6a82fb 0%, #a855f7 100%);
+}
+
+.soft-gradient-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.soft-gradient-info {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+.soft-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* כרטיסי פרופיל מותאמים אישית */
+.profile-header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.profile-card {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.profile-card-header {
+    padding: 1.5rem;
+    border-bottom: none;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    opacity: 0.9;
+    z-index: 1;
+}
+
+.profile-card-header > * {
+    position: relative;
+    z-index: 2;
+}
+
+.profile-section-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* גרדיאנטים לכותרות - אחידים בסגול */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* כותרת פרופיל ואימייל */
+.profile-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    animation: slideInRight 0.8s ease-out;
+}
+
+.profile-email {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+    animation: slideInRight 0.8s ease-out 0.2s both;
+}
+
+.profile-stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.profile-stat-label {
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+/* כפתורי פרופיל */
+.profile-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.profile-btn:hover::before {
+    left: 100%;
+}
+
+.profile-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.profile-btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.profile-btn-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+}
+
+.profile-btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.profile-btn-info {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: white;
+}
+
+.profile-btn-outline-primary {
+    background: transparent;
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+.profile-btn-outline-primary:hover {
+    background: #6366f1;
+    color: white;
+}
+
+.profile-btn-outline-danger {
+    background: transparent;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.profile-btn-outline-danger:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* תמונת פרופיל */
+.profile-image-edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: 3px solid white;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.profile-image-edit-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.default-profile-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+    border: 4px solid rgba(255,255,255,0.9);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* אפשרויות התראות */
+.profile-notification-option {
+    padding: 1rem;
+    border: 2px solid var(--bs-border-color);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: var(--bs-body-bg);
+}
+
+.profile-notification-option:hover {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.profile-notification-option input[type="radio"]:checked + .form-check-label {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+/* קופסת המעקבים */
+.profile-follow-section {
+    background: var(--bs-light);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 2px dashed var(--bs-border-color);
+    transition: all 0.3s ease;
+}
+
+.profile-follow-section:hover {
+    border-color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.05);
+}
+
+/* כרטיסי משתמשים */
+.profile-following-card {
+    background: var(--bs-body-bg);
+    border: 2px solid var(--bs-border-color);
+    border-radius: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 1;
+}
+
+.profile-following-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    border-color: var(--bs-primary);
+}
+
+.profile-user-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.profile-user-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: var(--bs-success);
+    border-radius: 50%;
+    border: 3px solid white;
+}
+
+/* פעילויות אחרונות */
+.profile-activity-card {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    height: 100%;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.profile-activity-content {
+    padding: 0;
+    height: calc(100vh - 180px);
+    overflow-y: auto;
+    background: var(--bs-body-bg);
+}
+
+/* תגי עניינים */
+.profile-interest-tag {
+    border-radius: 20px !important;
+    padding: 8px 16px !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+.profile-interest-tag:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.interest-remove-icon {
+    opacity: 0.7;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.profile-interest-tag:hover .interest-remove-icon {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* אנימציות */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* תמיכה בעיצוב כהה */
+[data-bs-theme="dark"] .profile-card {
+    background: var(--bs-dark);
+    border-color: var(--bs-secondary);
+}
+
+[data-bs-theme="dark"] .profile-notification-option {
+    background: var(--bs-dark);
+    border-color: var(--bs-secondary);
+}
+
+[data-bs-theme="dark"] .profile-follow-section {
+    background: var(--bs-secondary);
+}
+
+[data-bs-theme="dark"] .default-profile-image {
+    background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 100%);
+    border-color: rgba(255,255,255,0.8);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}

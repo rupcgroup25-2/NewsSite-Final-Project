@@ -421,10 +421,10 @@ function loadFiveTrendingTags(country) {
 }
 
 function showCountryMapModal() {
-    // Avoid duplicating the modal
+    // removing existing map
     if ($('#countryMapModal').length) {
-        $('#countryMapModal').modal('show');
-        return;
+        $('#countryMapModal').remove();
+        $('.jqvmap-label').remove();
     }
 
     const mapModal = `
@@ -447,26 +447,17 @@ function showCountryMapModal() {
 
     // Wait for modal to be fully shown before rendering map
     $('#countryMapModal').on('shown.bs.modal', function () {
+
         $('#countryMapContainer').vectorMap({
             map: 'world_en',
             backgroundColor: 'transparent',
             hoverOpacity: 0,
             hoverColor: '#88c',
-            onRegionClick: function (event, code, region) {
+            onRegionClick: function (event, code) {
                 $('#countryMapModal').modal('hide');
-                loadFiveTrendingTags(region); // Call your existing function
+                loadFiveTrendingTags(countryCodeToName[code.toUpperCase()]); // Call your existing function
             }
         });
-        //$('#countryMapContainer').vectorMap({
-        //    map: 'world_en',
-        //    backgroundColor: 'transparent',
-        //    hoverOpacity: 0,
-        //    hoverColor: '#88c',
-        //    onRegionClick: function (event, code, region) {
-        //        alert('Clicked country: ' + region);
-        //        // Your function here: loadFiveTrendingTags(region);
-        //    }
-        //});
     });
 
     $('#countryMapModal').modal('show');

@@ -1,4 +1,4 @@
-﻿
+﻿let tokenExpiredHandled = false;
 function getAuthToken() {
     return JSON.parse(localStorage.getItem("user")).token;
 }
@@ -19,11 +19,13 @@ function ajaxCall(method, api, data, successCB, errorCB) {
         success: successCB,
         error: function (xhr, status, error) {
             // טיפול ב-401 Unauthorized
-            if (xhr.status === 401) {
+            if (xhr.status === 401 && !tokenExpiredHandled) {
+                tokenExpiredHandled = true;
                 alert('Your session has expired. Please log in again.');
                 localStorage.removeItem('user');
                 localStorage.removeItem('cachedFollowingUsers');
                 window.location.reload(); // רענון הדף כדי להראות login
+                setTimeout(() => window.location.reload(), 100);
                 return;
             }
 

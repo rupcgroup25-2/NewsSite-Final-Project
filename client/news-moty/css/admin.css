@@ -1,0 +1,915 @@
+/* Admin Dashboard Styles */
+
+/* Prevent text selection across the admin dashboard */
+#admin {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Allow text selection only for inputs and textareas */
+#admin input, 
+#admin textarea, 
+#admin .selectable-text {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Header section styling */
+.display-5 {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.badge.bg-light {
+    font-weight: 500;
+    border: 1px solid #dee2e6;
+    font-size: 0.85rem;
+}
+
+/* Professional tag cards with purple gradient */
+.admin-tag-card {
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    user-select: none;
+}
+
+.admin-tag-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2) !important;
+    transition: all 0.2s ease;
+}
+
+/* Authorization card styling with animations */
+.admin-auth-card {
+    max-width: 400px;
+    border-radius: 20px;
+    animation: zoomIn 0.6s ease-out;
+}
+
+.admin-auth-icon {
+    font-size: 3rem;
+    animation: bounceIn 1s ease-out;
+    animation-delay: 0.3s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-timestamp {
+    font-size: 1.15rem;
+    animation: slideInRight 0.6s ease-out;
+    animation-delay: 0.5s;
+    animation-fill-mode: both;
+}
+
+/* Stats cards with gradients and animations */
+.admin-stats-card-users {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.1s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-card-articles {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.2s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-card-shares {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #3a8dde 0%, #00d4ff 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.3s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-card-blocked {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.4s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-card-saved {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.5s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-card-reports {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.6s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-card-daily-logins {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    animation: slideInLeft 0.6s ease-out;
+    animation-delay: 0.7s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-icon {
+    font-size: 2rem;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    animation: bounceIn 0.8s ease-out;
+    animation-delay: 0.3s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-icon:hover {
+    transform: rotate(360deg) scale(1.1);
+    opacity: 1;
+}
+
+.admin-stats-icon-reports {
+    font-size: 2rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    animation: bounceIn 0.8s ease-out;
+    animation-delay: 0.3s;
+    animation-fill-mode: both;
+}
+
+.admin-stats-icon-reports:hover {
+    transform: rotate(360deg) scale(1.1);
+    opacity: 1;
+}
+
+/* Card hover effects with animations */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: slideUpIn 0.6s ease-out;
+}
+
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+}
+
+/* Modern table styling with animations */
+.modern-table {
+    font-size: 0.95rem;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.modern-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-table th::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s;
+}
+
+.modern-table th:hover::before {
+    left: 100%;
+}
+
+.modern-table td {
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.table-row-even {
+    background-color: #fafbfc;
+    transition: all 0.3s ease;
+}
+
+.table-row-odd {
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.table-row-even:hover, .table-row-odd:hover {
+    background-color: #f0f8ff !important;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Avatar styling with animations */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar-small:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+}
+
+.admin-avatar-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.admin-avatar-fallback:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Action buttons with enhanced animations */
+.action-btn {
+    transition: all 0.3s ease;
+    border-width: 1.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Badge and status styling with animations */
+.status-badge-active {
+    background-color: var(--bs-success) !important;
+    animation: pulse 2s infinite;
+}
+
+.status-badge-inactive {
+    background-color: var(--bs-secondary) !important;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.status-badge-blocked {
+    background-color: var(--bs-danger) !important;
+    animation: pulse 1.5s infinite;
+}
+
+/* Button ripple effect */
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.action-btn:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+/* Comment and share boxes */
+.comment-box {
+    border-left: 3px solid #007bff;
+}
+
+.share-comment {
+    border-left: 3px solid #0dcaf0;
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+/* Reports table specific styling */
+.reports-table td {
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.reporter-info, .article-info, .shared-comment-info, .report-details {
+    line-height: 1.3;
+}
+
+.date-info {
+    white-space: nowrap;
+}
+
+/* Admin specific text styling with animations */
+.admin-card-text {
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 1px 0 #333;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.admin-bubble {
+    display: inline-block;
+    background: rgba(255,255,255,0.85);
+    color: #222;
+    font-size: 2.1rem;
+    font-weight: bold;
+    border-radius: 2rem;
+    padding: 0.25em 1.2em;
+    margin-bottom: 0.2em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    animation: zoomIn 0.5s ease-out;
+    transition: all 0.3s ease;
+}
+
+.admin-bubble:hover {
+    transform: scale(1.05);
+    background: rgba(255,255,255,0.95);
+}
+
+.admin-bubble-label {
+    display: inline-block;
+    background: rgba(255,255,255,0.65);
+    color: #333;
+    font-size: 1.05rem;
+    font-weight: 500;
+    border-radius: 1.2rem;
+    padding: 0.15em 0.9em;
+    margin-top: 0.2em;
+    animation: slideInRight 0.6s ease-out;
+    animation-delay: 0.2s;
+    animation-fill-mode: both;
+    transition: all 0.3s ease;
+}
+
+.admin-bubble-label:hover {
+    background: rgba(255,255,255,0.85);
+    transform: translateY(-2px);
+}
+
+/* Minimum height utilities */
+.min-height-60vh {
+    min-height: 60vh;
+}
+
+/* Text utilities */
+.text-truncate-150 {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-truncate-200 {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-truncate-300 {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Scroll bar styling */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Sticky header for tables */
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #f8f9fa !important;
+}
+
+/* Search input styling with animations */
+#userSearchInput {
+    transition: all 0.3s ease;
+}
+
+#userSearchInput:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+    transform: scale(1.02);
+}
+
+/* Header animations */
+.admin-header {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+.admin-header h1 {
+    animation: slideInRight 0.8s ease-out;
+    animation-delay: 0.2s;
+    animation-fill-mode: both;
+}
+
+.admin-header .lead {
+    animation: fadeInUp 0.6s ease-out;
+    animation-delay: 0.4s;
+    animation-fill-mode: both;
+}
+
+/* Dark mode styling for search icon */
+[data-bs-theme="dark"] .input-group-text .bi-search {
+    color: #6c757d !important;
+}
+
+/* Ensure search icon is visible in light mode */
+[data-bs-theme="light"] .input-group-text .bi-search,
+.input-group-text .bi-search {
+    color: #6c757d !important;
+}
+
+/* Custom grid for 7 columns */
+.col-xl-1-7 {
+    flex: 0 0 auto;
+    width: 14.285714%; /* 100% / 7 = 14.285714% */
+}
+
+/* Tag display styling with animations */
+.admin-tag-item {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    margin: 0.125rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    animation: slideInRight 0.4s ease-out;
+    transition: all 0.3s ease;
+}
+
+.admin-tag-item:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+.admin-tag-item:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.admin-tag-item:nth-child(even) {
+    animation-delay: 0.2s;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .admin-avatar-fallback {
+    background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 100%);
+}
+
+[data-bs-theme="dark"] .modern-table th {
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+}
+
+[data-bs-theme="dark"] .table-row-even {
+    background-color: var(--bs-dark);
+}
+
+[data-bs-theme="dark"] .table-row-odd {
+    background-color: var(--bs-secondary);
+}
+
+[data-bs-theme="dark"] .admin-tag-item {
+    background: linear-gradient(135deg, #4c6ef5, #7c3aed);
+}
+
+/* Loading and empty state styling with animations */
+.admin-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    font-size: 1.1rem;
+    color: var(--bs-secondary);
+    animation: pulse 1.5s infinite;
+}
+
+.admin-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--bs-secondary);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.admin-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    animation: rotateIn 1s ease-out;
+    animation-delay: 0.3s;
+    animation-fill-mode: both;
+}
+
+/* Image animations and consistent sizing */
+.admin-profile-image {
+    transition: all 0.4s ease;
+    border-radius: 50%;
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.admin-profile-image:hover {
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    border-color: #667eea;
+}
+
+/* Ensure all avatar images have consistent size */
+.admin-avatar-fallback img,
+.avatar-circle img,
+.avatar-small img {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Table consistent image sizing */
+.modern-table img {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+/* Table animation classes */
+.table-row-animate {
+    animation: slideInRight 0.5s ease-out;
+}
+
+.table-row-animate:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.table-row-animate:nth-child(even) {
+    animation-delay: 0.2s;
+}
+
+/* Stagger animation for table rows */
+.stagger-animation-1 { animation-delay: 0.1s; animation-fill-mode: both; }
+.stagger-animation-2 { animation-delay: 0.2s; animation-fill-mode: both; }
+.stagger-animation-3 { animation-delay: 0.3s; animation-fill-mode: both; }
+.stagger-animation-4 { animation-delay: 0.4s; animation-fill-mode: both; }
+.stagger-animation-5 { animation-delay: 0.5s; animation-fill-mode: both; }
+
+/* Loading spinner animation */
+.admin-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Scroll animations */
+@keyframes scrollGlow {
+    0% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    animation: scrollGlow 1s ease-in-out infinite;
+}
+
+/* Responsive design */
+@media (max-width: 1399px) {
+    .col-xl-1-7 {
+        width: 33.333333%; /* 3 columns on large screens */
+    }
+}
+
+@media (max-width: 991px) {
+    .col-xl-1-7 {
+        width: 50%; /* 2 columns on medium screens */
+    }
+}
+
+@media (max-width: 575px) {
+    .col-xl-1-7 {
+        width: 100%; /* 1 column on small screens */
+    }
+    
+    .admin-auth-card {
+        max-width: 100%;
+        margin: 0 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-table {
+        font-size: 0.85rem;
+        animation-delay: 0.2s;
+    }
+    
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    .admin-profile-image {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .admin-avatar-fallback {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.8rem;
+    }
+    
+    .reports-table td {
+        max-width: 150px;
+    }
+    
+    .admin-stats-timestamp {
+        font-size: 1rem;
+    }
+    
+    .text-truncate-150 {
+        max-width: 100px;
+    }
+    
+    .text-truncate-200 {
+        max-width: 120px;
+    }
+    
+    .text-truncate-300 {
+        max-width: 150px;
+    }
+    
+    .admin-stats-card-users,
+    .admin-stats-card-articles,
+    .admin-stats-card-shares,
+    .admin-stats-card-blocked,
+    .admin-stats-card-saved,
+    .admin-stats-card-reports,
+    .admin-stats-card-daily-logins {
+        animation-delay: 0.1s;
+        animation-duration: 0.4s;
+    }
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.7s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.7s ease-out;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.bounce-in {
+    animation: bounceIn 0.9s ease-out;
+}
+
+@keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.1); }
+    70% { transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.slideUpIn {
+    animation: slideUpIn 0.6s ease-out;
+}
+
+@keyframes slideUpIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fadeInUp {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.zoomIn {
+    animation: zoomIn 0.5s ease-out;
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.rotateIn {
+    animation: rotateIn 0.6s ease-out;
+}
+
+@keyframes rotateIn {
+    from { opacity: 0; transform: rotate(-200deg); }
+    to { opacity: 1; transform: rotate(0); }
+}
+
+.flipInX {
+    animation: flipInX 0.8s ease-out;
+}
+
+@keyframes flipInX {
+    from { 
+        opacity: 0; 
+        transform: perspective(400px) rotateX(90deg); 
+    }
+    40% { 
+        transform: perspective(400px) rotateX(-20deg); 
+    }
+    60% { 
+        transform: perspective(400px) rotateX(10deg); 
+    }
+    80% { 
+        transform: perspective(400px) rotateX(-5deg); 
+    }
+    to { 
+        opacity: 1; 
+        transform: perspective(400px) rotateX(0deg); 
+    }
+}
+
+/* Additional utility animations */
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.glow {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+    to { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
+}
+
+.heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.1); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.1); }
+    70% { transform: scale(1); }
+}
+
+/* Entrance animations for different elements */
+.animate-on-load {
+    animation: slideUpIn 0.6s ease-out;
+}
+
+.animate-delayed {
+    animation: fadeInUp 0.8s ease-out;
+    animation-delay: 0.3s;
+    animation-fill-mode: both;
+}
+
+.animate-bounce-delayed {
+    animation: bounceIn 0.8s ease-out;
+    animation-delay: 0.5s;
+    animation-fill-mode: both;
+}
+
+/* Print styles */
+@media print {
+    .card-hover:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .action-btn {
+        display: none;
+    }
+    
+    .admin-stats-card-users,
+    .admin-stats-card-articles,
+    .admin-stats-card-shares,
+    .admin-stats-card-blocked,
+    .admin-stats-card-saved,
+    .admin-stats-card-reports,
+    .admin-stats-card-daily-logins {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+}

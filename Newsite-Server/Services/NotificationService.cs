@@ -543,6 +543,7 @@ namespace Newsite_Server.Services
                 {
                     {"type", "new_comment"},
                     {"articleId", articleId.ToString()},
+                    {"excludeUserId", commenterId.ToString()}, // מוסיף למניעת התראות למבצע הפעולה
                     {"url", $"/article.html?id={articleId}"}
                 };
 

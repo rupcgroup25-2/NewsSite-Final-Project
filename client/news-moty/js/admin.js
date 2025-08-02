@@ -1,6 +1,4 @@
-﻿// renderAdminDashboard.js - Modern Version
-
-function renderAdminDashboard({
+﻿function renderAdminDashboard({
     users,
     activeUsersCount,
     savedArticlesCount,
@@ -17,10 +15,10 @@ function renderAdminDashboard({
     // בדיקת הרשאות admin
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
         $tab.html(`
-            <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-                <div class="card shadow-lg border-0" style="max-width: 400px; border-radius: 20px;">
-                    <div class="card-body text-center p-5">
-                        <i class="bi bi-shield-lock text-warning mb-3" style="font-size: 3rem;"></i>
+            <div class="container-fluid d-flex justify-content-center align-items-center min-height-60vh">
+                <div class="card shadow-lg border-0 admin-auth-card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-shield-lock text-warning mb-3 admin-auth-icon"></i>
                         <h4 class="text-muted">Admin Access Required</h4>
                         <p class="text-muted">You need admin privileges to access this dashboard.</p>
                     </div>
@@ -48,13 +46,23 @@ function renderAdminDashboard({
                 <div class="col-12">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <div>
-                            <h1 class="display-5 fw-bold text-primary mb-2">
-                                <i class="bi bi-speedometer2 me-3"></i>Admin Dashboard
+                            <h1 class="display-5 fw-bold text-dark mb-2">
+                                <i class="bi bi-speedometer2 me-3 text-primary"></i>Admin Dashboard
                             </h1>
-                            <p class="lead text-muted mb-0">Manage users, monitor activity, and review reports</p>
+                            <p class="text-muted mb-0">Comprehensive management and monitoring interface</p>
                         </div>
                         <div class="text-end">
-                            <span class="text-primary fw-bold" style="font-size:1.15rem;">Last updated: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString()}</span>
+                            <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                                <i class="bi bi-clock me-1"></i>
+                                ${new Date().toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                })} • ${new Date().toLocaleTimeString('en-US', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -63,54 +71,54 @@ function renderAdminDashboard({
             <!-- Statistics Cards -->
             <div class="row g-3 mb-5">
                 <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card border-0 shadow-sm h-100 card-hover admin-stats-card-users">
                         <div class="card-body text-white text-center p-3">
-                            <i class="bi bi-people-fill mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <i class="bi bi-people-fill mb-2 admin-stats-icon"></i>
                             <h3 class="fw-bold mb-1">${totalUsers}</h3>
                             <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Active Users</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="card border-0 shadow-sm h-100 card-hover admin-stats-card-articles">
                         <div class="card-body text-white text-center p-3">
-                            <i class="bi bi-journal-text mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <i class="bi bi-journal-text mb-2 admin-stats-icon"></i>
                             <h3 class="fw-bold mb-1">${totalArticles}</h3>
                             <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Saved Articles</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #3a8dde 0%, #00d4ff 100%);">
+                    <div class="card border-0 shadow-sm h-100 card-hover admin-stats-card-shares">
                         <div class="card-body text-white text-center p-3">
-                            <i class="bi bi-share-fill mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <i class="bi bi-share-fill mb-2 admin-stats-icon"></i>
                             <h3 class="fw-bold mb-1">${totalShared}</h3>
                             <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Shared Items</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <div class="card border-0 shadow-sm h-100 card-hover admin-stats-card-blocked">
                         <div class="card-body text-white text-center p-3">
-                            <i class="bi bi-person-x-fill mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <i class="bi bi-person-x-fill mb-2 admin-stats-icon"></i>
                             <h3 class="fw-bold mb-1">${totalBlocked}</h3>
                             <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Blocked Users</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <div class="card border-0 shadow-sm h-100 card-hover admin-stats-card-saved">
                         <div class="card-body text-dark text-center p-3">
-                            <i class="bi bi-flag-fill mb-2" style="font-size: 2rem; opacity: 0.8;"></i>
+                            <i class="bi bi-flag-fill mb-2 admin-stats-icon-reports"></i>
                             <h3 class="fw-bold mb-1">${totalReports}</h3>
                             <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Total Reports</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-1-7 col-lg-3 col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius: 16px; background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
+                    <div class="card border-0 shadow-sm h-100 card-hover admin-stats-card-daily-logins">
                         <div class="card-body text-white text-center p-3">
-                            <i class="bi bi-calendar-check mb-2" style="font-size: 2rem; opacity: 0.9;"></i>
+                            <i class="bi bi-calendar-check mb-2 admin-stats-icon"></i>
                             <h3 class="fw-bold mb-1">${totalDailyLogins}</h3>
                             <small class="badge bg-white bg-opacity-25 px-2 py-1 rounded-pill">Daily Logins</small>
                         </div>
@@ -128,16 +136,22 @@ function renderAdminDashboard({
             </div>
 
             <!-- Top Tags Section -->
-            <div id="topTagsSection" class="mb-4">
-                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-                    <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px 20px 0 0;">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-tags-fill me-2" style="font-size: 1.5rem;"></i>
-                            <h5 class="mb-0 fw-bold" id="topTagsHeader"></h5>
+            <div id="topTagsSection" class="mb-5">
+                <div class="card border-0 shadow-lg card-hover" style="border-radius: 20px; overflow: hidden;">
+                    <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
+                        <div class="d-flex align-items-center admin-header">
+                            <i class="bi bi-fire me-3 text-warning" style="font-size: 1.8rem;"></i>
+                            <div>
+                                <h4 class="mb-0 fw-bold text-white admin-card-text" id="topTagsHeader">Popular Tags</h4>
+                                <p class="mb-0 text-white-50">Most frequently used content tags</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body" id="topTagsList">
-                        <div class="text-muted">Loading top tags...</div>
+                    <div class="card-body py-4" id="topTagsList">
+                        <div class="admin-loading">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            Loading popular tags...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -219,10 +233,8 @@ function renderAdminDashboard({
             <tr class="${rowClass}">
                 <td class="py-3 px-4">
                     <div class="d-flex align-items-center">
-                        <div class="avatar-circle me-3">
-                            ${user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
+                        ${getUserProfileImageHtml(user, 40)}
+                        <div class="ms-3">
                             <div class="fw-semibold text-dark">${user.name}</div>
                             <small class="text-muted">ID: ${user.id}</small>
                         </div>
@@ -312,10 +324,12 @@ function renderAdminDashboard({
                     <td class="py-3">
                         <div class="reporter-info">
                             <div class="d-flex align-items-center mb-1">
-                                <div class="avatar-small me-2">
-                                    ${(r.ReporterName || 'U').charAt(0).toUpperCase()}
-                                </div>
-                                <div>
+                                ${getUserProfileImageHtml({
+                                    id: r.ReporterId,
+                                    name: r.ReporterName,
+                                    imageUrl: r.ReporterImageUrl
+                                }, 40)}
+                                <div class="ms-3">
                                     <div class="fw-semibold text-dark">${r.ReporterName || 'Unknown'}</div>
                                     <small class="text-muted">${r.ReporterEmail || 'No email'}</small>
                                 </div>
@@ -414,202 +428,24 @@ function renderAdminDashboard({
                 </div>
             </div>
         </div>
-
-        <style>
-        .card-hover {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .modern-table {
-            font-size: 0.95rem;
-        }
-        .modern-table th {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            font-weight: 600;
-            color: #495057;
-        }
-        .modern-table td {
-            border-bottom: 1px solid #f1f1f1;
-            vertical-align: middle;
-        }
-        .table-row-even {
-            background-color: #fafbfc;
-        }
-        .table-row-odd {
-            background-color: #ffffff;
-        }
-        .table-row-even:hover, .table-row-odd:hover {
-            background-color: #f0f8ff !important;
-        }
-
-        .avatar-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-        .avatar-small {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.75rem;
-        }
-
-        .action-btn {
-            transition: all 0.2s ease;
-            border-width: 1.5px;
-        }
-        .action-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .comment-box {
-            border-left: 3px solid #007bff;
-        }
-
-        .share-comment {
-            border-left: 3px solid #0dcaf0;
-            max-width: 300px;
-            word-wrap: break-word;
-        }
-
-        .reports-table td {
-            max-width: 200px;
-            word-wrap: break-word;
-        }
-
-        .reporter-info, .article-info, .shared-comment-info, .report-details {
-            line-height: 1.3;
-        }
-
-        .date-info {
-            white-space: nowrap;
-        }
-
-        .admin-card-text {
-            text-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 1px 0 #333;
-        }
-
-        .admin-bubble {
-            display: inline-block;
-            background: rgba(255,255,255,0.85);
-            color: #222;
-            font-size: 2.1rem;
-            font-weight: bold;
-            border-radius: 2rem;
-            padding: 0.25em 1.2em;
-            margin-bottom: 0.2em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-        .admin-bubble-label {
-            display: inline-block;
-            background: rgba(255,255,255,0.65);
-            color: #333;
-            font-size: 1.05rem;
-            font-weight: 500;
-            border-radius: 1.2rem;
-            padding: 0.15em 0.9em;
-            margin-top: 0.2em;
-        }
-
-        /* Scroll bar styling for users table */
-        .table-responsive::-webkit-scrollbar {
-            width: 8px;
-        }
-        .table-responsive::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .table-responsive::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        .table-responsive::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Sticky header for users table */
-        .sticky-top {
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            background-color: #f8f9fa !important;
-        }
-
-        /* Search input styling */
-        #userSearchInput:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
-        }
-
-        /* Dark mode styling for search icon */
-        [data-bs-theme="dark"] .input-group-text .bi-search {
-            color: #6c757d !important;
-        }
-        
-        /* Ensure search icon is visible in light mode */
-        [data-bs-theme="light"] .input-group-text .bi-search,
-        .input-group-text .bi-search {
-            color: #6c757d !important;
-        }
-
-        /* Custom grid for 7 columns */
-        .col-xl-1-7 {
-            flex: 0 0 auto;
-            width: 14.285714%; /* 100% / 7 = 14.285714% */
-        }
-
-        @media (max-width: 1399px) {
-            .col-xl-1-7 {
-                width: 33.333333%; /* 3 columns on large screens */
-            }
-        }
-
-        @media (max-width: 991px) {
-            .col-xl-1-7 {
-                width: 50%; /* 2 columns on medium screens */
-            }
-        }
-
-        @media (max-width: 575px) {
-            .col-xl-1-7 {
-                width: 100%; /* 1 column on small screens */
-            }
-        }
-
-        @media (max-width: 768px) {
-            .modern-table {
-                font-size: 0.85rem;
-            }
-            .avatar-circle {
-                width: 32px;
-                height: 32px;
-                font-size: 0.8rem;
-            }
-            .reports-table td {
-                max-width: 150px;
-            }
-        }
-        </style>`;
+`;
 
     $tab.html(html);
+}
+function getUserProfileImageHtml(user, size = 40) {
+    const imageUrl = user.imageUrl ||
+        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg`;
+    const fallbackInitial = (user.name || 'U').charAt(0).toUpperCase();
+
+    return `
+        <div class="position-relative d-inline-block" style="width:${size}px;height:${size}px;">
+            <img src="${imageUrl}" alt="Profile" class="admin-profile-image" 
+                style="width:${size}px;height:${size}px;"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="admin-avatar-fallback position-absolute top-0 start-0" 
+                style="width:${size}px;height:${size}px;display:none;font-size:${size / 2.2}px;">${fallbackInitial}</div>
+        </div>
+    `;
 }
 
 // פונקציות עזר לטעינת נתונים עם אימות Token
@@ -852,25 +688,52 @@ function loadTopTags(topCount) {
         function (tags) {
             let html = '';
             if (!tags || tags.length === 0) {
-                html = `<p class="text-muted">No tags found.</p>`;
+                html = `
+                    <div class="admin-empty-state">
+                        <i class="bi bi-tags text-muted"></i>
+                        <p class="text-muted">No popular tags found yet.</p>
+                    </div>`;
+                $('#topTagsHeader').text('Popular Tags');
             } else {
-                html += '<ul class="list-group list-group-flush">';
+                html += '<div class="row g-3">';
 
                 tags.forEach((tag, index) => {
+                    const animationClass = `stagger-animation-${(index % 5) + 1}`;
+
                     html += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-tag me-2 text-primary"></i>${tag.tagName}</span>
-                            <span class="badge bg-primary rounded-pill">${tag.tagCount}</span>
-                        </li>`;
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 card-hover admin-tag-card ${animationClass}" style="border-radius: 12px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-left: 4px solid #6c757d; user-select: none;">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h5 class="fw-bold mb-1 text-dark">${tag.tagName}</h5>
+                                            <div class="text-muted">
+                                                <i class="bi bi-graph-up me-1"></i>
+                                                ${tag.tagCount} articles
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <i class="bi bi-fire text-warning" style="font-size: 1.5rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
                 });
 
-                html += '</ul>';
+                html += '</div>';
+                $('#topTagsHeader').text(`Popular Tags (${tags.length})`);
             }
-            $('#topTagsHeader').text(`Top ${$(tags).length} Tags`);
+            
             $('#topTagsList').html(html);
         },
         function (xhr, status, error) {
-            $('#topTagsList').html(`<p class="text-danger">Failed to load tags.</p>`);
+            $('#topTagsList').html(`
+                <div class="admin-empty-state">
+                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                    <p class="text-danger">Failed to load popular tags.</p>
+                </div>`);
+            $('#topTagsHeader').text('🔥 Popular Tags - Error');
         }
     );
 }

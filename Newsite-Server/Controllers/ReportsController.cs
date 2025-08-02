@@ -28,12 +28,18 @@ namespace Newsite_Server.Controllers
 
             if (resultSavingReport > 0)
             {
-                // שלח התראה לכל המשתמשים (במקום אדמינים ספציפיים)
+                // שלח התראה רק לאדמינים, לא למשתמש שמדווח
                 try
                 {
-                    await notifications.NotifySystemUpdate(
-                        "New Report Submitted",
-                        $"A new report has been submitted for review"
+                    // קבל את שם המדווח
+                    User user = new User();
+                    string reporterName = user.GetUserNameById(dto.Report.ReporterId) ?? "Unknown User";
+                    
+                    await notifications.NotifyAdminNewReport(
+                        "Article Report", 
+                        dto.Article.Title ?? "Unknown Article", 
+                        reporterName,
+                        dto.Report.ReporterId
                     );
                 }
                 catch (Exception ex)

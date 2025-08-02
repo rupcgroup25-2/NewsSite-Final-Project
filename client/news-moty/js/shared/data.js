@@ -1,9 +1,12 @@
 ﻿// Sample data and state
-const articlesDict = {
-    "All" : [],
-    "sports": [],
-    "business": []
-};
+if (typeof articlesDict === 'undefined') {
+    const articlesDict = {
+        "All" : [],
+        "sports": [],
+        "business": []
+    };
+    window.articlesDict = articlesDict;
+}
 
 availableTags = [
     { id: "technology", name: "Technology", color: "primary" },

@@ -127,12 +127,17 @@ namespace Newsite_Server.BL
         public async Task NotifyArticleSharedToFollowers(int sharerId, string sharerName, string articleTitle)
         {
             var followers = dbs.GetUserFollowers(sharerId);
+            
+            // הסר את המשתמש שמשתף מהרשימה כדי שהוא לא יקבל התראה על פעולה שלו
+            followers.RemoveAll(followerId => followerId == sharerId);
+            
             if (followers.Count > 0)
             {
                 var data = new Dictionary<string, string>
                 {
                     {"type", "article_shared"},
                     {"sharerId", sharerId.ToString()},
+                    {"excludeUserId", sharerId.ToString()}, // מוסיף למניעת התראות למבצע הפעולה
                     {"url", "/shared.html"}
                 };
 
@@ -146,11 +151,17 @@ namespace Newsite_Server.BL
         }
 
         // התראה על עוקב חדש
-        public async Task NotifyNewFollower(int followedUserId, string followerName)
+        public async Task NotifyNewFollower(int followedUserId, string followerName, int followerId)
         {
+            // ודא שהמשתמש לא מקבל התראה על כך שהוא עוקב אחר עצמו
+            if (followedUserId == followerId) {
+                return; // אל תשלח התראה אם המשתמש עוקב אחר עצמו
+            }
+            
             var data = new Dictionary<string, string>
             {
                 {"type", "new_follower"},
+                {"excludeUserId", followerId.ToString()}, // מוסיף למניעת התראות למבצע הפעולה
                 {"url", "/profile.html"}
             };
 
@@ -162,16 +173,21 @@ namespace Newsite_Server.BL
             );
         }
 
-        // התראה לאדמין על דיווח חדש
-        public async Task NotifyAdminNewReport(string reportType, string reportedContent, string reporterName)
+        // התראה לאדמין על דיווח חדש - מעודכן לא לשלוח למדווח
+        public async Task NotifyAdminNewReport(string reportType, string reportedContent, string reporterName, int reporterId)
         {
             var adminUsers = dbs.GetAllUsersWithNotifications();
+            
+            // הסר את המשתמש שמדווח מהרשימה כדי שהוא לא יקבל התראה על פעולה שלו
+            adminUsers.RemoveAll(userId => userId == reporterId);
+            
             if (adminUsers.Count > 0)
             {
                 var data = new Dictionary<string, string>
                 {
                     {"type", "new_report"},
                     {"reportType", reportType},
+                    {"excludeUserId", reporterId.ToString()}, // מוסיף למניעת התראות למבצע הפעולה
                     {"url", "/admin.html"}
                 };
 
@@ -196,6 +212,27 @@ namespace Newsite_Server.BL
 
             var allActiveUsers = dbs.GetAllActiveUserIds();
             await notificationService.SendNotificationToUsers(allActiveUsers, title, message, data);
+        }
+
+        // התראה על עדכון מערכת לכל המשתמשים מלבד מבצע הפעולה
+        public async Task NotifySystemUpdateExcludingUser(string title, string message, int excludeUserId)
+        {
+            var data = new Dictionary<string, string>
+            {
+                {"type", "system_update"},
+                {"excludeUserId", excludeUserId.ToString()}, // מוסיף למניעת התראות למבצע הפעולה
+                {"url", "/"}
+            };
+
+            var allActiveUsers = dbs.GetAllActiveUserIds();
+            
+            // הסר את המשתמש שמבצע את הפעולה
+            allActiveUsers.RemoveAll(userId => userId == excludeUserId);
+            
+            if (allActiveUsers.Count > 0)
+            {
+                await notificationService.SendNotificationToUsers(allActiveUsers, title, message, data);
+            }
         }
 
         // התראה על יום הולדת למשתמש

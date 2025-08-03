@@ -149,6 +149,61 @@ function hideMessage(selector) {
     $(selector).addClass('d-none').text('').removeClass('alert alert-success alert-danger');
 }
 
+//Update recommended in localStorage
+async function updateRecommendedArticles() {
+    const cacheKey = NEWS_CACHE_KEY;
+    const cacheRaw = localStorage.getItem(cacheKey);
+    let cache = { articles: [] };
+
+    if (cacheRaw) {
+        try {
+            cache = JSON.parse(cacheRaw);
+        } catch (e) {
+            console.warn("Failed to parse article cache, resetting.");
+        }
+    }
+
+    // Remove old recommended articles
+    cache.articles = cache.articles.filter(article => !article.id.startsWith("recommended_"));
+
+    // If no tags exist, skip fetch and update cache immediately
+    if (!currentUser.tags || currentUser.tags.length === 0) {
+        localStorage.setItem(cacheKey, JSON.stringify(cache));
+        console.log("No tags found — recommended articles removed from cache.");
+        return;
+    }
+
+    // Fetch new recommended articles
+    ajaxCall(
+        "POST",
+        `${serverUrl}Articles/recommendedArticles/pageSize/100/language/en`,
+        JSON.stringify(currentUser.tags),
+        function success(response) {
+            const timestamp = Date.now();
+            const recommendedArticles = response
+                .filter(article => article.title && article.description && article.urlToImage)
+                .map((article, index) => ({
+                    id: `recommended_${timestamp}_${index}`,
+                    title: article.title,
+                    content: article.content || article.description,
+                    preview: article.description,
+                    category: "recommended",
+                    publishedAt: article.publishedAt,
+                    imageUrl: article.urlToImage,
+                    url: article.url,
+                    source: article.source
+                }));
+            // Merge back into cache and save without changing the date
+            cache.articles.push(...recommendedArticles);
+            localStorage.setItem(cacheKey, JSON.stringify(cache));
+            console.log("Recommended articles updated.");
+        },
+        function error(xhr) {
+            console.error("Failed to fetch updated recommended articles", xhr);
+        }
+    );
+}
+
 // Handle Login form submission - AJAX
 $(document).on('submit', '#loginForm', function (e) {
     e.preventDefault();
@@ -178,6 +233,7 @@ $(document).on('submit', '#loginForm', function (e) {
             }
             currentUser = response;
             localStorage.setItem('user', JSON.stringify(currentUser));
+            updateRecommendedArticles();
 
             // בדוק אם יש משתמש קודם ועבור להתראות החדשות
             if (typeof switchUserNotifications === 'function') {
@@ -307,6 +363,7 @@ $(document).on('click', '#logout-btn', function () {
     currentUser = null;
     localStorage.removeItem('user');
     localStorage.removeItem('cachedFollowingUsers');
+    localStorage.removeItem('newsApiCacheV2');
     
     // בטל הרשמה להתראות
     if (typeof unsubscribeUserFromNotifications === 'function') {

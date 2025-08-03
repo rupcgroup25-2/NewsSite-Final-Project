@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FirebaseAdmin.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
 using System.Text.Json;
@@ -14,6 +15,14 @@ namespace Newsite_Server.Controllers
         private static Dictionary<string, string>? _twitterLocationMap = null;
         private static DateTime _lastLocationLoadTime;
         private static readonly object _locationMapLock = new();
+        private readonly string _twitter;
+
+        public TagsController(IConfiguration config)
+        {
+            _twitter = config["ApiKeys:Twitter"];
+
+        }
+
 
         // GET: api/<TagsController>
         [HttpGet]
@@ -54,7 +63,7 @@ namespace Newsite_Server.Controllers
             string apiKey;
             try
             {
-                apiKey = System.IO.File.ReadAllText("twitter-trends-key.txt").Trim();
+                apiKey = _twitter;
             }
             catch (Exception ex)
             {

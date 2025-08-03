@@ -807,6 +807,8 @@ $(document).ready(async function () {
 let speechUtterance = null;
 let isPaused = false;
 let availableVoices = [];
+let pausedText = ''; // Store remaining text when paused
+let pausedAtIndex = 0; // Track where we paused
 
 // פונקציה לטעינת קולות זמינים
 function loadVoices() {
@@ -971,6 +973,8 @@ function startSpeaking(text) {
     }
 
     isPaused = false;
+    pausedText = text; // Store the full text
+    pausedAtIndex = 0; // Reset position
 
     if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
@@ -999,6 +1003,7 @@ function startSpeaking(text) {
         if (event.name === 'word') {
             const start = event.charIndex;
             const end = start + event.charLength;
+            pausedAtIndex = start; // Track current position for resume
             highlightSpokenWord(start, end);
         }
     };
@@ -1011,16 +1016,54 @@ function startSpeaking(text) {
 }
 
 function stopSpeaking() {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+    if (window.speechSynthesis.speaking) {
         isPaused = true;
-        window.speechSynthesis.pause();
+        window.speechSynthesis.cancel(); // Use cancel instead of pause for better compatibility
     }
 }
 
 function resumeSpeaking() {
-    if (window.speechSynthesis.paused) {
-        isPaused = false;
-        window.speechSynthesis.resume();
+    if (isPaused && pausedText) {
+        // Extract remaining text from where we left off
+        const remainingText = pausedText.substring(pausedAtIndex);
+        if (remainingText.trim().length > 0) {
+            isPaused = false;
+            
+            // Create new utterance for remaining text
+            speechUtterance = new SpeechSynthesisUtterance(remainingText);
+            speechUtterance.lang = 'en-US';
+            speechUtterance.pitch = 0.9;
+            speechUtterance.rate = 0.9;
+            
+            // Use same voice as before
+            const voiceSelect = document.getElementById('voiceSelect');
+            const selectedVoiceIndex = voiceSelect ? voiceSelect.value : '';
+            
+            if (selectedVoiceIndex !== '' && availableVoices[selectedVoiceIndex]) {
+                speechUtterance.voice = availableVoices[selectedVoiceIndex];
+            } else {
+                const voices = window.speechSynthesis.getVoices();
+                let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
+                if (!voice && voices.length > 0) voice = voices[0];
+                if (voice) speechUtterance.voice = voice;
+            }
+            
+            speechUtterance.onboundary = function (event) {
+                if (event.name === 'word') {
+                    const start = pausedAtIndex + event.charIndex;
+                    const end = start + event.charLength;
+                    pausedAtIndex = start;
+                    highlightSpokenWord(start, end);
+                }
+            };
+            
+            speechUtterance.onend = () => {
+                $('.tts-word').removeClass('highlighted');
+                isPaused = false;
+            };
+            
+            window.speechSynthesis.speak(speechUtterance);
+        }
     }
 }
 

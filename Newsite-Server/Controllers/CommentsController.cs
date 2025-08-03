@@ -12,9 +12,11 @@ namespace Newsite_Server.Controllers
     {
         private readonly Notifications notifications;
 
-        public CommentsController()
+
+        public CommentsController(IConfiguration con)
         {
             notifications = new Notifications();
+
         }
 
         [HttpPost("Addcomment")]

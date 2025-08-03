@@ -39,8 +39,8 @@ function initializeScrollAnimations() {
         rootMargin: '0px 0px -50px 0px'
     });
 
-    // Observe tech cards and feature cards
-    document.querySelectorAll('.tech-card, .feature-card').forEach((card, index) => {
+    // Observe feature cards
+    document.querySelectorAll('.feature-card').forEach((card, index) => {
         // Set initial state
         card.style.opacity = '0';
         card.style.transform = 'translateY(50px)';
@@ -52,17 +52,6 @@ function initializeScrollAnimations() {
 
 // Add some interactive effects
 document.addEventListener('DOMContentLoaded', function() {
-    // Add hover effect to tech cards
-    document.querySelectorAll('.tech-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-10px) scale(1.02)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-    
     // Add click effect to feature cards
     document.querySelectorAll('.feature-card').forEach(card => {
         card.addEventListener('click', function() {

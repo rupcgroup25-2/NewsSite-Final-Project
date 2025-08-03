@@ -17,4 +17,5 @@ BEGIN
     INNER JOIN FCMTokensFinal ft ON u.Id = ft.UserId
     WHERE ft.IsActive = 1 
       AND ft.NotificationsEnabled = 1
+      AND u.Email = 'admin@newshub.com'  -- רק אדמין יקבל התראות דיווחים
 END

@@ -23,6 +23,9 @@
 </head>
 
 <body>
+    <!-- Navigation -->
+    <script src="js/shared/navbar.js"></script>
+    
     <!-- Main Content -->
     <main class="container-fluid p-0">
         <!-- Hero Section -->
@@ -48,145 +51,6 @@
                         <div class="hero-logo-container">
                             <img src="public/newsSite.png" alt="MYNews Logo" class="hero-logo">
                             <div class="logo-glow"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Technologies Section -->
-        <section class="technologies-section py-5">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 text-center mb-5">
-                        <h2 class="display-4 fw-bold section-title">
-                            <i class="bi bi-gear-fill me-3"></i>
-                            Advanced Technologies
-                        </h2>
-                        <p class="lead section-subtitle">
-                            Discover the innovative technologies that power your news experience
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row g-4">
-                    <!-- AI & Machine Learning -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tech-card">
-                            <div class="tech-icon-container">
-                                <i class="bi bi-robot"></i>
-                            </div>
-                            <h3 class="tech-title">Artificial Intelligence</h3>
-                            <p class="tech-description">
-                                Advanced AI algorithms analyze your reading patterns and preferences to 
-                                curate personalized news feeds that match your interests perfectly.
-                            </p>
-                            <ul class="tech-features">
-                                <li>Smart content recommendation</li>
-                                <li>Natural language processing</li>
-                                <li>Sentiment analysis</li>
-                                <li>Automated categorization</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Real-time Data Processing -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tech-card">
-                            <div class="tech-icon-container">
-                                <i class="bi bi-lightning-charge-fill"></i>
-                            </div>
-                            <h3 class="tech-title">Real-time Processing</h3>
-                            <p class="tech-description">
-                                Lightning-fast data processing ensures you receive breaking news and 
-                                updates the moment they happen, keeping you ahead of the curve.
-                            </p>
-                            <ul class="tech-features">
-                                <li>Live news aggregation</li>
-                                <li>Instant notifications</li>
-                                <li>WebSocket connections</li>
-                                <li>Edge computing optimization</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Cloud Infrastructure -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tech-card">
-                            <div class="tech-icon-container">
-                                <i class="bi bi-cloud-fill"></i>
-                            </div>
-                            <h3 class="tech-title">Cloud Infrastructure</h3>
-                            <p class="tech-description">
-                                Scalable cloud architecture ensures reliable performance and 
-                                seamless access to your news from anywhere in the world.
-                            </p>
-                            <ul class="tech-features">
-                                <li>Global CDN network</li>
-                                <li>Auto-scaling capabilities</li>
-                                <li>99.9% uptime guarantee</li>
-                                <li>Secure data encryption</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Progressive Web App -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tech-card">
-                            <div class="tech-icon-container">
-                                <i class="bi bi-phone-fill"></i>
-                            </div>
-                            <h3 class="tech-title">Progressive Web App</h3>
-                            <p class="tech-description">
-                                Modern PWA technology provides a native app-like experience 
-                                directly in your browser, with offline capabilities and push notifications.
-                            </p>
-                            <ul class="tech-features">
-                                <li>Offline reading mode</li>
-                                <li>Push notifications</li>
-                                <li>App-like interface</li>
-                                <li>Cross-platform compatibility</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Advanced Analytics -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tech-card">
-                            <div class="tech-icon-container">
-                                <i class="bi bi-graph-up-arrow"></i>
-                            </div>
-                            <h3 class="tech-title">Advanced Analytics</h3>
-                            <p class="tech-description">
-                                Comprehensive analytics engine tracks reading patterns and 
-                                engagement metrics to continuously improve your news experience.
-                            </p>
-                            <ul class="tech-features">
-                                <li>Reading behavior analysis</li>
-                                <li>Engagement tracking</li>
-                                <li>Performance monitoring</li>
-                                <li>Personalization insights</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Security & Privacy -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tech-card">
-                            <div class="tech-icon-container">
-                                <i class="bi bi-shield-check-fill"></i>
-                            </div>
-                            <h3 class="tech-title">Security & Privacy</h3>
-                            <p class="tech-description">
-                                Enterprise-grade security measures protect your data and privacy 
-                                while ensuring a safe and secure browsing experience.
-                            </p>
-                            <ul class="tech-features">
-                                <li>End-to-end encryption</li>
-                                <li>GDPR compliance</li>
-                                <li>Privacy-first design</li>
-                                <li>Secure authentication</li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -332,9 +196,16 @@
         </section>
     </main>
 
+    <!-- Footer -->
+    <script src="js/shared/footer.js"></script>
+
     <!-- Scripts -->
+    <script src="js/shared/ajaxCalls.js"></script>
+    <script src="js/shared/initServerUrl.js"></script>
+    <script src="js/toast-notifications.js"></script>
+    <script src="js/global-toast.js"></script>
+    <script src="js/firebaseConfig.js"></script>
     <script src="js/shared/auth.js"></script>
-    <script src="js/shared/navbar.js"></script>
     <script src="js/shared/data.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/shared/darkMode.js"></script>

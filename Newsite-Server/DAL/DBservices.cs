@@ -3072,7 +3072,7 @@ namespace Newsite_Server.DAL
         }
 
         //--------------------------------------------------------------------------------------------------
-        // Get all users with notifications enabled (instead of admin-only)
+        // Get only admin users with notifications enabled (for reports and admin notifications)
         //--------------------------------------------------------------------------------------------------
         public List<int> GetAllUsersWithNotifications()
         {

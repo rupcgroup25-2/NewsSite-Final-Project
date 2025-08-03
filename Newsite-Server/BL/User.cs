@@ -177,5 +177,17 @@ namespace Newsite_Server.BL
         {
             return dbs.DeleteReport(articleId, userId);
         }
+
+        // פונקציה לבדיקה אם משתמש הוא אדמין לפי אימייל
+        public bool IsAdmin()
+        {
+            return this.Email == "admin@newshub.com";
+        }
+
+        // פונקציה סטטית לבדיקה אם אימייל הוא של אדמין
+        public static bool IsAdminEmail(string email)
+        {
+            return email == "admin@newshub.com";
+        }
     }
 }

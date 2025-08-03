@@ -9,6 +9,7 @@ if (typeof articlesDict === 'undefined') {
 }
 
 availableTags = [
+    { id: "recommended", name: "Recommended", color: "dark" },
     { id: "technology", name: "Technology", color: "primary" },
     { id: "health", name: "Health", color: "success" },
     { id: "sports", name: "Sports", color: "warning" },
@@ -39,9 +40,8 @@ let users = [/* ... */];
 let articleComments = {};
 let articleReports = [];
 
-const NEWS_API_KEY = "7c45000aa11241f2bed13189e946fb47";
 const NEWS_CACHE_KEY = "newsApiCacheV2";
-const NEWS_CATEGORIES = ["technology", "health", "sports", "business", "entertainment", "environment"];
+const NEWS_CATEGORIES = ["recommended", "technology", "health", "sports", "business", "entertainment", "environment"];
 
 function getCachedArticles() {
     const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);

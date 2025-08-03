@@ -42,22 +42,27 @@ const categoryMapping = {
 
 let fetchedArticles = [];
 let searchArticles = []; // Store search results articles
-let currentCategory = "all";
+let currentCategory = currentUser.tags.length !== 0 ? "recommended" : "all";
 
 function renderHomeTab() {
+    console.log('current user tags' + currentUser.tags);
     // Render the hero section placeholder
     $("#home").html(`
         <div id="hero-article"></div>
         <div class="category-pills mb-4">
             <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
-                <li class="nav-item" role="presentation">
+                ${currentUser.tags.length === 0 ? `<li class="nav-item" role="presentation">
                     <button class="nav-link category-pill active" data-category="all" type="button" role="tab">All</button>
-                </li>
-                ${availableTags.map(tag => `
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link category-pill" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
-                    </li>
-                `).join("")}
+                </li>`
+                :
+                `<li class="nav-item" role="presentation">
+                    <button class="nav-link category-pill active" data-category="recommended" type="button" role="tab">Recommended</button>
+                </li>`}
+                ${availableTags.filter(tag => tag.name.toLowerCase() !== 'recommended').map(tag => `
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link category-pill" data-category="${tag.id}" type="button" role="tab">${tag.name}</button>
+                </li>`).join("")}
+
             </ul>
         </div>
         <div class="search-section mb-4">
@@ -82,7 +87,7 @@ function renderHomeTab() {
         <div id="archiveResults" class="mb-4"></div>
         <div class="row" id="articles-list"></div>`);
     // Fetch and render hero + articles
-    renderArticlesWithHero("all");
+    renderArticlesWithHero(currentUser.tags.length !== 0 ? "recommended" : "all");
 }
 
 // Event handlers
@@ -94,7 +99,6 @@ $(document).ready(function () {
 // Category filter
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
-    
     // Clear search results when switching categories
     clearSearchResults();
     
@@ -159,8 +163,6 @@ function renderHeroArticle(article) {
 }
 
 async function fetchAllArticlesOncePerDay() {
-
-    // Check cache
     const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
     if (cacheRaw) {
         try {
@@ -176,6 +178,34 @@ async function fetchAllArticlesOncePerDay() {
     const timestamp = Date.now();
 
     const ajaxPromises = NEWS_CATEGORIES.map(cat => {
+        if (cat === "recommended") {
+            // Send POST request with tags
+            const tags = currentUser?.tags || [];
+            return $.ajax({
+                url: serverUrl + `Articles/recommendedArticles/pageSize/100/language/en`,
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(tags)
+            }).then(response => {
+                const filtered = response.filter(article => article.title && article.description && article.urlToImage);
+                return filtered.map((article, index) => ({
+                    id: `recommended_${timestamp}_${index}`,
+                    title: article.title,
+                    content: article.content || article.description,
+                    preview: article.description,
+                    category: cat,
+                    publishedAt: article.publishedAt,
+                    imageUrl: article.urlToImage,
+                    url: article.url,
+                    source: article.source
+                }));
+            }).catch(e => {
+                console.error("Failed to fetch recommended articles", e);
+                return [];
+            });
+        }
+
+        // Normal category request
         const apiCategory = categoryMapping[cat];
         let url = serverUrl + `Articles/top-headlines/pageSize/12/language/en/country/us`;
         if (apiCategory) {
@@ -185,9 +215,8 @@ async function fetchAllArticlesOncePerDay() {
         return $.ajax({ url, method: "GET" })
             .then(response => {
                 if (response.articles && Array.isArray(response.articles)) {
-                    const rawArticles = response.articles;
-                    const filtered = rawArticles.filter(article => article.title && article.description && article.urlToImage);
-                    let output = filtered.map((article, index) => ({
+                    const filtered = response.articles.filter(article => article.title && article.description && article.urlToImage);
+                    return filtered.map((article, index) => ({
                         id: `api_${cat}_${timestamp}_${index}`,
                         title: article.title,
                         content: article.content || article.description,
@@ -198,9 +227,7 @@ async function fetchAllArticlesOncePerDay() {
                         url: article.url,
                         source: article.source.name
                     }));
-                    return output;
                 }
-
                 return [];
             })
             .catch(e => {
@@ -211,7 +238,7 @@ async function fetchAllArticlesOncePerDay() {
 
     const results = await Promise.all(ajaxPromises);
     const allArticles = results.flat();
-    // Only save to cache if articles exist
+
     if (allArticles.length > 0) {
         const cacheValue = {
             date: new Date().toISOString(),
@@ -225,7 +252,6 @@ async function fetchAllArticlesOncePerDay() {
     fetchedArticles = allArticles;
     return allArticles;
 }
-
 
 // Replace fetchArticlesByCategory to use cache
 function fetchArticlesByCategory(category) {
@@ -627,7 +653,7 @@ function clearSearchResults() {
     // Reset category pills to show "All" as active
     $('#category-pills .nav-link').removeClass('active');
     $('#category-pills .nav-link[data-category="all"]').addClass('active');
-    currentCategory = "all";
+    currentCategory = currentUser.tags.length !== 0 ? "recommended" : "all";
 }
 
 // Initialize Firebase and notifications when the page loads

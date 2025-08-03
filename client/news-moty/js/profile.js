@@ -530,7 +530,7 @@ function renderFollowingUsers() {
         <div class="following-users-container">
             <div class="row g-3">
             ${followingUsers.map((user, index) => {
-                const imageUrl = user.imageUrl || `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg`;
+                const imageUrl = user.imageUrl || `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg?t=${Date.now()}`;
                 const fallbackInitial = (user.name || 'U').charAt(0).toUpperCase();
                 const statusClass = user.active ? 'following-user-status-active' : 'following-user-status-blocked';
                 const statusTitle = user.active ? 'Active' : 'Blocked';
@@ -960,7 +960,7 @@ function renderProfileError() {
 // פונקציה ליצירת HTML של תמונת פרופיל עם ברירת מחדל
 function getProfileImageHtml(profile) {
     const baseImageUrl = currentUser.imageUrl || 
-                        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
+        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg?t=${Date.now()}`;
     
     // הוסף cache-busting parameter כדי למנוע בעיות cache בדפדפן
     const imageUrl = baseImageUrl + '?t=' + new Date().getTime();
@@ -1020,7 +1020,14 @@ $(document).on("input", "#emailSearch", function () {
 
     if (!query) return;
 
-    const matches = allEmails.filter(email => email.toLowerCase().includes(query)).slice(0, 10);
+    // סנן את רשימת המיילים כדי לא לכלול את המשתמש הנוכחי
+    const filteredEmails = allEmails.filter(email => {
+        const includesQuery = email.toLowerCase().includes(query);
+        const isNotCurrentUser = !currentUser || email.toLowerCase() !== currentUser.email.toLowerCase();
+        return includesQuery && isNotCurrentUser;
+    });
+
+    const matches = filteredEmails.slice(0, 10);
 
     matches.forEach(email => {
         const $li = $("<li>")
@@ -1041,6 +1048,14 @@ $(document).on('click', '#follow-user-btn', function () {
     const email = $('#emailSearch').val().trim();
     if (!email) {
         alert("Please enter an email to follow.");
+        return;
+    }
+    
+    // בדיקה אם המשתמש מנסה לעקוב אחר עצמו
+    if (currentUser && email.toLowerCase() === currentUser.email.toLowerCase()) {
+        alert("You cannot follow yourself.");
+        $('#emailSearch').val('');
+        $('#suggestions').empty();
         return;
     }
     
@@ -1342,7 +1357,7 @@ $(document).on('click', '#testNotificationBtn', function () {
 function refreshProfileImageGlobally() {
     const timestamp = new Date().getTime();
     const baseImageUrl = currentUser.imageUrl || 
-                        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
+        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg?t=${Date.now()}`;
     const imageUrlWithCache = baseImageUrl + '?t=' + timestamp;
     
     // עדכן את תמונת הפרופיל בכל מקום שהיא מופיעה
@@ -1379,7 +1394,7 @@ function clearImageCache() {
     // יצירת תמונה חדשה כדי לאלץ טעינה מחדש
     const img = new Image();
     const baseImageUrl = currentUser.imageUrl || 
-                        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
+        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg?t=${Date.now()}`;
     
     img.onload = function() {
         console.log('🗑️ Image cache cleared and reloaded');

@@ -27,7 +27,8 @@ public class CloudinaryService
                 File = new FileDescription(file.FileName, stream),
                 PublicId = $"profile_pics/{userId}", // שמירה לפי מזהה המשתמש
                 Folder = "profile_pics",
-                Overwrite = true
+                Overwrite = true,
+                Invalidate = true
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
@@ -36,6 +37,8 @@ public class CloudinaryService
     }
     public async Task<ImageUploadResult> UploadRawStreamAsync(ImageUploadParams uploadParams)
     {
+        uploadParams.Overwrite = true;  
+        uploadParams.Invalidate = true;
         return await _cloudinary.UploadAsync(uploadParams);
     }
 }

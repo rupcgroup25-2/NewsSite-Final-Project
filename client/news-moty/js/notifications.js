@@ -447,6 +447,13 @@ async function setupMessaging(messagingModule) {
             console.log('📱 Current notification style:', localStorage.getItem('notificationStyle') || 'auto');
             console.log('👁️ Page visible:', !document.hidden && document.visibilityState === 'visible');
             
+            // בדוק אם התראות מופעלות
+            const notificationStatus = localStorage.getItem('notificationStatus');
+            if (notificationStatus === 'disabled') {
+                console.log('🔕 Skipping notification - notifications are disabled');
+                return;
+            }
+            
             // בדוק אם זה התראה עבור המשתמש הנוכחי (למנוע התראות על פעולות שלו)
             if (payload.data && payload.data.excludeUserId && currentUser && 
                 payload.data.excludeUserId === currentUser.id.toString()) {
@@ -641,7 +648,7 @@ function showInAppNotification(payload) {
                 <div class="flex-grow-1">
                     <strong>${notification.title}</strong><br>
                     <small>${notification.body}</small>
-                    ${data?.url ? `
+                    ${data?.url && data?.type !== "new_follower" ? `
                     <div class="mt-2">
                         <button class="btn btn-sm btn-primary me-2" onclick="window.open('${data.url}', '_blank'); $(this).closest('.notification-popup').remove();">
                             <i class="bi bi-eye"></i> View
@@ -1453,7 +1460,7 @@ function showCustomNotification(title, body, data) {
                 <div class="flex-grow-1">
                     <strong style="color: #0d47a1;">${title}</strong><br>
                     <small style="color: #424242;">${body}</small>
-                    ${data && data.url ? `
+                    ${data && data.url && data.type !== "new_follower" ? `
                     <div class="mt-3">
                         <button class="btn btn-sm btn-primary me-2 notification-action" data-action="view" data-url="${data.url}">
                             👁️ View

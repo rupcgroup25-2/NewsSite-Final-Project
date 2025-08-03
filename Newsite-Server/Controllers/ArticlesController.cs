@@ -21,10 +21,15 @@ namespace Newsite_Server.Controllers
         const int MAX_TEXT_LENGTH = 3000;
 
         private readonly Notifications notifications;
+        private readonly string _newsApiKey;
+        private readonly string _huggingFaceApiKey;
 
-        public ArticlesController()
+
+        public ArticlesController(IConfiguration config)
         {
             notifications = new Notifications();
+            _newsApiKey = config["ApiKeys:NewsApi"];
+            _huggingFaceApiKey = config["ApiKeys:HuggingFace"];
         }
 
         [HttpGet]
@@ -262,7 +267,7 @@ namespace Newsite_Server.Controllers
                 text = text.Substring(0, MAX_TEXT_LENGTH);
             }
 
-            string huggingFaceApiToken = System.IO.File.ReadAllText("huggingface-key.txt");
+            string huggingFaceApiToken = _huggingFaceApiKey;
 
 
             using var httpClient = new HttpClient();
@@ -308,7 +313,7 @@ namespace Newsite_Server.Controllers
             string newsApiKey;
             try
             {
-                newsApiKey = System.IO.File.ReadAllText("newsapi-key.txt").Trim();
+                newsApiKey = _newsApiKey;
             }
             catch (Exception ex)
             {
@@ -373,7 +378,7 @@ namespace Newsite_Server.Controllers
             string newsApiKey;
             try
             {
-                newsApiKey = System.IO.File.ReadAllText("newsapi-key.txt").Trim();
+                newsApiKey = _newsApiKey;
             }
             catch (Exception ex)
             {

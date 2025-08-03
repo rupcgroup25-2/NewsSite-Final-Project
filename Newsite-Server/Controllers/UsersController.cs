@@ -23,13 +23,15 @@ namespace Newsite_Server.Controllers
         private TokenService _tokenService;
         private readonly Notifications notifications;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly string _huggingFaceApiKey;
 
-  
+
         public UsersController(IConfiguration config)
         {
             _tokenService = new TokenService();
             notifications = new Notifications();
             _cloudinaryService = new CloudinaryService(config);
+            _huggingFaceApiKey = config["ApiKeys:HuggingFace"];
         }
 
         [HttpPost("Login")]
@@ -126,6 +128,11 @@ namespace Newsite_Server.Controllers
                 {
                     string followerName = user.GetUserNameById(followerId);
                     User followedUser = user.GetUserByEmail(followedEmail);
+
+                    if (followedUser != null && followerId == followedUser.Id)
+                    {
+                        return BadRequest("You cannot follow yourself.");
+                    }
 
                     if (!string.IsNullOrEmpty(followerName) && followedUser != null)
                     {
@@ -240,7 +247,7 @@ namespace Newsite_Server.Controllers
             string huggingFaceApiKey;
             try
             {
-                huggingFaceApiKey = System.IO.File.ReadAllText("huggingface-key.txt").Trim();
+                huggingFaceApiKey = _huggingFaceApiKey;
             }
             catch (Exception ex)
             {

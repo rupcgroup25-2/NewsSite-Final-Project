@@ -25,6 +25,17 @@ console.log('🔥 Firebase messaging service worker initialized successfully!');
 messaging.onBackgroundMessage((payload) => {
     console.log('Background message received:', payload);
     
+    // בדוק אם התראות מופעלות עבור המשתמש הנוכחי
+    try {
+        const notificationStatus = localStorage.getItem('notificationStatus');
+        if (notificationStatus === 'disabled') {
+            console.log('🔕 Skipping background notification - notifications are disabled');
+            return; // אל תציג את ההתראה
+        }
+    } catch (error) {
+        console.log('⚠️ Could not check notification status from localStorage');
+    }
+    
     // בדוק אם צריך לסנן את ההתראה עבור המשתמש הנוכחי
     if (payload.data && payload.data.excludeUserId) {
         // נסה לקבל את פרטי המשתמש הנוכחי מ-localStorage

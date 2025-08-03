@@ -156,13 +156,6 @@ NewsSite-Final-Project/ ├── client/ │ └── news-moty/ │ ├──
 - Edge 88+
 - Requires: ES6, Web Speech API, Service Workers
 
----
-
-## 🐛 Known Issues
-
-- TTS resume worked only with default voice – fixed by tracking word position.
-- Map tooltips appeared behind modal – fixed with z-index and overflow.
-- FCM token saving – fixed with save status tracking.
 
 ---
 
@@ -170,5 +163,5 @@ NewsSite-Final-Project/ ├── client/ │ └── news-moty/ │ ├──
 
 This project is an educational final project. All rights reserved.
 
----
+
 

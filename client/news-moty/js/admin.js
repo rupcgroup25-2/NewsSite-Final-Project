@@ -650,7 +650,7 @@ $(document).on('click', '.toggle-deactivate-btn', async function () {
         await putWithAuth(`Admin/${userId}/deactivate`);
         await loadAdminDashboardData();
     } catch (err) {
-        alert("Failed to toggle user status. Please try again.");
+        showErrorAlert("Failed to toggle user status. Please try again.", "Admin Action Failed");
         $btn.html(originalHtml).prop('disabled', false);
     }
 });
@@ -667,7 +667,7 @@ $(document).on('click', '.toggle-block-btn', async function () {
         await putWithAuth(`Admin/${userId}/block`);
         await loadAdminDashboardData();
     } catch (err) {
-        alert("Failed to toggle sharing permission. Please try again.");
+        showErrorAlert("Failed to toggle sharing permission. Please try again.", "Admin Action Failed");
         $btn.html(originalHtml).prop('disabled', false);
     }
 });
@@ -968,11 +968,11 @@ function deleteReport(articleId, reporterId) {
 
     ajaxCall("DELETE", url, null,
         function (response) {
-            alert("Report deleted successfully");
+            showSuccessAlert("Report deleted successfully", "Report Deleted");
             loadAdminDashboardData(); // שונה מ-loadAllReports() כדי לטעון את הטבלה עם התמונות
         },
         function (xhr){
-            alert("Failed to delete report: " + (xhr.responseText || xhr.statusText));
+            showErrorAlert("Failed to delete report: " + (xhr.responseText || xhr.statusText), "Delete Failed");
         }
     );
 }
@@ -983,13 +983,13 @@ function deleteArticle(articleId, articleUrl) {
     ajaxCall("DELETE", url, null,
         function (response) {
             console.log("Article deleted successfully");
-            alert("Article and related reports deleted");
+            showSuccessAlert("Article and related reports deleted", "Article Deleted");
             deleteArticleFromNewsApiCacheByUrl(articleUrl);
           
             loadAdminDashboardData(); // שונה מ-loadAllReports() כדי לטעון את הטבלה עם התמונות
         },
         function (xhr) {
-            alert("Failed to delete article: " + (xhr.responseText || xhr.statusText));
+            showErrorAlert("Failed to delete article: " + (xhr.responseText || xhr.statusText), "Delete Failed");
         }
     );
 }

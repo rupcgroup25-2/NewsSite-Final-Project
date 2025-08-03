@@ -221,7 +221,7 @@ async function initChat(articleData, userName) {
                 chatInput.value = '';
             } catch (error) {
                 console.error("Error sending message:", error);
-                alert("Failed to send message. Please try again.");
+                showErrorToast("Failed to send message. Please try again.", "Chat Error");
             }
         };
 
@@ -297,13 +297,13 @@ function getArticleIdFromUrl() {
 
 // --- Save Article ---
 function saveSCB(responseText) {
-    alert(responseText);
+    showSuccessToast(responseText, "Article Saved");
     $('.save-article-btn-from-view').text("Article Saved");
     $('.save-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
 }
 
 function saveECB() {
-    alert("Failed to save article");
+    showErrorToast("Failed to save article", "Save Failed");
 }
 $(document).on('click', '.save-article-btn-from-view', function () {
     if (!currentUser) {
@@ -333,13 +333,13 @@ $(document).on('click', '.share-article-btn-from-view', function () {
 });
 
 function shareSCB(responseText) {
-    alert(responseText);
+    showSuccessToast(responseText, "Article Shared");
     $('.share-article-btn-from-view').text("Article Shared");
     $('.share-article-btn-from-view').removeClass('btn-outline-dark').addClass('btn-dark');
 }
 
 function shareECB(xhr) {
-    alert(xhr.responseText || "Failed to share article.");
+    showErrorToast(xhr.responseText || "Failed to share article.", "Share Failed");
 }
 
 $(document).on('click', '#btnShareArticle', function () {
@@ -355,7 +355,7 @@ $(document).on('click', '.report-article-btn-from-view', function () { //inserti
 });
 
 function reportSCB(responseText) {
-    alert("Report submitted successfully.");
+    showSuccessToast("Report submitted successfully.", "Report Submitted");
     $('#reportModal').modal('hide');
     $("#reportComment").val("");
     $("#reportReason").val("");
@@ -364,7 +364,7 @@ function reportSCB(responseText) {
 }
 
 function reportECB(xhr) {
-    alert(xhr.responseText || "Failed to submit report.");
+    showErrorToast(xhr.responseText || "Failed to submit report.", "Report Failed");
 }
 
 $(document).on('click', '#btnReportArticle', function () {
@@ -663,7 +663,7 @@ $(document).ready(async function () {
         const commentText = $('#commentInput').val().trim();
 
         if (commentText.length === 0) {
-            alert('Comment text cannot be empty.');
+            showWarningToast('Comment text cannot be empty.', 'Invalid Input');
             return;
         }
         let article = window.article;
@@ -705,11 +705,11 @@ $(document).ready(async function () {
                 
                 // הצג הודעת הצלחה רק אחרי שהתגובות נטענו
                 setTimeout(() => {
-                    alert(response);
+                    showSuccessToast(response, "Comment Added");
                 }, 500);
             },
             function (xhr) {
-                alert(xhr.responseText);
+                showErrorToast(xhr.responseText, "Comment Failed");
             });
     });
 
@@ -730,11 +730,11 @@ $(document).ready(async function () {
 
         ajaxCall("DELETE", url, null,
             function (response) {
-                alert(response);
+                showSuccessToast(response, "Comment Deleted");
                 loadComments(articleId);
             },
             function (xhr) {
-                alert("Error: " + xhr.responseText);
+                showErrorToast("Error: " + xhr.responseText, "Delete Failed");
             }
         );
     });
@@ -752,11 +752,11 @@ $(document).ready(async function () {
 
         ajaxCall("DELETE", url, null,
             function (response) {
-                alert(response);
+                showSuccessToast(response, "All Comments Deleted");
                 loadComments(article.id); 
             },
             function (xhr) {
-                alert("Error: " + xhr.responseText);
+                showErrorToast("Error: " + xhr.responseText, "Delete Failed");
             });
     });
 
@@ -968,7 +968,7 @@ if (window.speechSynthesis.onvoiceschanged !== undefined) {
 
 function startSpeaking(text) {
     if (!text || text.trim() === '') {
-        alert("No text to read.");
+        showWarningToast("No text to read.", "Text-to-Speech");
         return;
     }
 
@@ -1069,7 +1069,7 @@ function resumeSpeaking() {
 
 $(document).on('click', '#readArticleBtn', function () {
     if (!window.extractedContent || window.extractedContent.trim().length === 0) {
-        alert("No content to read.");
+        showWarningToast("No content to read.", "Text-to-Speech");
         return;
     }
     startSpeaking(window.extractedContent);
@@ -1106,7 +1106,7 @@ $(document).on('click', '#generateSummaryBtn', function () {
     const articleText = window.extractedContent || '';
 
     if (!articleText) {
-        alert("No content available to summarize.");
+        showWarningToast("No content available to summarize.", "Summarization");
         $('#summaryLoading').hide();
         $(this).prop('disabled', false);
         return;
@@ -1122,13 +1122,13 @@ $(document).on('click', '#generateSummaryBtn', function () {
                 $('#articleSummary').text(data.summary).show();
                 $('.article-summary').show();
             } else {
-                alert("No summary received");
+                showWarningToast("No summary received", "Summarization");
             }
             $('#summaryLoading').hide();
             $('#generateSummaryBtn').prop('disabled', false);
         },
         function (xhr) {
-            alert("Failed to generate summary: " + (xhr.responseText || xhr.statusText));
+            showErrorToast("Failed to generate summary: " + (xhr.responseText || xhr.statusText), "Summarization Failed");
             $('#summaryLoading').hide();
             $('#generateSummaryBtn').prop('disabled', false);
         }

@@ -1,5 +1,18 @@
 ﻿// Profile Page Logic - Simplified Version
 
+// Modern Toast Notification functions - replace old modal alerts
+function showSuccessAlert(message, title = 'Success') {
+    return showSuccessToast(message, title);
+}
+
+function showErrorAlert(message, title = 'Error') {
+    return showErrorToast(message, title);
+}
+
+function showWarningAlert(message, title = 'Warning') {
+    return showWarningToast(message, title);
+}
+
 let userProfile = null;
 let followingUsers = [];
 let allEmails = [];
@@ -649,7 +662,7 @@ function bindProfileEvents() {
         const newTagName = $('#new-interest').val().trim();
 
         if (!newTagName) {
-            alert("Please enter a valid interest.");
+            showWarningAlert("Please enter a valid interest.", "Invalid Input");
             return;
         }
 
@@ -660,6 +673,11 @@ function bindProfileEvents() {
             apiUrl,
             null,
             function success(response) {
+                console.log("Tag added successfully:", response);
+                
+                // הצג הודעת הצלחה עם alert מותאם
+                showSuccessAlert(`Interest "${newTagName}" added successfully!`, 'Interest Added');
+                
                 const newTag = {
                     id: response.tagId,
                     name: newTagName
@@ -670,7 +688,7 @@ function bindProfileEvents() {
                 $('.interests-tags-container').html(renderInterestsButtons());
             },
             function error(xhr) {
-                alert("Failed to add interest: " + (xhr.responseText || xhr.statusText));
+                showErrorAlert("Failed to add interest: " + (xhr.responseText || xhr.statusText), "Add Interest Failed");
             }
         );
     });
@@ -678,7 +696,7 @@ function bindProfileEvents() {
     // Removing interest
     $(document).off('click', '.interest-tag').on('click', '.interest-tag', function () {
         const tagId = $(this).data('id');
-        const tagName = $(this).clone().find('span').remove().end().text().trim();
+        const tagName = $(this).find('span').text().trim(); // קבלת השם מה-span ישירות
 
         if (!confirm(`Are you sure you want to remove interest "${tagName}" ?`)) return;
 
@@ -688,14 +706,20 @@ function bindProfileEvents() {
             "DELETE",
             url,
             null, // No body needed
-            function success() {
+            function success(response) {
+                console.log("Tag removed successfully:", response);
+                
+                // הצג alert יפה במקום alert רגיל
+                showSuccessAlert(response || `Interest "${tagName}" removed successfully!`, 'Interest Removed');
+                
                 // Update local user object
                 currentUser.tags = currentUser.tags.filter(t => t.id !== tagId);
                 localStorage.setItem("user", JSON.stringify(currentUser));
                 $('.interests-tags-container').html(renderInterestsButtons());
             },
             function error(xhr) {
-                alert("Failed to remove interest: " + (xhr.responseText || xhr.statusText));
+                console.error("Error removing tag:", xhr);
+                showErrorAlert("Failed to remove interest: " + (xhr.responseText || xhr.statusText), "Remove Interest Failed");
             }
         );
     });
@@ -715,7 +739,7 @@ function saveProfileChanges() {
     const name = $('#editProfileName').val().trim();
     
     if (!name) {
-        alert('Name is required.');
+        showWarningAlert('Name is required.', 'Missing Information');
         return;
     }
     
@@ -751,13 +775,13 @@ function saveProfileChanges() {
     // Reload profile
     loadUserProfile();
 
-    alert('Profile updated successfully!');
+    showSuccessAlert('Profile updated successfully!', 'Profile Updated');
 }
 
 function saveProfileECB(xhr) {
     $('#saveProfileBtn').prop('disabled', false).text('Save Changes');
     console.error("Error saving profile:", xhr);
-    alert(xhr.responseText || 'Failed to update profile. Please try again.');
+    showErrorAlert(xhr.responseText || 'Failed to update profile. Please try again.', 'Update Failed');
 }
 
 function openChangePasswordModal() {
@@ -897,7 +921,7 @@ function showPasswordError(message) {
 function changePasswordSCB(response) {
     $('#savePasswordBtn').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Change Password');
     $('#changePasswordModal').modal('hide');
-    alert('Password changed successfully!');
+    showSuccessAlert('Password changed successfully!', 'Password Updated');
 }
 
 function changePasswordECB(xhr) {
@@ -935,11 +959,11 @@ function unfollowUser(userEmail) {
             // רנדר מחדש את הפרופיל
             renderProfile();
             
-            alert('User unfollowed successfully.');
+            showSuccessAlert('User unfollowed successfully.', 'User Unfollowed');
         },
         function (xhr) {
             console.error("Error unfollowing user:", xhr);
-            alert('Failed to unfollow user. Please try again.');
+            showErrorAlert('Failed to unfollow user. Please try again.', 'Unfollow Failed');
         }
     );
 }
@@ -1047,13 +1071,13 @@ $(document).on("input", "#emailSearch", function () {
 $(document).on('click', '#follow-user-btn', function () {
     const email = $('#emailSearch').val().trim();
     if (!email) {
-        alert("Please enter an email to follow.");
+        showWarningAlert("Please enter an email to follow.", "Missing Email");
         return;
     }
     
     // בדיקה אם המשתמש מנסה לעקוב אחר עצמו
     if (currentUser && email.toLowerCase() === currentUser.email.toLowerCase()) {
-        alert("You cannot follow yourself.");
+        showWarningAlert("You cannot follow yourself.", "Invalid Action");
         $('#emailSearch').val('');
         $('#suggestions').empty();
         return;
@@ -1062,7 +1086,7 @@ $(document).on('click', '#follow-user-btn', function () {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        alert("Please enter a valid email address.");
+        showWarningAlert("Please enter a valid email address.", "Invalid Email");
         return;
     }
 
@@ -1073,7 +1097,7 @@ $(document).on('click', '#follow-user-btn', function () {
         url,
         null,
         function success() {
-            alert("Follow request sent.");
+            showSuccessAlert("Follow request sent.", "User Followed");
             // Clear the search field and reload following users list
             $('#emailSearch').val('');
             $('#suggestions').empty();
@@ -1088,7 +1112,7 @@ $(document).on('click', '#follow-user-btn', function () {
             } else if (xhr.responseText) {
                 errorMsg = xhr.responseText;
             }
-            alert(errorMsg);
+            showErrorAlert(errorMsg, "Follow Failed");
         }
     );
 });
@@ -1325,7 +1349,7 @@ $(document).on('click', '#testNotificationBtn', function () {
             
             setTimeout(() => testNotification.close(), 8000);
         } else {
-            alert('Please allow notifications in your browser first!');
+            showWarningAlert('Please allow notifications in your browser first!', 'Notifications Blocked');
             $btn.prop('disabled', false).html(originalText);
             return;
         }
@@ -1447,7 +1471,7 @@ function bindProfileImageUploadEvents() {
         })
             .then(res => {
                 if (res.status === 401) {
-                    alert('Your session has expired. Please log in again.');
+                    showWarningAlert('Your session has expired. Please log in again.', 'Session Expired');
                     localStorage.removeItem('user');
                     localStorage.removeItem('cachedFollowingUsers');
                     window.location.reload();
@@ -1464,10 +1488,10 @@ function bindProfileImageUploadEvents() {
                     // נקה את ה-cache ורענן את התמונה
                     clearImageCache();
                 } else if (data) {
-                    alert('Image upload failed');
+                    showErrorAlert('Image upload failed', 'Upload Failed');
                 }
             })
-            .catch(() => alert('Image upload failed'))
+            .catch(() => showErrorAlert('Image upload failed', 'Upload Failed'))
             .finally(() => $('#profilePic').css('opacity', 1));
     });
 }
@@ -1475,7 +1499,7 @@ function bindProfileImageUploadEvents() {
 $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfileImageBtn', function () {
     const prompt = $('#profileImagePrompt').val().trim();
     if (!prompt) {
-        alert('Please enter a prompt.');
+        showWarningAlert('Please enter a prompt.', 'Missing Prompt');
         return;
     }
 
@@ -1504,7 +1528,7 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
     })
         .then(res => {
             if (res.status === 401) {
-                alert('Your session has expired. Please log in again.');
+                showWarningAlert('Your session has expired. Please log in again.', 'Session Expired');
                 localStorage.removeItem('user');
                 localStorage.removeItem('cachedFollowingUsers');
                 window.location.reload();
@@ -1521,12 +1545,12 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
                 // נקה את ה-cache ורענן את התמונה
                 clearImageCache();
                 
-                alert('Profile image generated successfully!');
+                showSuccessAlert('Profile image generated successfully!', 'Image Generated');
             } else {
-                alert('Image generation failed');
+                showErrorAlert('Image generation failed', 'Generation Failed');
             }
         })
-        .catch(() => alert('Image generation failed'))
+        .catch(() => showErrorAlert('Image generation failed', 'Generation Failed'))
         .finally(() => {
             // Restore button state
             $generateBtn.prop('disabled', false).html(originalText);

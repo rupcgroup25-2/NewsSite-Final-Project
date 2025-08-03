@@ -94,18 +94,18 @@
 $(document).on('click', '.unsave-btn', function () {
     const articleId = $(this).data('id');
     if (!currentUser) {
-        alert("Please login to remove saved articles.");
+        showWarningToast("Please login to remove saved articles.", "Authentication Required");
         return;
     }
 
     ajaxCall("DELETE", serverUrl + `Articles/unsave?userId=${currentUser.id}&articleId=${articleId}`, null,
         function (data) {
-            alert(data);
+            showSuccessToast(data, "Article Removed");
             savedArticles = savedArticles.filter(a => a.id !== articleId);
             renderSavedTab();
         },
         function (xhr) {
-            alert(xhr.responseText || "Failed to remove article");
+            showErrorToast(xhr.responseText || "Failed to remove article", "Error");
         }
     );
 });

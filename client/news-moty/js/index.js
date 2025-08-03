@@ -421,12 +421,12 @@ $(document).on('click', '.hashtag-button', function () {
 
 // --- Save Article ---
 function saveSCB(responseText) {
-    alert(responseText);
+    showSuccessToast(responseText, "Article Saved");
     fetchArticlesByCategory(currentCategory);
 }
 
 function saveECB() {
-    alert("Failed to save article");
+    showErrorToast("Failed to save article", "Save Error");
 }
 
 $(document).on('click', '.save-article-btn', function () {
@@ -444,12 +444,12 @@ $(document).on('click', '.share-article-btn', function () { //inserting the arti
 });
 
 function shareSCB(responseText) {
-    alert(responseText);
+    showSuccessToast(responseText, "Article Shared");
     fetchArticlesByCategory(currentCategory);
 }
 
 function shareECB(xhr) {
-    alert(xhr.responseText || "Failed to share article.");
+    showErrorToast(xhr.responseText || "Failed to share article.", "Share Error");
 }
 
 $(document).on('click', '#btnShareArticle', function () {
@@ -467,12 +467,12 @@ $(document).on('click', '.report-article-btn', function () { //inserting the art
 });
 
 function reportSCB(responseText) {
-    alert("Report submitted successfully.");
+    showSuccessToast("Report submitted successfully.", "Report Submitted");
     // המודל והשדות יתנקו ב-articleActions.js
 }
 
 function reportECB(xhr) {
-    alert(xhr.responseText || "Failed to submit report.");
+    showErrorToast(xhr.responseText || "Failed to submit report.", "Report Error");
     // המודל והשדות יתנקו ב-articleActions.js
 }
 
@@ -493,7 +493,7 @@ $(document).on('submit', '#reportForm', function (e) {
 async function searchArchive() {
     const query = $('#archiveQuery').val().trim();
     if (!query) {
-        alert('Please enter a search term');
+        showWarningToast('Please enter a search term', 'Search Required');
         return;
     }
     

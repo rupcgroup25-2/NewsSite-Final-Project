@@ -1084,7 +1084,7 @@ function manuallyUnsubscribeFromNotifications(userId) {
             null,
             function (response) {
                 console.log('Notifications disabled successfully');
-                alert('You will no longer receive notifications. You can re-enable them in settings.');
+                showInfoToast('You will no longer receive notifications. You can re-enable them in settings.', 'Notifications Disabled');
             },
             function (xhr) {
                 console.error('Error disabling notifications:', xhr.responseText);
@@ -1105,7 +1105,7 @@ function disableNotifications(userId) {
             console.log('✅ Notifications disabled successfully:', response);
             
             // הודעה ברורה למשתמש
-            alert('🔕 Notifications DISABLED\nYou will no longer receive notifications.');
+            showWarningToast('🔕 Notifications DISABLED\nYou will no longer receive notifications.', 'Notifications Disabled');
             showNotificationStatus('🔕 Notifications disabled successfully', 'info');
             
             // עדכן מצב מקומי
@@ -1137,7 +1137,7 @@ function enableNotifications(userId) {
             console.log('✅ Notifications enabled successfully:', response);
             
             // הודעה ברורה למשתמש
-            alert('🔔 Notifications ENABLED\nYou will now receive notifications about new articles and updates.');
+            showSuccessToast('🔔 Notifications ENABLED\nYou will now receive notifications about new articles and updates.', 'Notifications Enabled');
             showNotificationStatus('🔔 Notifications enabled successfully!', 'success');
             
             // עדכן מצב מקומי

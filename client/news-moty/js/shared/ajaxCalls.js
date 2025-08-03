@@ -21,7 +21,7 @@ function ajaxCall(method, api, data, successCB, errorCB) {
             // טיפול ב-401 Unauthorized
             if (xhr.status === 401 && !tokenExpiredHandled) {
                 tokenExpiredHandled = true;
-                alert('Your session has expired. Please log in again.');
+                showWarningToast('Your session has expired. Please log in again.', 'Session Expired');
                 localStorage.removeItem('user');
                 localStorage.removeItem('cachedFollowingUsers');
                 window.location.reload(); // רענון הדף כדי להראות login

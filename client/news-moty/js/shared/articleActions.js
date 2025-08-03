@@ -70,12 +70,12 @@ $(document).on('submit', '#shareForm', function (e) {
 // Sharing the clicked article by the user
 function shareArticle(article, comment, successCB, errorCB) {
     if (!currentUser) {
-        alert("Please login to share articles.");
+        showWarningToast("Please login to share articles.", "Authentication Required");
         return;
     }
 
     if (!article) {
-        alert("Article not found.");
+        showErrorToast("Article not found.", "Error");
         return;
     }
 
@@ -110,7 +110,7 @@ function shareArticle(article, comment, successCB, errorCB) {
 //Saving the clicked article by the user
 function saveArticle(article, saveSCB, saveECB) {
     if (!currentUser) {
-        alert("Please login to save articles.");
+        showWarningToast("Please login to save articles.", "Authentication Required");
         return;
     }
 
@@ -135,7 +135,7 @@ function saveArticle(article, saveSCB, saveECB) {
     };
 
     if (!articleToSend) {
-        alert("Article not found.");
+        showErrorToast("Article not found.", "Error");
         return;
     }
 
@@ -183,7 +183,7 @@ $(document).on('submit', '#reportForm', function (e) {
 // Reporting the clicked article
 function reportArticle(article, successCB, errorCB, isFromShared = false) {
     if (!currentUser) {
-        alert("Please login to report articles.");
+        showWarningToast("Please login to report articles.", "Authentication Required");
         return;
     }
 
@@ -191,12 +191,12 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
     const comment = $("#reportComment").val()?.trim() || "";
 
     if (!reason) {
-        alert("Please select a reason for reporting.");
+        showWarningToast("Please select a reason for reporting.", "Reason Required");
         return;
     }
 
     if (!article) {
-        alert("Article not found.");
+        showErrorToast("Article not found.", "Error");
         return;
     }
 

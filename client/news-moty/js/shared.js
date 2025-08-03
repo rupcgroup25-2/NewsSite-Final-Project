@@ -127,14 +127,14 @@ $(document).on('click', '.report-article-btn', function () { //inserting the art
 });
 
 function reportSCB(responseText) {
-    alert("Report submitted successfully.");
+    showSuccessToast("Report submitted successfully.", "Report Submitted");
     $('#reportModal').modal('hide');
     $("#reportComment").val("");
     $("#reportReason").val("");
 }
 
 function reportECB(xhr) {
-    alert(xhr.responseText || "Failed to submit report.");
+    showErrorToast(xhr.responseText || "Failed to submit report.", "Report Error");
 }
 
 // Handle the submit button click from the modal
@@ -144,7 +144,7 @@ $(document).on('submit', '#reportForm', function (e) {
     const articleId = window.currentReportArticleId;
     
     if (!articleId) {
-        alert("No article selected for reporting");
+        showWarningToast("No article selected for reporting", "Selection Required");
         return;
     }
     
@@ -152,7 +152,7 @@ $(document).on('submit', '#reportForm', function (e) {
     console.log("Found article:", article);
     
     if (!article) {
-        alert("Article not found");
+        showErrorToast("Article not found", "Error");
         return;
     }
     console.log("Calling reportArticle function");
@@ -162,18 +162,18 @@ $(document).on('submit', '#reportForm', function (e) {
 $(document).on('click', '.unshare-btn', function () {
     const articleId = $(this).data('id');
     if (!currentUser) {
-        alert("Please login to remove shared articles.");
+        showWarningToast("Please login to remove shared articles.", "Authentication Required");
         return;
     }
 
     ajaxCall("DELETE", serverUrl + `Articles/unshare?userId=${currentUser.id}&articleId=${articleId}`, null,
         function (data) {
-            alert(data);
+            showSuccessToast(data, "Article Removed");
             sharedArticles = sharedArticles.filter(a => a.id !== articleId);
             renderSharedTab();
         },
         function (xhr) {
-            alert(xhr.responseText || "Failed to remove shared article");
+            showErrorToast(xhr.responseText || "Failed to remove shared article", "Error");
         }
     );
 });

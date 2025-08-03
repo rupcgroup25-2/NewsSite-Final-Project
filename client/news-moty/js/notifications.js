@@ -189,8 +189,10 @@ window.switchNotificationStyle = function(style) {
         return;
     }
     
-    localStorage.setItem('notificationStyle', style);
-    console.log(`✅ Notification style changed to: ${style}`);
+    // שמור לפי משתמש נוכחי אם יש
+    const userId = currentUser && currentUser.id ? currentUser.id : 'global';
+    localStorage.setItem(`notificationStyle_${userId}`, style);
+    console.log(`✅ Notification style changed to: ${style} for user: ${userId}`);
     
     // בצע בדיקה מיידית
     setTimeout(() => {
@@ -681,7 +683,8 @@ function showNotificationStatus(message, type = 'info') {
     return;
     
     // אל תציג התראות success אם הן עלולות להפריע ל-system notifications
-    if (type === 'success' && localStorage.getItem('notificationStyle') === 'system') {
+    const userId = currentUser && currentUser.id ? currentUser.id : 'global';
+    if (type === 'success' && localStorage.getItem(`notificationStyle_${userId}`) === 'system') {
         console.log('✅ Notification Success (hidden for system notifications):', message);
         return;
     }
@@ -796,62 +799,58 @@ function subscribeUserToNotifications(userId) {
 }
 
 // טעינת סטטוס התראות מיד כשהדף נטען
-function loadNotificationStatus() {
-    console.log('🔍 Loading notification status on page load...');
+function loadNotificationStatus(retryCount = 0) {
+    console.log(`🔍 Loading notification status on page load... (retry: ${retryCount})`);
     
     const notificationBtn = document.getElementById('notifications-btn');
     if (!notificationBtn) {
-        console.log('⚠️ Notification button not found, retrying in 1 second...');
-        setTimeout(loadNotificationStatus, 1000);
+        if (retryCount < 10) { // מגבלת ניסיונות
+            console.log(`⚠️ Notification button not found, retrying in ${1000 + (retryCount * 500)}ms...`);
+            setTimeout(() => loadNotificationStatus(retryCount + 1), 1000 + (retryCount * 500));
+        } else {
+            console.error('❌ Notification button not found after multiple retries');
+        }
         return;
     }
     
-    // קרא מ-localStorage כברירת מחדל
-    const savedStatus = localStorage.getItem('notificationStatus') || 'disabled';
-    const lastUpdate = localStorage.getItem('lastNotificationUpdate');
+    console.log('✅ Notification button found!');
     
-    console.log(`📊 Saved status: ${savedStatus}, Last update: ${lastUpdate}`);
-    
-    // הצג הודעה מיידית על הסטטוס הנוכחי
-    if (savedStatus === 'enabled') {
-        showNotificationStatus('🔔 Notifications are ENABLED', 'success');
-    } else {
-        showNotificationStatus('🔕 Notifications are DISABLED', 'warning');
+    // אם אין משתמש מחובר, הצג מצב disabled
+    if (!currentUser || !currentUser.id) {
+        console.log('📊 No user logged in, showing disabled state');
+        updateNotificationIcon(false);
+        return;
     }
     
-    if (currentUser && currentUser.id) {
-        // אם יש משתמש מחובר, בדוק בשרת רק אם עבר זמן מהעדכון האחרון
-        const shouldCheckServer = !lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000; // 30 שניות
-        
-        if (shouldCheckServer) {
-            console.log('🌐 Checking server for latest status...');
-            checkNotificationStatus(currentUser.id).then(isEnabled => {
-                console.log(`📊 Server status for user ${currentUser.id}: ${isEnabled}`);
-                updateNotificationIcon(isEnabled);
-                localStorage.setItem('notificationStatus', isEnabled ? 'enabled' : 'disabled');
-                localStorage.setItem('lastNotificationUpdate', Date.now().toString());
-                
-                // עדכן הודעה אם השתנה
-                if ((isEnabled ? 'enabled' : 'disabled') !== savedStatus) {
-                    if (isEnabled) {
-                        showNotificationStatus('🔔 Notifications are ENABLED (updated from server)', 'success');
-                    } else {
-                        showNotificationStatus('🔕 Notifications are DISABLED (updated from server)', 'warning');
-                    }
-                }
-            }).catch(error => {
-                console.error('Error checking server status:', error);
-                // אם יש שגיאה בשרת, השתמש ב-localStorage
-                updateNotificationIcon(savedStatus === 'enabled');
-            });
-        } else {
-            console.log('📱 Using cached status (updated recently)');
+    const userId = currentUser.id;
+    
+    // קרא מ-localStorage לפי משתמש
+    const savedStatus = localStorage.getItem(`notificationStatus_${userId}`) || 'disabled';
+    const lastUpdate = localStorage.getItem(`lastNotificationUpdate_${userId}`);
+    
+    console.log(`📊 Saved status for user ${userId}: ${savedStatus}, Last update: ${lastUpdate}`);
+    
+    // הצג אייקון מיידית בהתאם לסטטוס השמור
+    updateNotificationIcon(savedStatus === 'enabled');
+    
+    // בדוק בשרת רק אם עבר זמן מהעדכון האחרון
+    const shouldCheckServer = !lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000; // 30 שניות
+    
+    if (shouldCheckServer) {
+        console.log('🌐 Checking server for latest status...');
+        checkNotificationStatus(userId).then(isEnabled => {
+            console.log(`📊 Server status for user ${userId}: ${isEnabled}`);
+            updateNotificationIcon(isEnabled);
+            localStorage.setItem(`notificationStatus_${userId}`, isEnabled ? 'enabled' : 'disabled');
+            localStorage.setItem(`lastNotificationUpdate_${userId}`, Date.now().toString());
+        }).catch(error => {
+            console.error('Error checking server status:', error);
+            // אם יש שגיאה בשרת, השתמש ב-localStorage
             updateNotificationIcon(savedStatus === 'enabled');
-        }
+        });
     } else {
-        // אם אין משתמש מחובר, השתמש ב-localStorage
+        console.log('📱 Using cached status (updated recently)');
         updateNotificationIcon(savedStatus === 'enabled');
-        console.log(`📊 No user logged in, using localStorage: ${savedStatus}`);
     }
 }
 
@@ -864,25 +863,32 @@ function initializeNotificationStatusGlobally() {
     
     if (notificationBtn) {
         console.log('📍 Notification button found - loading full status');
-        loadNotificationStatus();
+        loadNotificationStatus(0); // קרא עם פרמטר retry
     } else {
         console.log('📍 No notification button on this page - checking cached status');
         
-        // גם בעמודים ללא כפתור, נבדוק את הסטטוס השמור
-        const savedStatus = localStorage.getItem('notificationStatus');
-        const savedTimestamp = localStorage.getItem('lastNotificationUpdate');
-        
-        if (savedStatus) {
-            console.log(`📱 Found cached notification status: ${savedStatus} (updated: ${new Date(parseInt(savedTimestamp || 0)).toLocaleString()})`);
+        // בדוק אם יש משתמש מחובר
+        if (currentUser && currentUser.id) {
+            const userId = currentUser.id;
             
-            // אם הסטטוס ישן מדי (יותר מיום), נסמן לבדיקה בעמוד הבא
-            const isOld = !savedTimestamp || (Date.now() - parseInt(savedTimestamp)) > 24 * 60 * 60 * 1000;
-            if (isOld) {
-                console.log('⏰ Cached status is old, will refresh on next page with notification button');
-                localStorage.removeItem('lastNotificationUpdate'); // כך נבדק בשרת בעמוד הבא
+            // גם בעמודים ללא כפתור, נבדוק את הסטטוס השמור לפי משתמש
+            const savedStatus = localStorage.getItem(`notificationStatus_${userId}`);
+            const savedTimestamp = localStorage.getItem(`lastNotificationUpdate_${userId}`);
+            
+            if (savedStatus) {
+                console.log(`📱 Found cached notification status for user ${userId}: ${savedStatus} (updated: ${new Date(parseInt(savedTimestamp || 0)).toLocaleString()})`);
+                
+                // אם הסטטוס ישן מדי (יותר מיום), נסמן לבדיקה בעמוד הבא
+                const isOld = !savedTimestamp || (Date.now() - parseInt(savedTimestamp)) > 24 * 60 * 60 * 1000;
+                if (isOld) {
+                    console.log('⏰ Cached status is old, will refresh on next page with notification button');
+                    localStorage.removeItem(`lastNotificationUpdate_${userId}`); // כך נבדק בשרת בעמוד הבא
+                }
+            } else {
+                console.log(`📭 No cached notification status found for user ${userId}`);
             }
         } else {
-            console.log('📭 No cached notification status found');
+            console.log('👤 No user logged in, skipping status check');
         }
     }
 }
@@ -894,8 +900,8 @@ function showNotificationButton() {
         // הצג כפתור גם אם אין משתמש (לבדיקה)
         notificationBtn.style.display = 'inline-block';
         
-        // טען סטטוס התראות
-        loadNotificationStatus();
+        // טען סטטוס התראות - עם retry mechanism
+        loadNotificationStatus(0);
         
         // הוסף event listener לכפתור רק אם אין כבר
         if (!notificationBtn.onclick) {
@@ -923,18 +929,19 @@ function showNotificationButton() {
                     
                     console.log(`📊 Final status: isEnabled=${isEnabled}`);
                     
-                    const status = isEnabled ? 'enabled' : 'disabled';
-                    const action = isEnabled ? 'disable' : 'enable';
-                    const message = `Notifications are currently ${status}. Would you like to ${action} them?`;
-                    
-                    if (confirm(message)) {
-                        const userId = currentUser.id;
-                        
-                        if (isEnabled) {
-                            console.log('⏹️ Disabling notifications...');
+                    // לוגיקה פשוטה: אם מופעל - תציע לכבות, אם כבוי - תציע להפעיל
+                    if (isEnabled) {
+                        console.log('🔇 Current status: ENABLED, offering to disable...');
+                        if (confirm('🔔 Notifications are currently ENABLED.\n\n🔕 Click OK to DISABLE notifications.')) {
+                            const userId = currentUser.id;
+                            console.log('⏹️ User confirmed - disabling notifications...');
                             disableNotifications(userId);
-                        } else {
-                            console.log('▶️ Enabling notifications...');
+                        }
+                    } else {
+                        console.log('🔔 Current status: DISABLED, offering to enable...');
+                        if (confirm('🔕 Notifications are currently DISABLED.\n\n🔔 Click OK to ENABLE notifications.')) {
+                            const userId = currentUser.id;
+                            console.log('▶️ User confirmed - enabling notifications...');
                             enableNotifications(userId);
                         }
                     }
@@ -1114,9 +1121,9 @@ function disableNotifications(userId) {
             // עדכן אייקון
             updateNotificationIcon(false);
             
-            // שמור סטטוס ב-localStorage
-            localStorage.setItem('notificationStatus', 'disabled');
-            localStorage.setItem('lastNotificationUpdate', Date.now().toString());
+            // שמור סטטוס ב-localStorage לפי משתמש
+            localStorage.setItem(`notificationStatus_${userId}`, 'disabled');
+            localStorage.setItem(`lastNotificationUpdate_${userId}`, Date.now().toString());
         },
         function(xhr) {
             console.error('❌ Error disabling notifications:', xhr.responseText);
@@ -1146,9 +1153,9 @@ function enableNotifications(userId) {
             // עדכן אייקון
             updateNotificationIcon(true);
             
-            // שמור סטטוס ב-localStorage
-            localStorage.setItem('notificationStatus', 'enabled');
-            localStorage.setItem('lastNotificationUpdate', Date.now().toString());
+            // שמור סטטוס ב-localStorage לפי משתמש
+            localStorage.setItem(`notificationStatus_${userId}`, 'enabled');
+            localStorage.setItem(`lastNotificationUpdate_${userId}`, Date.now().toString());
         },
         function(xhr) {
             console.error('❌ Error enabling notifications:', xhr.responseText);
@@ -1383,9 +1390,10 @@ async function checkFirebaseStatus() {
 function showCustomNotification(title, body, data) {
     console.log('📢 Custom notification called:', title, body);
     
-    // קבל הגדרת סוג התראה מהמשתמש
-    const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
-    console.log('🔧 Notification style:', notificationStyle);
+    // קבל הגדרת סוג התראה מהמשתמש - לפי משתמש נוכחי
+    const userId = currentUser && currentUser.id ? currentUser.id : 'global';
+    const notificationStyle = localStorage.getItem(`notificationStyle_${userId}`) || 'auto';
+    console.log(`🔧 Notification style for user ${userId}:`, notificationStyle);
     
     // החלט איזה סוג התראה להציג
     const isPageVisible = !document.hidden && document.visibilityState === 'visible';
@@ -1820,16 +1828,48 @@ window.initNotificationsOnPageLoad = function() {
 // הרץ כשהדף נטען
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 Page loaded, starting notification setup...');
-    setTimeout(window.initNotificationsOnPageLoad, 100);
+    
+    // חכה שה-navbar יהיה מוכן לפני איתחול
+    function waitForNavbarAndInitialize() {
+        const notificationBtn = document.getElementById('notifications-btn');
+        if (notificationBtn) {
+            console.log('🎯 Navbar loaded, initializing notifications...');
+            setTimeout(window.initNotificationsOnPageLoad, 100);
+        } else {
+            console.log('⏳ Waiting for navbar to load...');
+            setTimeout(waitForNavbarAndInitialize, 200);
+        }
+    }
+    
+    waitForNavbarAndInitialize();
 });
 
 // הרץ גם כשמשתמש נכנס (מ-auth.js)
 window.onUserLogin = function(user) {
     console.log('👤 User logged in, setting up notifications for:', user.email);
     if (user && user.id) {
+        // נקה localStorage ישן שלא מבוסס על user ID
+        cleanOldLocalStorage();
+        
         switchUserNotifications(user.id);
     }
 };
+
+// פונקציה לניקוי localStorage ישן
+function cleanOldLocalStorage() {
+    const oldKeys = [
+        'notificationStatus',
+        'lastNotificationUpdate', 
+        'notificationStyle'
+    ];
+    
+    oldKeys.forEach(key => {
+        if (localStorage.getItem(key)) {
+            console.log(`🧹 Cleaning old localStorage key: ${key}`);
+            localStorage.removeItem(key);
+        }
+    });
+}
 
 // הרץ כשמשתמש יוצא
 window.onUserLogout = function() {
@@ -2007,22 +2047,6 @@ window.testDirectToken = function(title = "Direct Token Test", body = "This is a
         }
     );
 }
-
-// טען סטטוס התראות כשהדף נטען
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔄 Page loaded, initializing notification status...');
-    setTimeout(() => {
-        initializeNotificationStatusGlobally();
-    }, 1500); // 1.5 שניות אחרי שהדף נטען
-});
-
-// טען גם כש-window נטען לגמרי
-window.addEventListener('load', function() {
-    console.log('🔄 Window fully loaded, checking notification status...');
-    setTimeout(() => {
-        initializeNotificationStatusGlobally();
-    }, 500);
-});
 
 // פונקציה לניקוי טוקן FCM כשמשתמש מתנתק
 function clearFCMTokenOnLogout() {

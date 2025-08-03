@@ -59,5 +59,12 @@
         link.classList.add("active");
         }
     });
+    
+    // המתן לauth.js להיטען ואז רנדר user actions
+    setTimeout(() => {
+        if (typeof renderUserActions === 'function') {
+            renderUserActions();
+        }
+    }, 100);
 });
 

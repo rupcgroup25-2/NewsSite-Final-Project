@@ -235,12 +235,21 @@ $(document).on('submit', '#loginForm', function (e) {
             localStorage.setItem('user', JSON.stringify(currentUser));
             updateRecommendedArticles();
 
-            // בדוק אם יש משתמש קודם ועבור להתראות החדשות
-            if (typeof switchUserNotifications === 'function') {
-                switchUserNotifications(currentUser.id);
-            } else if (typeof subscribeUserToNotifications === 'function') {
-                subscribeUserToNotifications(currentUser.id);
-            }
+            // בדוק אם יש משתמש קודם ועבור להתראות החדשות - עם דחייה
+            setTimeout(() => {
+                if (typeof switchUserNotifications === 'function') {
+                    switchUserNotifications(currentUser.id);
+                } else if (typeof subscribeUserToNotifications === 'function') {
+                    subscribeUserToNotifications(currentUser.id);
+                } else {
+                    console.log('⏳ Notification functions not ready yet, will be called when available');
+                }
+                
+                // קרא להתחלת notifications אם זמין
+                if (typeof window.onUserLogin === 'function') {
+                    window.onUserLogin(currentUser);
+                }
+            }, 500);
 
             hideMessage('#loginError');
             $('#loginModal').modal('hide');
@@ -368,6 +377,11 @@ $(document).on('click', '#logout-btn', function () {
     // בטל הרשמה להתראות
     if (typeof unsubscribeUserFromNotifications === 'function') {
         unsubscribeUserFromNotifications();
+    }
+    
+    // קרא לפונקציית logout הגלובלית אם זמינה
+    if (typeof window.onUserLogout === 'function') {
+        window.onUserLogout();
     }
     
     renderUserActions();

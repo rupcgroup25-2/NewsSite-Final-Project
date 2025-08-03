@@ -9,6 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add scroll animations
     initializeScrollAnimations();
+    
+    // Initialize authentication modals
+    if (typeof createAuthModals === 'function') {
+        createAuthModals();
+    }
+    
+    // Render user actions in navbar
+    if (typeof renderUserActions === 'function') {
+        renderUserActions();
+    }
 });
 
 function initializeAboutPage() {

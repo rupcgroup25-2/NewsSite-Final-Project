@@ -367,9 +367,68 @@ namespace Newsite_Server.Controllers
 
         }
 
+        [HttpPost("recommendedArticles/pageSize/{pageSize}/language/{language}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRecommendedArticles(int pageSize, string language, [FromBody] List<Tag> tags)
+        {
+            if (tags == null || !tags.Any())
+                return BadRequest("At least one tag is required.");
+
+            string newsApiKey;
+            try
+            {
+                newsApiKey = _newsApiKey;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
+            }
+
+            // Create the query string with "OR"
+            string query = string.Join(" OR ", tags.Select(t => t.Name));
+
+            var baseUrl = "https://newsapi.org/v2/everything";
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
+
+            var urlBuilder = new StringBuilder($"{baseUrl}?apiKey={newsApiKey}&q={Uri.EscapeDataString(query)}");
+            urlBuilder.Append($"&language={Uri.EscapeDataString(language)}");
+            urlBuilder.Append($"&sortBy=publishedAt&pageSize={pageSize}");
+
+            var response = await httpClient.GetAsync(urlBuilder.ToString());
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, "Failed to fetch articles.");
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(jsonString);
+            var rawArticles = json.RootElement.GetProperty("articles");
+
+            var articles = rawArticles.EnumerateArray()
+                .Where(a =>
+                    a.TryGetProperty("title", out _) &&
+                    (a.TryGetProperty("description", out _) || a.TryGetProperty("content", out _)) &&
+                    a.TryGetProperty("urlToImage", out _))
+                .Select((a, index) => new
+                {
+                    id = $"recommended_{index}",
+                    title = a.GetProperty("title").GetString(),
+                    content = a.TryGetProperty("content", out var content) ? content.GetString() : null,
+                    description = a.TryGetProperty("description", out var desc) ? desc.GetString() : null,
+                    publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
+                    urlToImage = a.GetProperty("urlToImage").GetString(),
+                    url = a.GetProperty("url").GetString(),
+                    source = a.GetProperty("source").GetProperty("name").GetString(),
+                }).ToList();
+
+            Article temp = new Article(); // Increase API call count
+            temp.increaseNewsApiCounter();
+
+            return Ok(articles);
+        }
+
+
         [HttpGet("searchArticles/{query}/{from?}/{to?}")]
         [AllowAnonymous]
-
         public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
         {
             if (string.IsNullOrWhiteSpace(query))

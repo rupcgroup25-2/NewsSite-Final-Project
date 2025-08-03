@@ -16,6 +16,7 @@ namespace Newsite_Server.Controllers
             notifications = new Notifications();
         }
 
+        // Gets the health status of the notification service
         [HttpGet("status")]
         public IActionResult GetStatus()
         {
@@ -23,7 +24,7 @@ namespace Newsite_Server.Controllers
             {
                 Console.WriteLine("🔧 Status endpoint called");
                 
-                // בדיקת חיבור לבסיס נתונים
+                // Test database connection
                 var dbStatus = notifications.TestDatabaseConnection();
                 
                 return Ok(new { 
@@ -40,40 +41,42 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        [HttpGet("firebase-status")]
-        public async Task<IActionResult> GetFirebaseStatus()
-        {
-            try
-            {
-                Console.WriteLine("🔍 Checking Firebase API status...");
+        //// Tests Firebase FCM API connection and provides setup instructions
+        //[HttpGet("firebase-status")]
+        //public async Task<IActionResult> GetFirebaseStatus()
+        //{
+        //    try
+        //    {
+        //        Console.WriteLine("🔍 Checking Firebase API status...");
                 
-                var result = await notifications.TestFirebaseConnection();
+        //        var result = await notifications.TestFirebaseConnection();
                 
-                return Ok(new { 
-                    status = result ? "fcm-api-enabled" : "fcm-api-disabled", 
-                    timestamp = DateTime.Now,
-                    message = result ? "Firebase APIs are enabled and working" : "Firebase FCM API is not enabled - check Google Cloud Console",
-                    projectId = "newspapersite-ruppin",
-                    instructions = result ? null : new {
-                        step1 = "Go to https://console.cloud.google.com/apis/library/fcm.googleapis.com?project=newspapersite-ruppin",
-                        step2 = "Click 'ENABLE' to enable Firebase Cloud Messaging API", 
-                        step3 = "Also enable https://console.cloud.google.com/apis/library/firebase.googleapis.com?project=newspapersite-ruppin",
-                        step4 = "Verify billing is enabled for the project",
-                        step5 = "Wait 5-10 minutes and try again"
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Exception in firebase-status: {ex.Message}");
-                return StatusCode(500, new { 
-                    status = "error", 
-                    message = ex.Message,
-                    timestamp = DateTime.Now
-                });
-            }
-        }
+        //        return Ok(new { 
+        //            status = result ? "fcm-api-enabled" : "fcm-api-disabled", 
+        //            timestamp = DateTime.Now,
+        //            message = result ? "Firebase APIs are enabled and working" : "Firebase FCM API is not enabled - check Google Cloud Console",
+        //            projectId = "newspapersite-ruppin",
+        //            instructions = result ? null : new {
+        //                step1 = "Go to https://console.cloud.google.com/apis/library/fcm.googleapis.com?project=newspapersite-ruppin",
+        //                step2 = "Click 'ENABLE' to enable Firebase Cloud Messaging API", 
+        //                step3 = "Also enable https://console.cloud.google.com/apis/library/firebase.googleapis.com?project=newspapersite-ruppin",
+        //                step4 = "Verify billing is enabled for the project",
+        //                step5 = "Wait 5-10 minutes and try again"
+        //            }
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Exception in firebase-status: {ex.Message}");
+        //        return StatusCode(500, new { 
+        //            status = "error", 
+        //            message = ex.Message,
+        //            timestamp = DateTime.Now
+        //        });
+        //    }
+        //}
 
+        // Saves FCM token for push notifications
         [HttpPost("SaveFCMToken")]
         public IActionResult SaveFCMToken(int userId, string fcmToken)
         {
@@ -94,7 +97,7 @@ namespace Newsite_Server.Controllers
                 {
                     Console.WriteLine($"✅ FCM token saved successfully for user {userId}");
                     
-                    // אמת שהטוקן נשמר בפועל
+                    // Verify that the token was actually saved
                     Console.WriteLine($"🔍 Verifying token was saved...");
                     bool isEnabled = notifications.IsUserNotificationsEnabled(userId);
                     Console.WriteLine($"📊 User {userId} notifications enabled: {isEnabled}");
@@ -119,6 +122,35 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Clears specific FCM token on logout
+        [HttpDelete("ClearSpecificFCMToken")]
+        public IActionResult ClearSpecificFCMToken(int userId, string fcmToken)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(fcmToken))
+                {
+                    return BadRequest("FCM token cannot be empty");
+                }
+
+                int result = notifications.ClearSpecificFCMToken(userId, fcmToken);
+
+                if (result > 0)
+                {
+                    return Ok("FCM token cleared successfully");
+                }
+                else
+                {
+                    return Ok("No token to clear (already removed)");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        // Disables FCM notifications for a user
         [HttpPut("DisableFCMToken")]
         public IActionResult DisableFCMToken(int userId)
         {
@@ -141,6 +173,7 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Enables FCM notifications for a user
         [HttpPut("EnableFCMToken")]
         public IActionResult EnableFCMToken(int userId)
         {
@@ -163,6 +196,7 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Gets notification status for a specific user
         [HttpGet("NotificationStatus")]
         public IActionResult GetNotificationStatus(int userId)
         {
@@ -177,6 +211,9 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Tests notification functionality for a specific user
+        // Complex testing workflow: user validation → token verification → Firebase connection test → delivery confirmation
+        // Process: user ID validation → FCM token lookup → test notification creation → Firebase API call → success tracking
         [HttpPost("TestNotification")]
         public async Task<IActionResult> TestNotification(int userId)
         {
@@ -184,7 +221,7 @@ namespace Newsite_Server.Controllers
             {
                 Console.WriteLine($"🧪 TestNotification endpoint called for userId: {userId}");
                 
-                // בדוק אם יש FCM tokens לאותו משתמש
+                // Check if user has FCM tokens
                 Console.WriteLine($"🔍 Checking if user {userId} has FCM tokens...");
                 
                 bool success = await notifications.SendTestNotification(userId);
@@ -208,42 +245,42 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        [HttpPost("TestDirectToken")]
-        public async Task<IActionResult> TestDirectToken(string fcmToken, string title = "Test Notification", string body = "This is a direct token test notification!")
-        {
-            try
-            {
-                Console.WriteLine($"🎯 TestDirectToken endpoint called");
-                Console.WriteLine($"📧 FCM Token: {fcmToken?.Substring(0, Math.Min(30, fcmToken?.Length ?? 0))}...");
-                Console.WriteLine($"📝 Title: {title}");
-                Console.WriteLine($"📝 Body: {body}");
+        //[HttpPost("TestDirectToken")]
+        //public async Task<IActionResult> TestDirectToken(string fcmToken, string title = "Test Notification", string body = "This is a direct token test notification!")
+        //{
+        //    try
+        //    {
+        //        Console.WriteLine($"🎯 TestDirectToken endpoint called");
+        //        Console.WriteLine($"📧 FCM Token: {fcmToken?.Substring(0, Math.Min(30, fcmToken?.Length ?? 0))}...");
+        //        Console.WriteLine($"📝 Title: {title}");
+        //        Console.WriteLine($"📝 Body: {body}");
                 
-                if (string.IsNullOrEmpty(fcmToken))
-                {
-                    Console.WriteLine("❌ FCM token is null or empty");
-                    return BadRequest("FCM token is required");
-                }
+        //        if (string.IsNullOrEmpty(fcmToken))
+        //        {
+        //            Console.WriteLine("❌ FCM token is null or empty");
+        //            return BadRequest("FCM token is required");
+        //        }
 
-                bool success = await notifications.SendDirectTokenNotification(fcmToken, title, body);
+        //        bool success = await notifications.SendDirectTokenNotification(fcmToken, title, body);
 
-                if (success)
-                {
-                    Console.WriteLine("✅ Direct token test notification sent successfully");
-                    return Ok("Direct token test notification sent successfully");
-                }
-                else
-                {
-                    Console.WriteLine("❌ Failed to send direct token test notification");
-                    return StatusCode(500, "Failed to send direct token test notification");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error in TestDirectToken endpoint: {ex.Message}");
-                Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
-                return StatusCode(500, $"Error: {ex.Message}");
-            }
-        }
+        //        if (success)
+        //        {
+        //            Console.WriteLine("✅ Direct token test notification sent successfully");
+        //            return Ok("Direct token test notification sent successfully");
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine("❌ Failed to send direct token test notification");
+        //            return StatusCode(500, "Failed to send direct token test notification");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Error in TestDirectToken endpoint: {ex.Message}");
+        //        Console.WriteLine($"📋 Stack trace: {ex.StackTrace}");
+        //        return StatusCode(500, $"Error: {ex.Message}");
+        //    }
+        //}
 
         [HttpPost("SystemUpdate")]
         public async Task<IActionResult> SendSystemUpdate(string title, string message)
@@ -259,37 +296,41 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        [HttpGet("DiagnoseFirebase")]
-        public async Task<IActionResult> DiagnoseFirebase()
-        {
-            try
-            {
-                Console.WriteLine("🔧 Firebase diagnostic endpoint called");
-                
-                var result = await notifications.DiagnoseFirebaseConnection();
-                
-                return Ok(new { 
-                    firebaseConnectionTest = result,
-                    message = result ? "Firebase connection successful" : "Firebase connection failed - check logs for details"
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Firebase diagnostic error: {ex.Message}");
-                return StatusCode(500, $"Error during Firebase diagnosis: {ex.Message}");
-            }
-        }
+        //[HttpGet("DiagnoseFirebase")]
+        //public async Task<IActionResult> DiagnoseFirebase()
+        //{
+        //    try
+        //    {
+        //        Console.WriteLine("🔧 Firebase diagnostic endpoint called");
 
+        //        var result = await notifications.DiagnoseFirebaseConnection();
+
+        //        return Ok(new { 
+        //            firebaseConnectionTest = result,
+        //            message = result ? "Firebase connection successful" : "Firebase connection failed - check logs for details"
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Firebase diagnostic error: {ex.Message}");
+        //        return StatusCode(500, $"Error during Firebase diagnosis: {ex.Message}");
+        //    }
+        //}
+
+        // Cleans up invalid FCM tokens from the database
+        // Complex maintenance workflow: token validation → Firebase verification → database cleanup → statistics tracking
+        // Process: token retrieval → Firebase validation test → invalid token identification → batch deletion → result reporting
         [HttpPost("CleanupInvalidTokens")]
         public async Task<IActionResult> CleanupInvalidTokens()
         {
             try
             {
                 Console.WriteLine("🧹 Starting cleanup of invalid FCM tokens...");
-                
+
                 var result = await notifications.CleanupInvalidTokens();
-                
-                return Ok(new { 
+
+                return Ok(new
+                {
                     tokensRemoved = result,
                     message = $"Cleanup completed. Removed {result} invalid tokens."
                 });
@@ -301,90 +342,90 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        [HttpGet("GetTokenStats")]
-        public IActionResult GetTokenStats()
-        {
-            try
-            {
-                var stats = notifications.GetTokenStatistics();
-                return Ok(stats);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Token stats error: {ex.Message}");
-                return StatusCode(500, $"Error getting token stats: {ex.Message}");
-            }
-        }
+        //[HttpGet("GetTokenStats")]
+        //public IActionResult GetTokenStats()
+        //{
+        //    try
+        //    {
+        //        var stats = notifications.GetTokenStatistics();
+        //        return Ok(stats);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Token stats error: {ex.Message}");
+        //        return StatusCode(500, $"Error getting token stats: {ex.Message}");
+        //    }
+        //}
 
-        [HttpGet("GetComprehensiveDiagnosis")]
-        public async Task<IActionResult> GetComprehensiveDiagnosis()
-        {
-            try
-            {
-                Console.WriteLine("🔍 Running comprehensive FCM diagnosis...");
-                
-                var diagnosis = await notifications.GetComprehensiveDiagnosis();
-                
-                return Ok(diagnosis);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Comprehensive diagnosis error: {ex.Message}");
-                return StatusCode(500, $"Error during comprehensive diagnosis: {ex.Message}");
-            }
-        }
+        //[HttpGet("GetComprehensiveDiagnosis")]
+        //public async Task<IActionResult> GetComprehensiveDiagnosis()
+        //{
+        //    try
+        //    {
+        //        Console.WriteLine("🔍 Running comprehensive FCM diagnosis...");
 
-        [HttpGet("QuickHealthCheck")]
-        public async Task<IActionResult> QuickHealthCheck()
-        {
-            try
-            {
-                Console.WriteLine("⚡ Running quick health check...");
-                
-                var result = new
-                {
-                    timestamp = DateTime.Now,
-                    firebase = new
-                    {
-                        initialized = FirebaseAdmin.FirebaseApp.DefaultInstance != null,
-                        projectId = FirebaseAdmin.FirebaseApp.DefaultInstance?.Options?.ProjectId ?? "Not available"
-                    },
-                    database = notifications.TestDatabaseConnection(),
-                    tokens = notifications.GetTokenStatistics(),
-                    recommendations = new List<string>()
-                };
+        //        var diagnosis = await notifications.GetComprehensiveDiagnosis();
 
-                var recommendations = (List<string>)result.recommendations;
+        //        return Ok(diagnosis);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Comprehensive diagnosis error: {ex.Message}");
+        //        return StatusCode(500, $"Error during comprehensive diagnosis: {ex.Message}");
+        //    }
+        //}
 
-                if (!result.firebase.initialized)
-                {
-                    recommendations.Add("❌ Firebase not initialized - check service account file");
-                }
+        //[HttpGet("QuickHealthCheck")]
+        //public async Task<IActionResult> QuickHealthCheck()
+        //{
+        //    try
+        //    {
+        //        Console.WriteLine("⚡ Running quick health check...");
 
-                if (!result.database)
-                {
-                    recommendations.Add("❌ Database connection failed - check connection string");
-                }
+        //        var result = new
+        //        {
+        //            timestamp = DateTime.Now,
+        //            firebase = new
+        //            {
+        //                initialized = FirebaseAdmin.FirebaseApp.DefaultInstance != null,
+        //                projectId = FirebaseAdmin.FirebaseApp.DefaultInstance?.Options?.ProjectId ?? "Not available"
+        //            },
+        //            database = notifications.TestDatabaseConnection(),
+        //            tokens = notifications.GetTokenStatistics(),
+        //            recommendations = new List<string>()
+        //        };
 
-                var tokenStats = (dynamic)result.tokens;
-                if (tokenStats.totalTokens == 0)
-                {
-                    recommendations.Add("⚠️ No FCM tokens found - users need to subscribe to notifications");
-                }
+        //        var recommendations = (List<string>)result.recommendations;
 
-                if (recommendations.Count == 0)
-                {
-                    recommendations.Add("✅ Basic health check passed - try comprehensive diagnosis for detailed analysis");
-                }
+        //        if (!result.firebase.initialized)
+        //        {
+        //            recommendations.Add("❌ Firebase not initialized - check service account file");
+        //        }
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Quick health check error: {ex.Message}");
-                return StatusCode(500, $"Error during health check: {ex.Message}");
-            }
-        }
+        //        if (!result.database)
+        //        {
+        //            recommendations.Add("❌ Database connection failed - check connection string");
+        //        }
+
+        //        var tokenStats = (dynamic)result.tokens;
+        //        if (tokenStats.totalTokens == 0)
+        //        {
+        //            recommendations.Add("⚠️ No FCM tokens found - users need to subscribe to notifications");
+        //        }
+
+        //        if (recommendations.Count == 0)
+        //        {
+        //            recommendations.Add("✅ Basic health check passed - try comprehensive diagnosis for detailed analysis");
+        //        }
+
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Quick health check error: {ex.Message}");
+        //        return StatusCode(500, $"Error during health check: {ex.Message}");
+        //    }
+        //}
 
     }
 }

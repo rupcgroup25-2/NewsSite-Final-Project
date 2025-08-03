@@ -9,6 +9,7 @@ namespace Newsite_Server.Services
     public class TokenService
     {
         private const string SecretKey = "MotyNivYuvalSuperSecretKey123";
+        // Generates JWT token for user authentication
         public string GenerateToken(string userEmail, string role = "User")
         {
             var tokenHandler = new JwtSecurityTokenHandler();

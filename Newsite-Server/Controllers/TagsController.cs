@@ -24,7 +24,7 @@ namespace Newsite_Server.Controllers
         }
 
 
-        // GET: api/<TagsController>
+        // Gets all available tags from the database
         [HttpGet]
         public IEnumerable<Tag> Get()
         {
@@ -32,6 +32,8 @@ namespace Newsite_Server.Controllers
             return tag.GetAllTags();
         }
 
+        // Complex Twitter trends fetching with location mapping, caching, and external API integration
+        // Multi-step process: location validation -> file caching -> location ID lookup -> API call -> response parsing
         [HttpGet("twitterTrends/{location}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetTwitterTrends(string location)
@@ -39,13 +41,15 @@ namespace Newsite_Server.Controllers
             if (string.IsNullOrWhiteSpace(location))
                 return BadRequest("Location is required.");
 
-            // Load and cache the location map (reload every 12 hours for example)
+            // Thread-safe location map loading with 12-hour cache refresh for performance optimization
             lock (_locationMapLock)
             {
+                // Check if cache is empty or expired (12-hour refresh cycle)
                 if (_twitterLocationMap == null || DateTime.Now - _lastLocationLoadTime > TimeSpan.FromHours(12))
                 {
                     try
                     {
+                        // Load location-to-ID mapping from local JSON file
                         var jsonText = System.IO.File.ReadAllText("twitter-api-locations.json");
                         _twitterLocationMap = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
                         _lastLocationLoadTime = DateTime.Now;
@@ -97,6 +101,7 @@ namespace Newsite_Server.Controllers
         }
 
 
+        // Creates a new tag in the database
         [HttpPost]
         public IActionResult CreateTag([FromBody] Tag tag)
         {
@@ -110,6 +115,7 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Assigns a tag to a specific user by tag name
         [HttpPost("assign/userId/{userId}/tagName/{tagName}")]
         public IActionResult AssignTagToUser(int userId, string tagName)
         {
@@ -122,6 +128,7 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Failed to assign tag to user (duplicate or error).");
         }
 
+        // Removes a tag from a specific user
         [HttpDelete("RemoveFromUser/userId/{userId}/tagId/{tagId}")]
         public IActionResult RemoveTagFromUser(int userId, int tagId)
         {
@@ -135,7 +142,7 @@ namespace Newsite_Server.Controllers
         }
 
 
-        // DELETE api/<TagsController>/5
+        // Deletes a tag from the system (admin only)
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public IActionResult DeleteTag(int id)

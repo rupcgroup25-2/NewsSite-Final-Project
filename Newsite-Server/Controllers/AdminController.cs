@@ -11,6 +11,7 @@ namespace Newsite_Server.Controllers
     [Authorize(Roles = "Admin")] // All methods restricted only for admin
     public class AdminController : ControllerBase
     {
+        // Gets count of active users in the system
         [HttpGet("ActiveUsersCount")]
         public IActionResult GetActiveUsersCount()
         {
@@ -22,6 +23,7 @@ namespace Newsite_Server.Controllers
                 return NotFound("No active users");
         }
 
+        // Gets count of saved articles in the system
         [HttpGet("SavedArticlesCount")]
         public IActionResult GetSavedArticlesCount()
         {
@@ -34,6 +36,7 @@ namespace Newsite_Server.Controllers
                 return NotFound("No saved articles");
         }
 
+        // Gets count of shared articles in the system
         [HttpGet("SharedArticlesCount")]
         public IActionResult GetSharedArticlesCount()
         {
@@ -44,6 +47,7 @@ namespace Newsite_Server.Controllers
             else
                 return NotFound("No shared articles");
         }
+        // Gets count of blocked users in the system
         [HttpGet("BlockedUsersCount")]
         public IActionResult GetBlockedUsersCount()
         {
@@ -55,6 +59,7 @@ namespace Newsite_Server.Controllers
                 return NotFound("No blocked users");
         }
 
+        // Gets count of reports in the system
         [HttpGet("ReportsCount")]
         public IActionResult GetReportsCount()
         {
@@ -65,6 +70,7 @@ namespace Newsite_Server.Controllers
             else
                 return NotFound("No reports");
         }
+        // Gets count of API pull requests for a specific API
         [HttpGet("ArticlePullRequestsCount")]
         public IActionResult ArticlePullRequestsCount(string apiName)
         {
@@ -76,6 +82,7 @@ namespace Newsite_Server.Controllers
                 return NotFound("No reports");
         }
 
+        // Gets number of daily logins
         [HttpGet("DailyLogins")]
         public IActionResult GetDailyLoginsNumber()
         {
@@ -137,6 +144,9 @@ namespace Newsite_Server.Controllers
             return user.GetAllUsers();
         }
 
+        // Deletes all comments for a specific article
+        // Complex moderation workflow: article validation → comment identification → batch deletion → result verification
+        // Process: article ID validation → comment lookup → mass deletion operation → success confirmation
         [HttpDelete("DeleteAllComments/{articleId}")]
         public IActionResult DeleteAllComments(int articleId)
         {
@@ -174,6 +184,9 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Deletes an article and all associated data
+        // Complex cascade deletion workflow: article validation → dependency resolution → cascading deletion → integrity maintenance
+        // Process: article ID validation → related data identification → cascade deletion (comments, reports, saves) → final article removal
         [HttpDelete("DeleteArticle/{articleId}")]
         public IActionResult DeleteArticle(int articleId)
         {

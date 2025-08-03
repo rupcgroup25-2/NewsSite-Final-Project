@@ -30,24 +30,28 @@ namespace Newsite_Server.BL
 
         public Comment() { }
 
+        // Adds a new comment to an article
         public int AddComment(int articleId, int userId, string commentText)
         {
             DBservices dbs = new DBservices();
             return dbs.AddComment(articleId, userId, commentText);
         }
 
+        // Gets all comments for a specific article
         public List<Comment> GetCommentsByArticle(int articleId)
         {
             DBservices dbs = new DBservices();
             return dbs.GetCommentsByArticle(articleId);
         }
 
+        // Deletes a specific comment by user and article
         public int DeleteComment(int userId, int articleId)
         {
             DBservices dbs = new DBservices();
             return dbs.DeleteComment(userId, articleId);
         }
 
+        // Deletes all comments for a specific article
         public int DeleteAllCommentsForArticle(int articleId)
         {
             DBservices dbs = new DBservices();

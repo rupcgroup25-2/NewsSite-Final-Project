@@ -2836,6 +2836,47 @@ namespace Newsite_Server.DAL
         }
 
         //--------------------------------------------------------------------------------------------------
+        // Clear specific FCM token for a user on logout
+        //--------------------------------------------------------------------------------------------------
+        public int ClearSpecificFCMToken(int userId, string fcmToken)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("myProjDB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@UserId", userId);
+            paramDic.Add("@FCMToken", fcmToken);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("sp_ClearSpecificFCMTokenFinal", con, paramDic);
+
+            try
+            {
+                int result = cmd.ExecuteNonQuery();
+                Console.WriteLine($"🗑️ Cleared FCM token for user {userId}, affected rows: {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("General Exception: " + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                if (con != null) con.Close();
+            }
+        }
+
+        //--------------------------------------------------------------------------------------------------
         // Get FCM Tokens for specific users
         //--------------------------------------------------------------------------------------------------
         public List<string> GetFCMTokensForUsers(List<int> userIds)
@@ -3094,11 +3135,15 @@ namespace Newsite_Server.DAL
 
             try
             {
+                Console.WriteLine("🔍 Debug: Calling sp_GetAllUsersWithNotificationsFinal");
                 SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (reader.Read())
                 {
-                    userIds.Add((int)reader["Id"]);
+                    int userId = (int)reader["Id"];
+                    userIds.Add(userId);
+                    Console.WriteLine($"   Found user ID: {userId}");
                 }
+                Console.WriteLine($"🔍 Debug: Total users returned by SP: {userIds.Count}");
                 return userIds;
             }
             catch (Exception ex)

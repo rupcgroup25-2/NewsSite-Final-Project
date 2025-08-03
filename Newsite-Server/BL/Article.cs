@@ -15,7 +15,8 @@ namespace Newsite_Server.BL
         string comment;
         List<string> tags;
 
-        public Article() {
+        public Article()
+        {
             tags = new List<string>();
         }
 
@@ -42,13 +43,14 @@ namespace Newsite_Server.BL
         public DateTime PublishedAt { get => publishedAt; set => publishedAt = value; }
         public string SourceName { get => sourceName; set => sourceName = value; }
         public string Author { get => author; set => author = value; }
-        public int SharedById { get; set; }      
+        public int SharedById { get; set; }
         public string SharedByName { get; set; }
         public List<string> Tags { get; set; }
 
 
         DBservices dbs = new DBservices();
 
+        // Inserts article to database if it doesn't exist, returns article ID
         public int InsertArticleIfNotExists()
         {
             Article existing = dbs.GetArticleByUrl(this.Url);
@@ -76,11 +78,13 @@ namespace Newsite_Server.BL
             return articleId;
         }
 
+        // Assigns a tag to an article
         public int AssignArticleTag(int articleId, string tag) //Assign tag to article
         {
             return dbs.AssignTagToArticle(articleId, tag);
         }
 
+        // Assigns multiple tags to an article
         public void AssignTagsToArticle(int articleId, List<string> tags)
         {
             if (tags == null || tags.Count == 0)
@@ -92,16 +96,18 @@ namespace Newsite_Server.BL
             }
         }
 
+        // Saves an article for a specific user
         public int SaveArticleForUser(int userId, int articleId)
         {
             // check if already exist or just inserted and got an id
             int insertResult = InsertArticleIfNotExists();
-            if(insertResult != this.id)
+            if (insertResult != this.id)
                 return dbs.SaveArticleForUser(userId, insertResult);
             else
                 return dbs.SaveArticleForUser(userId, this.Id);
         }
 
+        // Shares an article with a comment by a user
         public int ShareArticleWithComment(int userId, int articleId, string comment)
         {
             int watchSharedPermission = dbs.GetWatchSharedPermission(userId);
@@ -116,16 +122,19 @@ namespace Newsite_Server.BL
             else return -1;
         }
 
+        // Gets all saved articles for a specific user
         public List<Article> GetSavedArticlesForUser(int userId)
         {
             return dbs.GetSavedArticlesForUser(userId);
         }
 
+        // Gets a single saved article for a user
         public Article GetSingleSavedArticlesForUser(int userId, int articleId)
         {
             return dbs.GetSingleSavedArticlesForUser(userId, articleId);
         }
 
+        // Gets all shared articles for a specific user
         public List<Article> GetSharedArticlesForUser(int userId)
         {
             int watchSharedPermission = dbs.GetWatchSharedPermission(userId);
@@ -145,7 +154,7 @@ namespace Newsite_Server.BL
         {
             return dbs.GetSingleReportedArticlesForUser(userId, articleId);
         }
-        public Article GetSharedArticleById( int articleId)
+        public Article GetSharedArticleById(int articleId)
         {
             return dbs.GetSingleSharedArticleByArticleId(articleId);
         }
@@ -181,6 +190,7 @@ namespace Newsite_Server.BL
             return dbs.SearchSavedArticles(userId, word);
         }
 
+        // Increases the NewsAPI counter for tracking API usage
         public int increaseNewsApiCounter()
         {
             return dbs.IncreaseApiCounter("NewsApiCalls");

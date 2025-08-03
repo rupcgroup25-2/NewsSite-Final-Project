@@ -34,11 +34,13 @@ namespace Newsite_Server.Controllers
             _huggingFaceApiKey = config["ApiKeys:HuggingFace"];
         }
 
+        // Authenticates user login, validates account status, tracks login, and returns JWT token with user details
+        // Complex flow: credential validation -> account status check -> login tracking -> role assignment -> token generation
         [HttpPost("Login")]
         [AllowAnonymous]
         public IActionResult Login([FromBody] User user)
         {
-
+            // Validate credentials against database
             User NewUser = user.LoginUser();
 
             if (NewUser == null)
@@ -46,15 +48,20 @@ namespace Newsite_Server.Controllers
                 return BadRequest(new { message = "Invalid email or password" });
             }
 
+            // Check if user account is active (not blocked)
             if (!NewUser.Active)
             {
                 return Unauthorized(new { message = "The user is blocked because of violations of the site!" });
             }
 
+            // Track daily login for analytics
             NewUser.TrackDailyLogin(NewUser.Id);
+            
+            // Determine user role for JWT token
             string role = NewUser.Email == "admin@newshub.com" ? "Admin" : "User";
             string token = _tokenService.GenerateToken(NewUser.Email, role);
 
+            // Return successful login response with token and user data
             return Ok(new
             {
                 token,
@@ -65,7 +72,7 @@ namespace Newsite_Server.Controllers
             });
         }
 
-        // POST api/<UsersController>
+        // Registers a new user account after validation
         [HttpPost("Register")]
         [AllowAnonymous]
         public IActionResult Register([FromBody] User user)
@@ -78,6 +85,7 @@ namespace Newsite_Server.Controllers
             return Ok(new { message = "Success" });
         }
 
+        // Gets all user email addresses from the system
         [HttpGet]
         [Route("AllEmails")]
         public IActionResult GetAllUsersEmails()
@@ -90,6 +98,7 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Server error.");
         }
 
+        // Gets details of users that a specific user is following
         [HttpGet]
         [Route("GetFollowedUsers")]
         public IActionResult GetMyFollowedUsersDetails(int userId)
@@ -103,9 +112,12 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Server error.");
         }
 
+        // Complex follow user functionality with validation, notification system, and security checks
+        // Flow: JWT validation -> database update -> self-follow check -> notification sending -> error handling
         [HttpPost("Follow")]
         public async Task<IActionResult> FollowUser(int followerId, string followedEmail)
         {
+            // Debug: Extract and log JWT claims for security verification
             var userClaims = User.Claims.ToList();
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -115,28 +127,32 @@ namespace Newsite_Server.Controllers
                 Console.WriteLine($"   - {claim.Type}: {claim.Value}");
             }
 
-            // בדיקה אם זה Admin
+            // Verify admin role for debugging purposes
             bool isAdmin = User.IsInRole("Admin");
-
+            
             User user = new User();
+            // Attempt to create follow relationship in database
             int result = user.FollowUser(followerId, followedEmail);
 
             if (result > 0)
             {
-                // הוסף התראה על עוקב חדש - משופר עם הפונקציות החדשות
+                // Send notification to followed user (complex notification flow)
                 try
                 {
+                    // Get follower name for notification message
                     string followerName = user.GetUserNameById(followerId);
                     User followedUser = user.GetUserByEmail(followedEmail);
 
+                    // Prevent self-following edge case
                     if (followedUser != null && followerId == followedUser.Id)
                     {
                         return BadRequest("You cannot follow yourself.");
                     }
 
+                    // Send notification if both users exist and names are valid
                     if (!string.IsNullOrEmpty(followerName) && followedUser != null)
                     {
-                        // שלח התראה למשתמש שעליו עוקבים
+                        // Trigger async notification to followed user
                         await notifications.NotifyNewFollower(followedUser.Id, followerName, followerId);
                     }
                 }
@@ -152,6 +168,7 @@ namespace Newsite_Server.Controllers
         }
 
 
+        // Allows a user to unfollow another user
         [HttpDelete("Unfollow")]
         public IActionResult UnfollowUser(int followerId,  string followedEmail)
         {
@@ -164,6 +181,7 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Failed to unfollow");
         }
 
+        // Updates user's profile name
         [HttpPut("UpdateProfile")]
         public IActionResult UpdateProfile(int userId, [FromBody] string newName)
         {
@@ -176,6 +194,7 @@ namespace Newsite_Server.Controllers
             return Ok(new { message = "Profile updated successfully." });
         }
 
+        // Updates user's password
         [HttpPut("ChangePassword")]
         public IActionResult UpdatePassword(int userId, [FromBody] string newPass)
         {
@@ -188,6 +207,7 @@ namespace Newsite_Server.Controllers
             return Ok(new { message = "Profile updated successfully." });
         }
 
+        // Gets all user activities with specified count limit
         [HttpGet]
         [Route("AllActivities")]
         public IActionResult GetAllUserActivities(int userId, int count)
@@ -201,6 +221,7 @@ namespace Newsite_Server.Controllers
                 return BadRequest("No activities found or server error.");
         }
 
+        // Saves FCM token for push notifications
         [HttpPost("SaveFCMTokenAlt")]
         public IActionResult SaveFCMTokenAlt(int userId, string fcmToken)
         {
@@ -223,6 +244,7 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Uploads profile image to Cloudinary service
         [HttpPost("UploadProfileImage")]
         public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageRequest request)
         {
@@ -237,13 +259,15 @@ namespace Newsite_Server.Controllers
             return Ok(new { ImageUrl = imageUrl });
         }
 
+        // Complex AI-powered profile image generation using HuggingFace Stable Diffusion API
+        // Multi-step process: prompt validation -> API authentication -> AI image generation -> cloud storage -> URL return
         [HttpPost("GenerateProfileImage")]
         public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Prompt))
                 return BadRequest("Prompt is required.");
 
-            // קריאת המפתח מקובץ טקסט (כמו אצלך ב-ArticlesController)
+            // Secure API key retrieval from configuration
             string huggingFaceApiKey;
             try
             {
@@ -254,7 +278,7 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, "Failed to read HuggingFace API key: " + ex.Message);
             }
 
-            // קריאה ל-HuggingFace Stable Diffusion
+            // Configure HTTP client for HuggingFace Stable Diffusion API call
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", huggingFaceApiKey);
 
@@ -273,10 +297,10 @@ namespace Newsite_Server.Controllers
                 return StatusCode((int)response.StatusCode, error);
             }
 
-            // קבלת התמונה כ-byte[]
+            // Get the image as byte[]
             var imageBytes = await response.Content.ReadAsByteArrayAsync();
 
-            // העלאה ל-Cloudinary
+            // Upload to Cloudinary
             using var ms = new MemoryStream(imageBytes);
             var uploadParams = new ImageUploadParams
             {
@@ -289,7 +313,7 @@ namespace Newsite_Server.Controllers
             if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
                 return StatusCode(500, "Failed to upload generated image to Cloudinary.");
 
-            // אפשרות: עדכן את כתובת התמונה בפרופיל המשתמש במסד הנתונים כאן
+            // Optional: Update profile image URL in user database here
 
             return Ok(new { imageUrl = uploadResult.SecureUrl.ToString() });
         }

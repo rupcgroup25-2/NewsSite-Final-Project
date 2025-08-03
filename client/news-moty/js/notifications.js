@@ -1718,6 +1718,9 @@ function fixCommonNotificationIssues() {
 function unsubscribeUserFromNotifications() {
     console.log('🚪 Unsubscribing user from notifications...');
     
+    // נקה את הטוקן מהשרת לפני התנתקות
+    clearFCMTokenOnLogout();
+    
     // הסתר כפתור התראות
     hideNotificationButton();
     
@@ -2019,4 +2022,56 @@ window.addEventListener('load', function() {
     setTimeout(() => {
         initializeNotificationStatusGlobally();
     }, 500);
-});;
+});
+
+// פונקציה לניקוי טוקן FCM כשמשתמש מתנתק
+function clearFCMTokenOnLogout() {
+    console.log('🗑️ Clearing FCM token on logout...');
+    
+    if (currentFCMToken && subscribedUserId) {
+        console.log(`   Clearing token for user: ${subscribedUserId}`);
+        console.log(`   Token: ${currentFCMToken.substring(0, 30)}...`);
+        
+        // שלח בקשה לשרת להסיר את הטוקן הזה מהמשתמש הישן
+        ajaxCall(
+            "DELETE",
+            `${serverUrl}Notifications/ClearSpecificFCMToken?userId=${subscribedUserId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
+            null,
+            function(response) {
+                console.log('✅ FCM token cleared successfully from previous user');
+            },
+            function(xhr) {
+                console.log('⚠️ Failed to clear FCM token:', xhr.responseText);
+            }
+        );
+    }
+    
+    // נקה משתנים מקומיים
+    subscribedUserId = null;
+    // אל תנקה את currentFCMToken כי זה עדיין רלוונטי למכשיר
+    
+    console.log('✅ Token cleanup completed');
+}
+
+// הוסף את הפונקציה לglobal scope כדי שניתן יהיה לקרוא לה מקבצים אחרים
+window.clearFCMTokenOnLogout = clearFCMTokenOnLogout;
+
+// פונקציה משופרת להחלפת משתמש שמנקה טוקן ישן
+window.switchUserNotifications = function(newUserId) {
+    console.log('🔄 Switching user notifications...');
+    console.log(`   From user: ${subscribedUserId || 'None'}`);
+    console.log(`   To user: ${newUserId}`);
+    
+    // נקה טוקן מהמשתמש הקודם
+    if (subscribedUserId && subscribedUserId !== newUserId) {
+        clearFCMTokenOnLogout();
+    }
+    
+    // המתן רגע ואז הרשם למשתמש החדש
+    setTimeout(() => {
+        if (newUserId && notificationsInitialized) {
+            console.log(`🔗 Subscribing new user ${newUserId} to notifications...`);
+            subscribeUserToNotifications(newUserId);
+        }
+    }, 500); // חצי שנייה
+};;

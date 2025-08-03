@@ -10,7 +10,7 @@ GO
 -- Description:	<Get FCM Tokens For Users>
 -- =============================================
 
--- чбмъ FCM Tokens мощъощйн (шч фтймйн тн дъшаеъ оефтмеъ)
+-- пїЅпїЅпїЅпїЅ FCM Tokens пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 CREATE PROCEDURE sp_GetFCMTokensForUsersFinal
     @UserIds NVARCHAR(MAX)
 AS

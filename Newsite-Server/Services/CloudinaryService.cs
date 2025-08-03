@@ -18,6 +18,7 @@ public class CloudinaryService
         _cloudinary = new Cloudinary(acc);
     }
 
+    // Uploads profile image to Cloudinary cloud storage
     public async Task<string> UploadImageAsync(IFormFile file, string userId)
     {
         using (var stream = file.OpenReadStream())
@@ -25,16 +26,17 @@ public class CloudinaryService
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                PublicId = $"profile_pics/{userId}", // שמירה לפי מזהה המשתמש
+                PublicId = $"profile_pics/{userId}", // Save by user ID
                 Folder = "profile_pics",
                 Overwrite = true,
                 Invalidate = true
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
-            return result.SecureUrl.ToString(); // URL לתמונה
+            return result.SecureUrl.ToString(); // URL for the image
         }
     }
+    // Uploads raw image stream to Cloudinary with custom parameters
     public async Task<ImageUploadResult> UploadRawStreamAsync(ImageUploadParams uploadParams)
     {
         uploadParams.Overwrite = true;  

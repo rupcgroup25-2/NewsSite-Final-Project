@@ -32,6 +32,7 @@ namespace Newsite_Server.Controllers
             _huggingFaceApiKey = config["ApiKeys:HuggingFace"];
         }
 
+        // Retrieves all articles from the database for admin users
         [HttpGet]
         [Authorize(Roles = "Admin")] // All methods restricted only for admin
         public IEnumerable<Article> GetAllArticles()
@@ -40,6 +41,7 @@ namespace Newsite_Server.Controllers
             return article.GetAllArticles();
         }
 
+        // Gets all saved articles for a specific user
         [HttpGet("saved/{userId}")]
         public IActionResult GetSavedArticles(int userId)
         {
@@ -52,6 +54,7 @@ namespace Newsite_Server.Controllers
         }
 
         
+        // Gets a specific saved article for a user
         [HttpGet("singleSaved/userId/{userId}/articleId/{articleId}")]
         public IActionResult GetSingleSavedArticles(int userId, int articleId)
         {
@@ -63,6 +66,7 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
 
+        // Gets all shared articles for a specific user
         [HttpGet("shared/{userId}")]
         public IActionResult GetSharedArticles(int userId)
         {
@@ -74,6 +78,7 @@ namespace Newsite_Server.Controllers
             return Ok(articles);
         }
 
+        // Gets a specific shared article for a user
         [HttpGet("singleShared/userId/{userId}/articleId/{articleId}")]
         public IActionResult GetSingleSharedArticles(int userId, int articleId)
         {
@@ -84,6 +89,7 @@ namespace Newsite_Server.Controllers
 
             return Ok(article);
         }
+        // Gets a specific reported article for admin users only
         [HttpGet("singleReported/userId/{userId}/articleId/{articleId}")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetSingleReportedArticles(int userId, int articleId)
@@ -96,6 +102,7 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
 
+        // Gets a shared article by its ID
         [HttpGet("singleShared/articleId/{articleId}")]
         public IActionResult GetSharedArticleById(int articleId)
         {
@@ -107,6 +114,7 @@ namespace Newsite_Server.Controllers
             return Ok(article);
         }
 
+        // Gets an article by its URL from the database
         [HttpGet("singleArticleByUrl")]
         [AllowAnonymous]
         public IActionResult GetSingleArticleByUrl([FromQuery] string url)
@@ -120,6 +128,7 @@ namespace Newsite_Server.Controllers
         }
 
 
+        // Searches saved articles by keyword for a specific user
         [HttpGet("search")]
         public IActionResult SearchSavedArticles([FromQuery] int userId, [FromQuery] string word)
         {
@@ -134,7 +143,7 @@ namespace Newsite_Server.Controllers
             return Ok(articles);
         }
 
-        // POST api/<ArticlesController>
+        // Adds a new article to the database
         [HttpPost]
         public IActionResult AddArticle([FromBody] Article article)
         {
@@ -162,6 +171,7 @@ namespace Newsite_Server.Controllers
         //    }
         //}
 
+        // Saves an article for a specific user
         [HttpPost("SaveArticle")]
         public IActionResult SaveArticle(int userId, [FromBody] Article article)
         {
@@ -173,6 +183,9 @@ namespace Newsite_Server.Controllers
                 return Ok("article is already saved");
         }
 
+        // Shares an article with a comment and sends notifications to followers
+        // Complex workflow: article sharing → user validation → follower notification → error handling
+        // Process: database sharing operation → user name lookup → notification dispatch to all followers
         [HttpPost("ShareArticle")]
         public async Task<IActionResult> ShareArticle(int userId, [FromBody] Article article)
         {
@@ -182,7 +195,7 @@ namespace Newsite_Server.Controllers
             {
                 try
                 {
-                    // קבל את שם המשתמש שישר את הכתבה (משופר)
+                    // Get the name of the user who shared the article
                     User userHandler = new User();
                     string sharerName = userHandler.GetUserNameById(userId);
 
@@ -208,6 +221,7 @@ namespace Newsite_Server.Controllers
                 return Ok("Article already shared");
         }
 
+        // Removes an article from user's saved articles
         [HttpDelete("unsave")]
         public IActionResult DeleteSaved(int userId, int articleId)
         {
@@ -218,6 +232,7 @@ namespace Newsite_Server.Controllers
             return result > 0 ? Ok("Removed from saved") : NotFound("Not found");
         }
 
+        // Removes an article from user's shared articles
         [HttpDelete("unshare")]
         public IActionResult DeleteShared(int userId, int articleId)
         {
@@ -228,6 +243,7 @@ namespace Newsite_Server.Controllers
             return result > 0 ? Ok("Removed from shared") : NotFound("Not found");
         }
 
+        // Removes a tag from an article
         [HttpDelete("RemoveTagFromArticle")]
         public IActionResult RemoveTagFromArticle(int articleId, int tagId)
         {
@@ -235,6 +251,7 @@ namespace Newsite_Server.Controllers
             return result > 0 ? Ok("Tag removed from article") : NotFound("Tag not found on article");
         }
 
+        // Extracts article content from a given URL
         [HttpGet("extract")]
         [AllowAnonymous]
         public async Task<IActionResult> Extract(string url)
@@ -250,10 +267,13 @@ namespace Newsite_Server.Controllers
             return Ok(new { content = content });
         }
 
+        // Complex AI-powered text summarization using HuggingFace transformer models
+        // Multi-step process: input validation -> text truncation -> API authentication -> AI processing -> response parsing -> length validation
         [HttpPost("summarize")]
         [AllowAnonymous]
         public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
          {
+            // Extract and validate text input from JSON request body
             if (!requestBody.TryGetProperty("text", out JsonElement textElement) || string.IsNullOrWhiteSpace(textElement.GetString()))
             {
                 return BadRequest("Text is required for summarization.");
@@ -261,7 +281,7 @@ namespace Newsite_Server.Controllers
 
             string text = textElement.GetString();
 
-            // ✂️ הגבלה על אורך הטקסט - נחתוך אם ארוך מדי
+            // Apply text length limit to prevent API overload (max 3000 characters)
             if (text.Length > MAX_TEXT_LENGTH)
             {
                 text = text.Substring(0, MAX_TEXT_LENGTH);
@@ -269,7 +289,7 @@ namespace Newsite_Server.Controllers
 
             string huggingFaceApiToken = _huggingFaceApiKey;
 
-
+            // Configure HTTP client with Bearer token authentication for HuggingFace API
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", huggingFaceApiToken);
 
@@ -306,6 +326,9 @@ namespace Newsite_Server.Controllers
             return Ok(new { summary = firstSummary });
         }
 
+        // Gets top headlines from NewsAPI with optional category filtering
+        // Complex external API workflow: key validation → URL building → HTTP request → response parsing → counter tracking
+        // Process: API key retrieval → dynamic URL construction → HTTP client setup → NewsAPI call → JSON parsing → usage tracking
         [HttpGet("top-headlines/pageSize/{pageSize}/language/{language}/country/{country}/category/{category?}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetTopHeadlines(int pageSize, string language, string country, string? category = null)
@@ -367,6 +390,9 @@ namespace Newsite_Server.Controllers
 
         }
 
+        // Gets recommended articles based on user's tags from NewsAPI
+        // Complex personalization workflow: tag validation → query building → API call → data filtering → content transformation
+        // Process: tag list validation → OR query construction → NewsAPI integration → article filtering → usage tracking
         [HttpPost("recommendedArticles/pageSize/{pageSize}/language/{language}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetRecommendedArticles(int pageSize, string language, [FromBody] List<Tag> tags)
@@ -427,6 +453,7 @@ namespace Newsite_Server.Controllers
         }
 
 
+        // Searches articles by query with optional date range from NewsAPI
         [HttpGet("searchArticles/{query}/{from?}/{to?}")]
         [AllowAnonymous]
         public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)

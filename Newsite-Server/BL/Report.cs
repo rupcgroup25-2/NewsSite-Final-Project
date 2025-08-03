@@ -31,10 +31,12 @@ namespace Newsite_Server.BL
 
         DBservices dbs = new DBservices();
 
+        // Submits a new report to the database
         public int SubmitReport()
         {
             return dbs.ReportArticles(ReporterId, ArticleId, sharerId, Comment);
         }
+        // Gets all reports from the database
         public List<Object> GetAllReports()
         {
             return dbs.GetAllReportsOnArticle();

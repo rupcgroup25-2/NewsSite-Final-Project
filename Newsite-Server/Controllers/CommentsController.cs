@@ -19,6 +19,9 @@ namespace Newsite_Server.Controllers
 
         }
 
+        // Adds a new comment to an article and sends notifications
+        // Complex workflow: validation → article insertion → comment creation → notification dispatch
+        // Process: input validation → article existence check → comment insertion → user name lookup → notification to all other commenters
         [HttpPost("Addcomment")]
         public async Task<IActionResult> AddComment([FromBody] CommentWithArticleDto dto)
         {
@@ -35,7 +38,7 @@ namespace Newsite_Server.Controllers
                 if (result == 0)
                     return Conflict("User has already commented on this article.");
 
-                // שלח התראה על תגובה חדשה
+                // Send notification about new comment
                 try
                 {
                     User userHandler = new User();
@@ -64,6 +67,7 @@ namespace Newsite_Server.Controllers
             }
         }
 
+        // Deletes a comment by user and article IDs
         [HttpDelete("DeleteCommentByArticleAndUser")]
         public IActionResult DeleteCommentByArticleAndUser(int userId, int articleId)
         {
@@ -84,100 +88,102 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        [HttpGet("debug/notification-recipients/{articleId}")]
-        [AllowAnonymous]
-        public IActionResult GetNotificationRecipients(int articleId, int excludeUserId = 0)
-        {
-            try
-            {
-                Comment c = new Comment();
-                var dbServices = new DAL.DBservices();
+        //// Debug endpoint to get notification recipients for an article
+        //[HttpGet("debug/notification-recipients/{articleId}")]
+        //[AllowAnonymous]
+        //public IActionResult GetNotificationRecipients(int articleId, int excludeUserId = 0)
+        //{
+        //    try
+        //    {
+        //        Comment c = new Comment();
+        //        var dbServices = new DAL.DBservices();
                 
-                // קבל את כל המשתמשים שהגיבו על המאמר
-                var usersWhoCommented = dbServices.GetUsersWhoCommentedOnArticle(articleId, excludeUserId);
+        //        // Get all users who commented on the article
+        //        var usersWhoCommented = dbServices.GetUsersWhoCommentedOnArticle(articleId, excludeUserId);
                 
-                // קבל את כל התגובות על המאמר
-                var allComments = c.GetCommentsByArticle(articleId);
+        //        // Get all comments on the article
+        //        var allComments = c.GetCommentsByArticle(articleId);
                 
-                // קבל את כל FCM Tokens של משתמשים שהגיבו
-                var usersFromComments = allComments.Select(comment => comment.UserId).Distinct().ToList();
-                var fcmTokensForCommenters = dbServices.GetFCMTokensForUsers(usersFromComments);
+        //        // Get all FCM Tokens of users who commented
+        //        var usersFromComments = allComments.Select(comment => comment.UserId).Distinct().ToList();
+        //        var fcmTokensForCommenters = dbServices.GetFCMTokensForUsers(usersFromComments);
                 
-                var result = new
-                {
-                    ArticleId = articleId,
-                    ExcludeUserId = excludeUserId,
-                    UsersWhoWillReceiveNotifications = usersWhoCommented,
-                    AllCommentsOnArticle = allComments.Select(comment => new { 
-                        UserId = comment.UserId, 
-                        CommentText = comment.CommentText,
-                        Date = comment.CreatedAt
-                    }),
-                    UsersFromAllComments = usersFromComments,
-                    FCMTokensForCommenters = fcmTokensForCommenters,
-                    TotalNotificationRecipients = usersWhoCommented.Count,
-                    TotalCommentsOnArticle = allComments.Count,
-                    TotalUniqueCommenters = usersFromComments.Count,
-                    CommentersWithFCMTokens = fcmTokensForCommenters.Count
-                };
+        //        var result = new
+        //        {
+        //            ArticleId = articleId,
+        //            ExcludeUserId = excludeUserId,
+        //            UsersWhoWillReceiveNotifications = usersWhoCommented,
+        //            AllCommentsOnArticle = allComments.Select(comment => new { 
+        //                UserId = comment.UserId, 
+        //                CommentText = comment.CommentText,
+        //                Date = comment.CreatedAt
+        //            }),
+        //            UsersFromAllComments = usersFromComments,
+        //            FCMTokensForCommenters = fcmTokensForCommenters,
+        //            TotalNotificationRecipients = usersWhoCommented.Count,
+        //            TotalCommentsOnArticle = allComments.Count,
+        //            TotalUniqueCommenters = usersFromComments.Count,
+        //            CommentersWithFCMTokens = fcmTokensForCommenters.Count
+        //        };
                 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error: {ex.Message}");
-            }
-        }
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest($"Error: {ex.Message}");
+        //    }
+        //}
 
-        [HttpGet("debug/fcm-analysis/{articleId}")]
-        [AllowAnonymous]
-        public IActionResult GetFCMAnalysis(int articleId, int excludeUserId = 0)
-        {
-            try
-            {
-                Comment c = new Comment();
-                var dbServices = new DAL.DBservices();
+        //// Debug endpoint to analyze FCM tokens for article commenters
+        //[HttpGet("debug/fcm-analysis/{articleId}")]
+        //[AllowAnonymous]
+        //public IActionResult GetFCMAnalysis(int articleId, int excludeUserId = 0)
+        //{
+        //    try
+        //    {
+        //        Comment c = new Comment();
+        //        var dbServices = new DAL.DBservices();
                 
-                // קבל את כל התגובות על המאמר
-                var allComments = c.GetCommentsByArticle(articleId);
-                var uniqueCommenters = allComments.Select(comment => comment.UserId).Distinct().ToList();
+        //        // Get all comments on the article
+        //        var allComments = c.GetCommentsByArticle(articleId);
+        //        var uniqueCommenters = allComments.Select(comment => comment.UserId).Distinct().ToList();
                 
-                // בדוק FCM Tokens עבור כל המגיבים
-                var analysis = new List<object>();
-                foreach (var userId in uniqueCommenters)
-                {
-                    if (userId != excludeUserId)
-                    {
-                        var userTokens = dbServices.GetFCMTokensForUsers(new List<int> { userId });
-                        analysis.Add(new
-                        {
-                            UserId = userId,
-                            HasFCMToken = userTokens.Count > 0,
-                            FCMTokenCount = userTokens.Count,
-                            WillReceiveNotification = userTokens.Count > 0
-                        });
-                    }
-                }
+        //        // Check FCM Tokens for all commenters
+        //        var analysis = new List<object>();
+        //        foreach (var userId in uniqueCommenters)
+        //        {
+        //            if (userId != excludeUserId)
+        //            {
+        //                var userTokens = dbServices.GetFCMTokensForUsers(new List<int> { userId });
+        //                analysis.Add(new
+        //                {
+        //                    UserId = userId,
+        //                    HasFCMToken = userTokens.Count > 0,
+        //                    FCMTokenCount = userTokens.Count,
+        //                    WillReceiveNotification = userTokens.Count > 0
+        //                });
+        //            }
+        //        }
                 
-                var result = new
-                {
-                    ArticleId = articleId,
-                    ExcludeUserId = excludeUserId,
-                    TotalCommenters = uniqueCommenters.Count,
-                    CommentersExcludingRequester = uniqueCommenters.Where(id => id != excludeUserId).Count(),
-                    CommentersWithFCMTokens = analysis.Count(a => (bool)a.GetType().GetProperty("HasFCMToken").GetValue(a)),
-                    FCMAnalysis = analysis
-                };
+        //        var result = new
+        //        {
+        //            ArticleId = articleId,
+        //            ExcludeUserId = excludeUserId,
+        //            TotalCommenters = uniqueCommenters.Count,
+        //            CommentersExcludingRequester = uniqueCommenters.Where(id => id != excludeUserId).Count(),
+        //            CommentersWithFCMTokens = analysis.Count(a => (bool)a.GetType().GetProperty("HasFCMToken").GetValue(a)),
+        //            FCMAnalysis = analysis
+        //        };
                 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error: {ex.Message}");
-            }
-        }
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest($"Error: {ex.Message}");
+        //    }
+        //}
 
-              
+        // Gets all comments for a specific article
         [HttpGet("article/{articleId}")]
         [AllowAnonymous]
         public IActionResult GetCommentsByArticle(int articleId)

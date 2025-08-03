@@ -650,11 +650,10 @@ function clearSearchResults() {
     searchArticles = []; // Clear search articles array
     localStorage.removeItem('searchArticles'); // Clear from localStorage
     
-    // Reset category pills based on user's interests
-    const defaultCategory = (currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all";
+    // Reset category pills to show "All" as active
     $('#category-pills .nav-link').removeClass('active');
-    $(`#category-pills .nav-link[data-category="${defaultCategory}"]`).addClass('active');
-    currentCategory = defaultCategory;
+    $('#category-pills .nav-link[data-category="all"]').addClass('active');
+    currentCategory = (currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all";
 }
 
 // Initialize Firebase and notifications when the page loads

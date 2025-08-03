@@ -17,6 +17,9 @@ namespace Newsite_Server.Controllers
             notifications = new Notifications();
         }
 
+        // Submits a new report for an article and notifies admins
+        // Complex workflow: article validation → report creation → admin notification → duplicate prevention
+        // Process: article insertion → report validation → database insertion → reporter name lookup → admin notification dispatch
         [HttpPost]
         public async Task<IActionResult> SubmitReport([FromBody] ReportWithArticleDto dto)
         {
@@ -28,12 +31,17 @@ namespace Newsite_Server.Controllers
 
             if (resultSavingReport > 0)
             {
-                // שלח התראה רק לאדמינים, לא למשתמש שמדווח
+                // Send notification only to admins, not to the reporting user
                 try
                 {
-                    // קבל את שם המדווח
+                    Console.WriteLine($"🔍 Report submitted: Sending admin notification");
+                    Console.WriteLine($"   Reporter ID: {dto.Report.ReporterId}");
+                    Console.WriteLine($"   Article: {dto.Article.Title}");
+                    
+                    // Get the reporter's name
                     User user = new User();
                     string reporterName = user.GetUserNameById(dto.Report.ReporterId) ?? "Unknown User";
+                    Console.WriteLine($"   Reporter name: {reporterName}");
                     
                     await notifications.NotifyAdminNewReport(
                         "Article Report", 
@@ -41,6 +49,8 @@ namespace Newsite_Server.Controllers
                         reporterName,
                         dto.Report.ReporterId
                     );
+                    
+                    Console.WriteLine($"✅ Admin notification sent successfully");
                 }
                 catch (Exception ex)
                 {
@@ -54,6 +64,7 @@ namespace Newsite_Server.Controllers
 
         }
 
+        // Gets all reports and articles for admin review
         [HttpGet]
         [Authorize(Roles = "Admin")] // All methods restricted only for admin
         public IEnumerable<Object> GetAllReportAndArticles()

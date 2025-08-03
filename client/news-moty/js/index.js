@@ -42,16 +42,16 @@ const categoryMapping = {
 
 let fetchedArticles = [];
 let searchArticles = []; // Store search results articles
-let currentCategory = currentUser.tags.length !== 0 ? "recommended" : "all";
+let currentCategory = (currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all";
 
 function renderHomeTab() {
-    console.log('current user tags' + currentUser.tags);
+    console.log('current user tags', currentUser ? currentUser.tags : 'No user logged in');
     // Render the hero section placeholder
     $("#home").html(`
         <div id="hero-article"></div>
         <div class="category-pills mb-4">
             <ul class="nav nav-pills flex-wrap gap-2 justify-content-center justify-content-md-start" id="category-pills" role="tablist">
-                ${currentUser.tags.length === 0 ? `<li class="nav-item" role="presentation">
+                ${(currentUser && currentUser.tags && currentUser.tags.length === 0) || !currentUser ? `<li class="nav-item" role="presentation">
                     <button class="nav-link category-pill active" data-category="all" type="button" role="tab">All</button>
                 </li>`
                 :
@@ -87,7 +87,7 @@ function renderHomeTab() {
         <div id="archiveResults" class="mb-4"></div>
         <div class="row" id="articles-list"></div>`);
     // Fetch and render hero + articles
-    renderArticlesWithHero(currentUser.tags.length !== 0 ? "recommended" : "all");
+    renderArticlesWithHero((currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all");
 }
 
 // Event handlers
@@ -650,10 +650,11 @@ function clearSearchResults() {
     searchArticles = []; // Clear search articles array
     localStorage.removeItem('searchArticles'); // Clear from localStorage
     
-    // Reset category pills to show "All" as active
+    // Reset category pills based on user's interests
+    const defaultCategory = (currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all";
     $('#category-pills .nav-link').removeClass('active');
-    $('#category-pills .nav-link[data-category="all"]').addClass('active');
-    currentCategory = currentUser.tags.length !== 0 ? "recommended" : "all";
+    $(`#category-pills .nav-link[data-category="${defaultCategory}"]`).addClass('active');
+    currentCategory = defaultCategory;
 }
 
 // Initialize Firebase and notifications when the page loads

@@ -79,7 +79,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (true)
 {
     app.UseSwagger();
     app.UseSwaggerUI();

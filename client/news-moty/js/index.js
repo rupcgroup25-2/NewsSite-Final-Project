@@ -740,7 +740,7 @@ async function loadMoreArticles(category) {
 
 async function fetchMoreArticlesFromAPI(category, offset, limit) {
     const apiCategory = categoryMapping[category];
-    const page = Math.floor(offset / limit) + 1;
+    const page = Math.ceil(offset / limit) + 1;
 
     // בונים את ה-URL עם כל הפרמטרים בשורת השאילתה (query string)
     let url = `${serverUrl}Articles/top-headlines?pageSize=${limit}&language=en&country=us&page=${page}`;

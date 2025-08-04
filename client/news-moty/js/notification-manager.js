@@ -502,6 +502,7 @@ class NotificationManager {
         const { notification, data } = payload;
         this.showBadge();
         this.playSound();
+        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
 
         const html = `
             <div class="alert alert-info alert-dismissible fade show notification-popup animate__animated animate__slideInRight" 
@@ -511,22 +512,16 @@ class NotificationManager {
                     <div class="flex-grow-1">
                         <strong>${notification.title}</strong><br>
                         <small>${notification.body}</small>
-                        ${data?.url ? `
+                        ${data && data.url && data.type !== "new_follower" && data.type !== "new_comment" ? `
                         <div class="mt-2">
-                            <button class="btn btn-sm btn-primary me-2" onclick="window.open('${data.url}', '_blank'); $(this).closest('.notification-popup').remove();">
+                            <button class="btn btn-sm btn-primary me-2" onclick="window.open('${baseUrl + data.url}', '_blank'); $(this).closest('.notification-popup').remove();">
                                 <i class="bi bi-eye"></i> View
                             </button>
                             <button class="btn btn-sm btn-outline-secondary" onclick="$(this).closest('.notification-popup').remove()">
                                 <i class="bi bi-x"></i> Dismiss
                             </button>
                         </div>
-                        ` : `
-                        <div class="mt-2">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="$(this).closest('.notification-popup').remove()">
-                                <i class="bi bi-x"></i> Dismiss
-                            </button>
-                        </div>
-                        `}
+                        ` : ``}
                     </div>
                     <button type="button" class="btn-close ms-2" onclick="$(this).closest('.notification-popup').remove()"></button>
                 </div>
@@ -541,7 +536,8 @@ class NotificationManager {
         const userId = currentUser?.id || 'global';
         const style = localStorage.getItem(`notificationStyle_${userId}`) || 'auto';
         const isVisible = !document.hidden && document.visibilityState === 'visible';
-        
+        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+
         let useSystem = false;
         switch(style) {
             case 'system': useSystem = true; break;
@@ -568,7 +564,7 @@ class NotificationManager {
                         <small>${body}</small>
                         ${data?.url ? `
                         <div class="mt-2">
-                            <button class="btn btn-sm btn-primary me-2" onclick="window.open('${data.url}', '_blank'); this.closest('.custom-notification').remove();">
+                            <button class="btn btn-sm btn-primary me-2" onclick="window.open('${baseUrl + data.url}', '_blank'); this.closest('.custom-notification').remove();">
                                 👁️ View
                             </button>
                             <button class="btn btn-sm btn-outline-secondary" onclick="this.closest('.custom-notification').remove();">

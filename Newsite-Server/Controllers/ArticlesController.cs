@@ -332,69 +332,69 @@ namespace Newsite_Server.Controllers
             return Ok(new { summary = firstSummary });
         }
 
-        // Gets top headlines from NewsAPI with optional category filtering
-        // Complex external API workflow: key validation → URL building → HTTP request → response parsing → counter tracking
-        // Process: API key retrieval → dynamic URL construction → HTTP client setup → NewsAPI call → JSON parsing → usage tracking
-        [HttpGet("top-headlines/pageSize/{pageSize}/language/{language}/country/{country}/category/{category?}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetTopHeadlines(int pageSize, string language, string country, string? category = null)
-        {
-            string newsApiKey;
-            try
-            {
-                newsApiKey = _newsApiKey;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
-            }
+        //// Gets top headlines from NewsAPI with optional category filtering
+        //// Complex external API workflow: key validation → URL building → HTTP request → response parsing → counter tracking
+        //// Process: API key retrieval → dynamic URL construction → HTTP client setup → NewsAPI call → JSON parsing → usage tracking
+        //[HttpGet("top-headlines/pageSize/{pageSize}/language/{language}/country/{country}/category/{category?}")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> GetTopHeadlines(int pageSize, string language, string country, string? category = null)
+        //{
+        //    string newsApiKey;
+        //    try
+        //    {
+        //        newsApiKey = _newsApiKey;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
+        //    }
 
-            string url = $"https://newsapi.org/v2/top-headlines?apiKey={newsApiKey}&pageSize={pageSize}&language={language}&country={country}";
+        //    string url = $"https://newsapi.org/v2/top-headlines?apiKey={newsApiKey}&pageSize={pageSize}&language={language}&country={country}";
 
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                url += $"&category={category}";
-            }
-
-
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
+        //    if (!string.IsNullOrWhiteSpace(category))
+        //    {
+        //        url += $"&category={category}";
+        //    }
 
 
-            HttpResponseMessage response;
-            try
-            {
-                response = await httpClient.GetAsync(url);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Error calling NewsAPI: " + ex.Message);
-            }
+        //    using var httpClient = new HttpClient();
+        //    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
 
-            if (!response.IsSuccessStatusCode)
-            {
-                string error = await response.Content.ReadAsStringAsync();
-                return StatusCode((int)response.StatusCode, error);
-            }
 
-            string jsonResponse = await response.Content.ReadAsStringAsync();
+        //    HttpResponseMessage response;
+        //    try
+        //    {
+        //        response = await httpClient.GetAsync(url);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, "Error calling NewsAPI: " + ex.Message);
+        //    }
 
-            using var doc = JsonDocument.Parse(jsonResponse);
-            var root = doc.RootElement;
+        //    if (!response.IsSuccessStatusCode)
+        //    {
+        //        string error = await response.Content.ReadAsStringAsync();
+        //        return StatusCode((int)response.StatusCode, error);
+        //    }
 
-            if (!root.TryGetProperty("articles", out JsonElement articlesElement))
-            {
-                return BadRequest("No articles returned from NewsAPI.");
-            }
+        //    string jsonResponse = await response.Content.ReadAsStringAsync();
 
-            var articles = JsonSerializer.Deserialize<List<object>>(articlesElement.GetRawText());
+        //    using var doc = JsonDocument.Parse(jsonResponse);
+        //    var root = doc.RootElement;
+
+        //    if (!root.TryGetProperty("articles", out JsonElement articlesElement))
+        //    {
+        //        return BadRequest("No articles returned from NewsAPI.");
+        //    }
+
+        //    var articles = JsonSerializer.Deserialize<List<object>>(articlesElement.GetRawText());
             
-            Article temp = new Article();//in order to increase the api calls counter of NewsAPI
-            temp.increaseNewsApiCounter();
+        //    Article temp = new Article();//in order to increase the api calls counter of NewsAPI
+        //    temp.increaseNewsApiCounter();
 
-            return Ok(new { articles });
+        //    return Ok(new { articles });
 
-        }
+        //}
 
         // Gets recommended articles based on user's tags from NewsAPI
         // Complex personalization workflow: tag validation → query building → API call → data filtering → content transformation
@@ -518,7 +518,51 @@ namespace Newsite_Server.Controllers
             return Ok(articles);
         }
 
+        [HttpGet("top-headlines")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTopHeadlines(
+            [FromQuery] int pageSize,
+            [FromQuery] string? language,    // אופציונלי
+            [FromQuery] string? country,     // אופציונלי
+            [FromQuery] string category,     // חובה
+            [FromQuery] int page)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+                return BadRequest("Category is required.");
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
+
+            var apiKey = _newsApiKey; 
+
+            // בונים URL דינמי בהתאם לפרמטרים שקיבלנו
+            var url = $"https://newsapi.org/v2/top-headlines?pageSize={pageSize}&page={page}&apiKey={apiKey}&category={category}";
+
+            if (!string.IsNullOrWhiteSpace(language))
+                url += $"&language={language}";
+
+            if (!string.IsNullOrWhiteSpace(country))
+                url += $"&country={country}";
+
+            var response = await httpClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+                return Content(content, "application/json");
+
+            return StatusCode((int)response.StatusCode, content);
+        }
+
     }
 
+
+
+
+
+
+
+
+
 }
+
 

@@ -85,7 +85,8 @@ function renderHomeTab() {
             <div id="tagArea" class="mb-3"></div>
         </div>
         <div id="archiveResults" class="mb-4"></div>
-        <div class="row" id="articles-list"></div>`);
+        <div class="row" id="articles-list"></div>
+        <div id="load-more-container" class="text-center mt-3"></div>`);
     // Fetch and render hero + articles
     renderArticlesWithHero((currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all");
 }
@@ -251,29 +252,6 @@ async function fetchAllArticlesOncePerDay() {
 
     fetchedArticles = allArticles;
     return allArticles;
-}
-
-// Replace fetchArticlesByCategory to use cache
-function fetchArticlesByCategory(category) {
-    const $list = $("#articles-list");
-    $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
-    currentCategory = category;
-    // Update category pills highlighting
-    $('#category-pills .nav-link').removeClass('active');
-    $(`#category-pills .nav-link[data-category="${category}"]`).addClass('active');
-
-    // Try cache first
-    let articles = getCachedArticles();
-    if (articles) {
-        renderHeroAndArticles(filterArticlesByCategory(articles, category));
-        return;
-    }
-    // If not cached, fetch and then render
-    fetchAllArticlesOncePerDay().then(allArticles => {
-        renderHeroAndArticles(filterArticlesByCategory(allArticles, category));
-    }).catch(() => {
-        showError("Failed to fetch articles. Please try again later.");
-    });
 }
 
 function filterArticlesByCategory(articles, category) {
@@ -668,3 +646,135 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('⚠️ Notification system not found, will be initialized when available...');
     }
 });
+
+// ניהול מצב כמה מאמרים מוצגים כרגע בקטגוריה
+let displayedCountByCategory = {};
+
+function fetchArticlesByCategory(category) {
+    const $list = $("#articles-list");
+    $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+    currentCategory = category;
+    displayedCountByCategory[category] = 0; // אפס ספירה כשמשנים קטגוריה
+    // עדכון UI
+    $('#category-pills .nav-link').removeClass('active');
+    $(`#category-pills .nav-link[data-category="${category}"]`).addClass('active');
+
+    let articles = getCachedArticles();
+    if (articles) {
+        renderArticlesPage(category, articles);
+        return;
+    }
+
+    fetchMoreArticlesFromAPI().then(allArticles => {
+        renderArticlesPage(category, allArticles);
+    }).catch(() => {
+        showError("Failed to fetch articles. Please try again later.");
+    });
+}
+
+// פונקציה שמציגה עד 12 מאמרים נוספים
+function renderArticlesPage(category, allArticles) {
+    const PAGE_SIZE = 12;
+    let filtered = filterArticlesByCategory(allArticles, category);
+    let start = displayedCountByCategory[category] || 12;
+    let end = start + PAGE_SIZE;
+
+    let articlesToShow = filtered.slice(0, end);
+    displayedCountByCategory[category] = articlesToShow.length;
+
+    renderHeroAndArticles(articlesToShow);
+
+    renderLoadMoreButton(category, filtered.length);
+}
+
+function renderLoadMoreButton(category) {
+    const $container = $("#load-more-container");
+    
+    if (category !== "recommended") {
+        $container.html(`<button id="load-more-btn" class="btn btn-primary">Load more articles</button>`);
+        $("#load-more-btn").off("click").on("click", () => loadMoreArticles(category));
+    } else {
+        $container.html(''); // הסתרת הכפתור ב recommended
+    }
+}
+
+async function loadMoreArticles(category) {
+    const articles = getCachedArticles() || [];
+    const categoryArticles = articles.filter(a => a.category === category);
+
+    const currentlyDisplayed = displayedCountByCategory[category] || 12;
+    const nextBatch = categoryArticles.slice(currentlyDisplayed, currentlyDisplayed + 12);
+
+    if (nextBatch.length > 0) {
+        // עדכן ספירה והצג מחדש
+        displayedCountByCategory[category] = currentlyDisplayed + nextBatch.length;
+        renderHeroAndArticles(categoryArticles.slice(0, displayedCountByCategory[category]));
+    } else {
+        // אם אין מספיק בלוקל, נסה למשוך מה־API
+        try {
+            const newArticles = await fetchMoreArticlesFromAPI(category, currentlyDisplayed, 12);
+            if (newArticles.length > 0) {
+                // עדכון הלוקל סטורג
+                const updatedArticles = [...articles, ...newArticles];
+                const cacheValue = {
+                    date: new Date().toISOString(),
+                    articles: updatedArticles
+                };
+                localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(cacheValue));
+
+                // עדכן ספירה והצג
+                displayedCountByCategory[category] = currentlyDisplayed + newArticles.length;
+                renderHeroAndArticles(updatedArticles.filter(a => a.category === category).slice(0, displayedCountByCategory[category]));
+            } else {
+                alert("No more articles to load.");
+            }
+        } catch {
+            showError("Error loading more articles.");
+        }
+    }
+}
+
+async function fetchMoreArticlesFromAPI(category, offset, limit) {
+    const apiCategory = categoryMapping[category];
+    const page = Math.floor(offset / limit) + 1;
+
+    // בונים את ה-URL עם כל הפרמטרים בשורת השאילתה (query string)
+    let url = `${serverUrl}Articles/top-headlines?pageSize=${limit}&language=en&country=us&page=${page}`;
+
+    if (apiCategory) {
+        url += `&category=${apiCategory}`;
+    }
+
+    try {
+        const response = await $.ajax({ url, method: "GET" });
+        console.log("API response:", response);
+        if (response.articles && Array.isArray(response.articles)) {
+            const filtered = response.articles.filter(article => article.title && article.description && article.urlToImage);
+            const timestamp = Date.now();
+            return filtered.map((article, index) => ({
+                id: `api_${category}_${timestamp}_${index + offset}`,
+                title: article.title,
+                content: article.content || article.description,
+                preview: article.description,
+                category,
+                publishedAt: article.publishedAt,
+                imageUrl: article.urlToImage,
+                url: article.url,
+                source: article.source.name
+            }));
+        } else {
+            console.error("No articles array in response");
+            return [];
+        }
+    } catch (e) {
+        console.error("API fetch failed", e);
+        return [];
+    }
+}
+
+
+
+
+
+
+

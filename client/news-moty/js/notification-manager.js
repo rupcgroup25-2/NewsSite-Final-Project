@@ -110,21 +110,21 @@ class NotificationManager {
                 const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js');
                 window.app = initializeApp(firebaseConfig);
             }
-            
+
+            // --- הוספה: רישום Service Worker ידני מהנתיב שלך ---
+            const swPath = '/cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js';
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register(swPath);
+            }
+            // ---------------------------------------------------
+
             const messagingModule = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js');
-            
-            // Use global messaging variable like the original notifications.js
             if (!window.messaging) {
                 window.messaging = messagingModule.getMessaging(window.app);
             }
-            
-            // Update global messaging variable for compatibility
             messaging = window.messaging;
-            
-            // Set local references
             this.messaging = window.messaging;
             this.messagingModule = messagingModule;
-            
         } catch (error) {
             console.error('❌ Firebase initialization failed:', error);
             throw error;
@@ -174,30 +174,22 @@ class NotificationManager {
     async getToken() {
         try {
             if (this.currentFCMToken) return this.currentFCMToken;
+            if (!this.messaging || !this.messagingModule) return null;
 
-            // Check if we have proper Firebase messaging setup
-            if (!this.messaging || !this.messagingModule) {
-                return null;
-            }
+            // --- הוספה: קבל את ה-registration מהנתיב שלך ---
+            const swRegistration = await navigator.serviceWorker.getRegistration('/cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js');
+            // ------------------------------------------------
 
             let token;
-            
-            // Try to get FCM token with VAPID key if available (like original code)
             if (this.vapidKey) {
-                try {
-                    token = await this.messagingModule.getToken(this.messaging, {
-                        vapidKey: this.vapidKey
-                    });
-                } catch (vapidError) {
-                    try {
-                        token = await this.messagingModule.getToken(this.messaging);
-                    } catch (finalError) {
-                        throw finalError;
-                    }
-                }
+                token = await this.messagingModule.getToken(this.messaging, {
+                    vapidKey: this.vapidKey,
+                    serviceWorkerRegistration: swRegistration // הוסף את זה
+                });
             } else {
-                // No VAPID key available, try without
-                token = await this.messagingModule.getToken(this.messaging);
+                token = await this.messagingModule.getToken(this.messaging, {
+                    serviceWorkerRegistration: swRegistration // הוסף את זה
+                });
             }
 
             if (token) {
@@ -240,7 +232,7 @@ class NotificationManager {
                             '/firebase-messaging-sw.js',
                             './firebase-messaging-sw.js',
                             '../firebase-messaging-sw.js',
-                            'cgroup2/test2/tar5/client/news-moty/firebase - messaging - sw.js'
+                            'cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js'
                         ];
                         
                         let registered = false;

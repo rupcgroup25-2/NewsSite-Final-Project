@@ -31,7 +31,7 @@
 
     let html = '<div class="shared-container">';
     sharedArticles.forEach((article, index) => {
-        const tag = availableTags.find(t => t.name === article.tags[0]) || { color: "secondary", name: "General" };
+        const tag = availableTags.find(t => t.name === article.tags[0]) || { color: "secondary", name: "Recommended" };
         const isMyArticle = article.sharedById === currentUser.id;
         const cardClass = isMyArticle ? 'shared-article-card my-shared-article' : 'shared-article-card';
 

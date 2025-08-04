@@ -137,7 +137,7 @@ function renderHeroArticle(article) {
         $("#hero-article").html("");
         return;
     }
-    const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "General" };
+    const tag = availableTags.find(t => t.id === article.category) || { color: "secondary", name: "Recommended" };
     $("#hero-article").html(`
         <div class="card mb-4 shadow-lg border-0 overflow-hidden hero-article-card">
             <div class="row g-0 align-items-stretch flex-md-row flex-column-reverse">
@@ -515,7 +515,7 @@ $(document).on('submit', '#reportForm', function (e) {
     $('#btnReportArticle').click();
 });
 
-// Guardian API search function
+// NewsApi search function
 async function searchArchive() {
     const query = $('#archiveQuery').val().trim();
     if (!query) {
@@ -529,7 +529,7 @@ async function searchArchive() {
     $('#archiveResults').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
     
     try {
-        const results = await searchGuardianAPI(query, fromDate, toDate);
+        const results = await searchNewsAPI(query, fromDate, toDate);
         displayArchiveResults(results, query);
         // Hide regular articles when showing search results
         $('#articles-list').hide();
@@ -539,7 +539,7 @@ async function searchArchive() {
     }
 }
 
-async function searchGuardianAPI(query, fromDate = null, toDate = null) {
+async function searchNewsAPI(query, fromDate = null, toDate = null) {
     const encodedQuery = encodeURIComponent(query);
     const fromSegment = fromDate ? `/${encodeURIComponent(fromDate)}` : "";
     const toSegment = toDate ? `/${encodeURIComponent(toDate)}` : "";
@@ -574,7 +574,7 @@ function displayArchiveResults(articles, query) {
     articles.forEach((article, index) => {
         const articleId = `search_${index}_${Date.now()}`;
         const isSaved = savedArticles.includes(articleId);
-        const tag = { color: "white", name: query }; // Default tag for search results
+        const tag = { color: "primary", name: query }; // Changed to primary for better visibility
         console.log(article.source);
         // Create article object for the action buttons
         const articleObj = {
@@ -603,7 +603,7 @@ function displayArchiveResults(articles, query) {
                     <div class="position-relative">
                         <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" class="card-img-top article-card-image" alt="${article.title}">
                         <div class="article-card-overlay">
-                            <span class="badge bg-light text-dark article-card-tag">${tag.name}</span>
+                            <span class="badge bg-primary text-white article-card-tag">${tag.name}</span>
                             <span class="badge article-card-date">${formatDate(article.publishedAt)}</span>
                         </div>
                     </div>

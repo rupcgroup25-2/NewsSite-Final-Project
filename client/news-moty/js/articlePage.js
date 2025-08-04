@@ -809,6 +809,7 @@ let isPaused = false;
 let availableVoices = [];
 let pausedText = ''; // Store remaining text when paused
 let pausedAtIndex = 0; // Track where we paused
+let selectedVoice = null; // Store the selected voice globally
 
 // פונקציה לטעינת קולות זמינים
 function loadVoices() {
@@ -956,6 +957,30 @@ function loadVoices() {
                 background: #495057 !important;
                 color: #ffffff !important;
             }
+
+            /* Text-to-Speech highlighting styles */
+            .tts-word.highlighted {
+                background-color: #ffeb3b !important;
+                color: #000 !important;
+                padding: 2px 4px;
+                border-radius: 3px;
+                box-shadow: 0 1px 3px rgba(255, 235, 59, 0.5);
+                font-weight: 500;
+                transition: all 0.15s ease-in-out;
+            }
+
+            /* Dark mode highlighting */
+            @media (prefers-color-scheme: dark) {
+                .tts-word.highlighted {
+                    background-color: #ffc107 !important;
+                    color: #000 !important;
+                }
+            }
+            [data-bs-theme="dark"] .tts-word.highlighted,
+            .dark-mode .tts-word.highlighted {
+                background-color: #ffc107 !important;
+                color: #000 !important;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -990,13 +1015,17 @@ function startSpeaking(text) {
     const selectedVoiceIndex = voiceSelect ? voiceSelect.value : '';
     
     if (selectedVoiceIndex !== '' && availableVoices[selectedVoiceIndex]) {
-        speechUtterance.voice = availableVoices[selectedVoiceIndex];
+        selectedVoice = availableVoices[selectedVoiceIndex];
+        speechUtterance.voice = selectedVoice;
     } else {
         // ברירת מחדל - מצא קול באנגלית
         const voices = window.speechSynthesis.getVoices();
         let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
         if (!voice && voices.length > 0) voice = voices[0];
-        if (voice) speechUtterance.voice = voice;
+        if (voice) {
+            selectedVoice = voice;
+            speechUtterance.voice = voice;
+        }
     }
 
     speechUtterance.onboundary = function (event) {
@@ -1035,34 +1064,67 @@ function resumeSpeaking() {
             speechUtterance.pitch = 0.9;
             speechUtterance.rate = 0.9;
             
-            // Use same voice as before
-            const voiceSelect = document.getElementById('voiceSelect');
-            const selectedVoiceIndex = voiceSelect ? voiceSelect.value : '';
+            // Use same voice as before - save the starting position for proper highlighting
+            const resumeStartIndex = pausedAtIndex;
             
-            if (selectedVoiceIndex !== '' && availableVoices[selectedVoiceIndex]) {
-                speechUtterance.voice = availableVoices[selectedVoiceIndex];
-            } else {
-                const voices = window.speechSynthesis.getVoices();
-                let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
-                if (!voice && voices.length > 0) voice = voices[0];
-                if (voice) speechUtterance.voice = voice;
-            }
-            
-            speechUtterance.onboundary = function (event) {
-                if (event.name === 'word') {
-                    const start = pausedAtIndex + event.charIndex;
-                    const end = start + event.charLength;
-                    pausedAtIndex = start;
-                    highlightSpokenWord(start, end);
+            // Wait for voices to be available before setting voice
+            const setVoiceAndSpeak = () => {
+                // Use the previously selected voice if available
+                if (selectedVoice) {
+                    speechUtterance.voice = selectedVoice;
+                } else {
+                    // Fallback: get voice from selector or find a good English voice
+                    const voiceSelect = document.getElementById('voiceSelect');
+                    const selectedVoiceIndex = voiceSelect ? voiceSelect.value : '';
+                    const voices = window.speechSynthesis.getVoices();
+                    
+                    if (selectedVoiceIndex !== '' && availableVoices[selectedVoiceIndex]) {
+                        selectedVoice = availableVoices[selectedVoiceIndex];
+                        speechUtterance.voice = selectedVoice;
+                    } else if (voices.length > 0) {
+                        // Find a good English voice
+                        let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
+                        if (!voice) voice = voices.find(v => v.lang.startsWith('en'));
+                        if (!voice && voices.length > 0) voice = voices[0];
+                        if (voice) {
+                            selectedVoice = voice;
+                            speechUtterance.voice = voice;
+                        }
+                    }
                 }
+                
+                speechUtterance.onboundary = function (event) {
+                    if (event.name === 'word') {
+                        // For resumed speech, add the resume start index to get correct position
+                        const actualStart = resumeStartIndex + event.charIndex;
+                        const actualEnd = actualStart + event.charLength;
+                        
+                        // Update pausedAtIndex to track current position in original text
+                        pausedAtIndex = actualStart;
+                        
+                        highlightSpokenWord(actualStart, actualEnd);
+                    }
+                };
+                
+                speechUtterance.onend = () => {
+                    $('.tts-word').removeClass('highlighted');
+                    isPaused = false;
+                };
+                
+                window.speechSynthesis.speak(speechUtterance);
             };
             
-            speechUtterance.onend = () => {
-                $('.tts-word').removeClass('highlighted');
-                isPaused = false;
-            };
-            
-            window.speechSynthesis.speak(speechUtterance);
+            // If voices are already loaded, use them immediately
+            if (window.speechSynthesis.getVoices().length > 0) {
+                setVoiceAndSpeak();
+            } else {
+                // Wait for voices to load
+                window.speechSynthesis.onvoiceschanged = () => {
+                    setVoiceAndSpeak();
+                    // Restore the original voices changed handler
+                    window.speechSynthesis.onvoiceschanged = loadVoices;
+                };
+            }
         }
     }
 }
@@ -1085,16 +1147,86 @@ $(document).on('click', '#resumeReadArticleBtn', function () {
 
 function highlightSpokenWord(start, end) {
     $('.tts-word').removeClass('highlighted');
-    let totalLength = 0;
+    
+    // Get the full text content for accurate indexing
+    const fullText = window.extractedContent || '';
+    if (!fullText) return;
+    
+    // Create a more accurate mapping between character positions and spans
+    let charIndex = 0;
+    let foundSpan = null;
+    
     $('.tts-word').each(function () {
-        const text = $(this).text();
-        const wordLength = text.length;
-        if (start >= totalLength && start < totalLength + wordLength) {
-            $(this).addClass('highlighted');
-            return false;
+        const spanText = $(this).text();
+        const spanStartIndex = charIndex;
+        const spanEndIndex = charIndex + spanText.length;
+        
+        // Check if the word boundary falls within this span
+        // Allow for some tolerance in matching
+        if (start >= spanStartIndex && start <= spanEndIndex) {
+            foundSpan = $(this);
+            return false; // Break the loop
         }
-        totalLength += wordLength + 1;
+        
+        charIndex = spanEndIndex;
+        
+        // Handle whitespace and separators between spans
+        // Skip whitespace in the original text
+        while (charIndex < fullText.length && /\s/.test(fullText[charIndex])) {
+            charIndex++;
+        }
     });
+    
+    // If we didn't find exact match, try to find closest span
+    if (!foundSpan) {
+        let closestSpan = null;
+        let minDistance = Infinity;
+        charIndex = 0;
+        
+        $('.tts-word').each(function () {
+            const spanText = $(this).text();
+            const spanStartIndex = charIndex;
+            const spanEndIndex = charIndex + spanText.length;
+            
+            // Calculate distance from start position to this span
+            const distance = Math.min(
+                Math.abs(start - spanStartIndex),
+                Math.abs(start - spanEndIndex)
+            );
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestSpan = $(this);
+            }
+            
+            charIndex = spanEndIndex;
+            while (charIndex < fullText.length && /\s/.test(fullText[charIndex])) {
+                charIndex++;
+            }
+        });
+        
+        foundSpan = closestSpan;
+    }
+    
+    if (foundSpan) {
+        foundSpan.addClass('highlighted');
+        
+        // Scroll the highlighted word into view if needed
+        const container = $('.article-body');
+        const element = foundSpan[0];
+        if (element && container.length) {
+            const containerTop = container.scrollTop();
+            const containerHeight = container.height();
+            const elementTop = element.offsetTop - container.offset().top + containerTop;
+            
+            // Only scroll if element is not visible
+            if (elementTop < containerTop || elementTop > containerTop + containerHeight) {
+                container.animate({
+                    scrollTop: elementTop - containerHeight / 2
+                }, 300);
+            }
+        }
+    }
 }
 
 //SUMMARIZE

@@ -54,7 +54,7 @@
 
     let articlesHtml = '';
     savedArticles.forEach((article, index) => {
-        const tag = { color: "secondary", name: article.tags?.[0] || article.category || "General" };
+        const tag = availableTags.find(t => t.name === (article.tags?.[0] || article.category)) || { color: "secondary", name: "General" };
 
         articlesHtml += `
         <div class="saved-article-card">

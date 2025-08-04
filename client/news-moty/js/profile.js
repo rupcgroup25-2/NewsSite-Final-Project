@@ -432,13 +432,6 @@ function renderProfile() {
     loadNotificationSettings();
     
     bindProfileImageUploadEvents();
-    
-    // רענן את תמונת הפרופיל כדי למנוע בעיות cache
-    if (currentUser && currentUser.imageUrl) {
-        setTimeout(() => {
-            refreshProfileImageGlobally();
-        }, 500); // המתן קצת כדי שה-DOM יטען
-    }
 
 }
 
@@ -1376,19 +1369,6 @@ $(document).on('click', '#testNotificationBtn', function () {
     }, 3000);
 });
 
-// פונקציה לרענון תמונת פרופיל פשוטה
-function refreshProfileImageGlobally() {
-    const imageUrl = currentUser.imageUrl || 
-        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
-    
-    // עדכן את תמונת הפרופיל בכל מקום שהיא מופיעה
-    $('#profilePic').attr('src', imageUrl);
-    $('.user-profile-image').attr('src', imageUrl);
-    $('.current-user-avatar').attr('src', imageUrl);
-    
-    console.log('🖼️ Profile image refreshed globally');
-}
-
 
 //adding profile picture
 function getAuthToken() {
@@ -1441,8 +1421,8 @@ function bindProfileImageUploadEvents() {
                     currentUser.imageUrl = data.imageUrl;
                     localStorage.setItem('user', JSON.stringify(currentUser));
                     
-                    // רענן את התמונה
-                    refreshProfileImageGlobally();
+                    // עדכן את התמונה בעמוד הנוכחי
+                    $('#profilePic').attr('src', data.imageUrl);
                 } else if (data) {
                     showErrorAlert('Image upload failed', 'Upload Failed');
                 }
@@ -1498,8 +1478,8 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
                 currentUser.imageUrl = data.imageUrl;
                 localStorage.setItem('user', JSON.stringify(currentUser));
                 
-                // רענן את התמונה
-                refreshProfileImageGlobally();
+                // עדכן את התמונה בעמוד הנוכחי
+                $('#profilePic').attr('src', data.imageUrl);
                 
                 showSuccessAlert('Profile image generated successfully!', 'Image Generated');
             } else {

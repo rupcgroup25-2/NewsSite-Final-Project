@@ -29,7 +29,6 @@ public class CloudinaryService
                 PublicId = $"profile_pics/{userId}", // Save by user ID
                 Folder = "profile_pics",
                 Overwrite = true,
-                Invalidate = true
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
@@ -40,7 +39,6 @@ public class CloudinaryService
     public async Task<ImageUploadResult> UploadRawStreamAsync(ImageUploadParams uploadParams)
     {
         uploadParams.Overwrite = true;  
-        uploadParams.Invalidate = true;
         return await _cloudinary.UploadAsync(uploadParams);
     }
 }

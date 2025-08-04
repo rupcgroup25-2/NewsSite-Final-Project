@@ -152,7 +152,7 @@ namespace Newsite_Server.Controllers
             if (result > 0)
                 return Ok("Article Inserted successfully");
             else
-                return Ok("Article already exists");
+                return BadRequest("Article already exists");
         }
 
         //[HttpPost("AssignTagToArticle")]
@@ -180,7 +180,7 @@ namespace Newsite_Server.Controllers
             if (result > 0)
                 return Ok("Article saved successfully");
             else
-                return Ok("article is already saved");
+                return BadRequest("article is already saved");
         }
 
         // Shares an article with a comment and sends notifications to followers
@@ -191,7 +191,12 @@ namespace Newsite_Server.Controllers
         {
             int result = article.ShareArticleWithComment(userId, article.Id, article.Comment);
 
-            if (result > 0)
+            if (result == 0)
+            {
+                return BadRequest("Article already shared");
+            }
+
+            else if (result > 0)
             {
                 try
                 {
@@ -215,10 +220,11 @@ namespace Newsite_Server.Controllers
 
                 return Ok("Article shared successfully");
             }
-            else if (result == -1)
-                return Ok("The user is blocked sharing");
-            else
-                return Ok("Article already shared");
+            else 
+            {
+                return BadRequest("The user is blocked sharing");
+            }
+            
         }
 
         // Removes an article from user's saved articles

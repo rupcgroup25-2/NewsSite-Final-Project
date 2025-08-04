@@ -55,9 +55,6 @@ function renderAdminDashboard({
                             <p class="text-muted mb-0">Comprehensive management and monitoring interface</p>
                         </div>
                         <div class="text-end">
-                            <button class="btn btn-outline-primary btn-sm me-2" id="refreshImagesBtn" title="Refresh Profile Images">
-                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Images
-                            </button>
                             <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
                                 <i class="bi bi-clock me-1"></i>
                                 ${new Date().toLocaleDateString('en-US', { 
@@ -688,27 +685,6 @@ $(document).ready(function () {
 
         // עדכון מונה התוצאות
         $('#userSearchResults').text(`${visibleCount} users found`);
-    });
-    
-    // אירוע לכפתור רענון תמונות
-    $(document).on('click', '#refreshImagesBtn', function() {
-        const $btn = $(this);
-        const originalHtml = $btn.html();
-        
-        // הוסף אנימציית טעינה
-        $btn.html('<span class="spinner-border spinner-border-sm me-1"></span>Refreshing...').prop('disabled', true);
-        
-        // רענן תמונות ותן זמן לטעינה
-        setTimeout(() => {
-            refreshAdminProfileImages();
-            // אם זה לא עוזר, טען מחדש את כל הדשבורד
-            setTimeout(() => {
-                if (confirm('If images still appear old, reload entire dashboard?')) {
-                    loadAdminDashboardData();
-                }
-                $btn.html(originalHtml).prop('disabled', false);
-            }, 1500);
-        }, 500);
     });
 });
 

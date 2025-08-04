@@ -1504,6 +1504,7 @@ namespace Newsite_Server.DAL
 
         //--------------------------------------------------------------------------------------------------
         // This method share an article with a comment to SharedArticlesTable
+        // Returns: 0 = already shared, 1 = successfully shared
         //--------------------------------------------------------------------------------------------------
         public int ShareArticleForUser(int userId, int articleId, string comment)
         {
@@ -1529,7 +1530,9 @@ namespace Newsite_Server.DAL
 
             try
             {
-                return cmd.ExecuteNonQuery();
+                object result = cmd.ExecuteScalar();
+                int resultValue = result != null ? Convert.ToInt32(result) : 0;
+                return resultValue; // 0 = already shared, 1 = successfully shared
             }
             catch (Exception ex)
             {
@@ -1842,12 +1845,11 @@ namespace Newsite_Server.DAL
                 if (reader.Read())
                 {
                     int blockSharing = Convert.ToInt32(reader["BlockSharing"]);
-
                     return blockSharing;
                 }
                 else
                 {
-                    // לא נמצאה שורה - אפשר להחליט להחזיר -1 או לזרוק שגיאה
+                    //not found
                     return -1;
                 }
             }

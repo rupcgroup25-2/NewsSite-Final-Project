@@ -1,204 +1,4 @@
-﻿// ניהול push notifications עם Firebase
-
-/*
-// =============================================================================
-// DEBUG FUNCTIONS - אלה כבר לא נחוצות אחרי שהמערכת עובדת
-// =============================================================================
-*/
-
-//// פונקציה לבדיקת מצב התראות מפורט
-//function debugNotificationStatus() {
-//    console.log('🔍 === NOTIFICATION DEBUG STATUS ===');
-//    console.log('📱 Notification permission:', Notification.permission);
-//    console.log('🔧 Notification style:', localStorage.getItem('notificationStyle') || 'auto');
-//    console.log('👁️ Page visible:', !document.hidden && document.visibilityState === 'visible');
-//    console.log('🔥 Firebase initialized:', typeof messaging !== 'undefined' && !!messaging);
-//    console.log('⚙️ Service Worker registered:', navigator.serviceWorker?.controller ? 'Yes' : 'No');
-//    console.log('🔑 Current FCM Token:', currentFCMToken ? 'Available (' + currentFCMToken.length + ' chars)' : 'None');
-//    console.log('✅ Notifications initialized:', notificationsInitialized);
-//    console.log('👤 Current user:', typeof currentUser !== 'undefined' && currentUser ? currentUser.email : 'Not logged in');
-//    console.log('🔗 Subscribed user ID:', subscribedUserId || 'None');
-    
-//    // בדוק אם יש FCM token רק אם messaging מוכן
-//    if (typeof messaging !== 'undefined' && messaging && messaging.getToken) {
-//        console.log('🔄 Checking FCM token from Firebase...');
-//        import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js')
-//            .then(messagingModule => {
-//                return messagingModule.getToken(messaging, { vapidKey: 'BLQJzYUECwCieCgz4kPIpKs8wF5fNB8k6PZu8W7Q4V9tN7vNhA5TKnUzBvBXFJ3YxrJKDQ2vWnP4M5k3uT1Qr8M' });
-//            })
-//            .then((currentToken) => {
-//                if (currentToken) {
-//                    console.log('🔑 FCM Token from Firebase (length):', currentToken.length);
-//                    console.log('🔑 Token match:', currentToken === currentFCMToken ? 'Yes' : 'No');
-//                } else {
-//                    console.log('❌ No FCM token available from Firebase');
-//                }
-//            })
-//            .catch((err) => {
-//                console.log('❌ Error getting FCM token from Firebase:', err.message);
-//            });
-//    } else {
-//        console.log('⚠️ Firebase messaging not ready for token check');
-//    }
-    
-//    console.log('==============================');
-//}
-
-//// הוסף את הפונקציה לglobal scope לשימוש בconsole - מיותר כי כבר לא בשימוש
-//window.debugNotificationStatus = debugNotificationStatus;
-
-//// פונקציית debug מהירה - מיותר כי כבר לא בשימוש
-//window.quickNotificationCheck = function() {
-//    console.log('⚡ QUICK NOTIFICATION CHECK');
-//    console.log('Permission:', Notification.permission);
-//    console.log('Style:', localStorage.getItem('notificationStyle') || 'auto');
-//    console.log('FCM Token:', currentFCMToken ? 'Yes' : 'No');
-//    console.log('User:', currentUser ? currentUser.email : 'None');
-//    console.log('Initialized:', notificationsInitialized);
-    
-//    // בדוק Service Worker
-//    if ('serviceWorker' in navigator) {
-//        navigator.serviceWorker.getRegistrations().then(registrations => {
-//            console.log('Service Workers found:', registrations.length);
-//            if (registrations.length === 0) {
-//                console.log('⚠️ No Service Worker registered! Attempting to register...');
-//                registerServiceWorker();
-//            }
-//        });
-//    }
-    
-//    // טסט התראה לפי ההגדרה הנוכחית (לא תמיד system)
-//    const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
-//    const isPageVisible = !document.hidden && document.visibilityState === 'visible';
-    
-//    let useSystemNotification = false;
-//    switch(notificationStyle) {
-//        case 'system':
-//            useSystemNotification = true;
-//            break;
-//        case 'inpage':
-//            useSystemNotification = false;
-//            break;
-//        case 'auto':
-//        default:
-//            useSystemNotification = !isPageVisible;
-//            break;
-//    }
-    
-//    console.log('🔔 Will use system notification:', useSystemNotification);
-    
-//    if (useSystemNotification) {
-//        if (Notification.permission === 'granted') {
-//            const testNotif = new Notification('Quick Test - System', {
-//                body: 'System notifications are working!',
-//                icon: '/favicon.ico',
-//                tag: 'quick-test'
-//            });
-//            setTimeout(() => testNotif.close(), 3000);
-//            console.log('✅ Test system notification sent');
-//        } else {
-//            console.log('❌ No notification permission for system notification');
-//        }
-//    } else {
-//        // הצג התראת in-page
-//        showCustomNotification('Quick Test - In-Page', 'In-page notifications are working!');
-//        console.log('✅ Test in-page notification sent');
-//    }
-//};
-
-/*
-// =============================================================================
-// DEBUG CONSOLE COMMANDS - מיותר כי המערכת כבר עובדת
-// =============================================================================
-*/
-
-//// הוסף הוראות debug לconsole
-//console.log(`
-//🔧 === NOTIFICATION DEBUG COMMANDS ===
-//Use these commands in the browser console:
-
-//1. quickNotificationCheck() - Quick status check + test
-//2. debugNotificationStatus() - Detailed status report  
-//3. localStorage.setItem('notificationStyle', 'system') - Force system notifications
-//4. localStorage.setItem('notificationStyle', 'inpage') - Force in-page notifications
-//5. localStorage.setItem('notificationStyle', 'auto') - Auto mode (default)
-//6. registerServiceWorker() - Manually register Service Worker
-//7. switchNotificationStyle('system'|'inpage'|'auto') - Quick style switch
-
-//Test buttons in profile page:
-//- Click notification bell button to toggle notifications
-//- Click test notification button to send test message
-
-//Current status: ${notificationsInitialized ? 'Ready' : 'Loading...'}
-//=====================================
-//`);
-
-/*
-// =============================================================================
-// SERVICE WORKER MANUAL REGISTRATION - שימושי לשמור למקרי בעיות
-// =============================================================================
-*/
-
-// פונקציה לרישום Service Worker ידני
-window.registerServiceWorker = async function() {
-    if ('serviceWorker' in navigator) {
-        try {
-            console.log('🔄 Manually registering Service Worker...');
-            
-            // נסה נתיבים שונים
-            const possiblePaths = [
-                './firebase-messaging-sw.js',
-                '/firebase-messaging-sw.js',
-                '../firebase-messaging-sw.js',
-                '/client/news-moty/firebase-messaging-sw.js'
-            ];
-            
-            let registration = null;
-            let lastError = null;
-            
-            for (const path of possiblePaths) {
-                try {
-                    console.log(`🔄 Trying path: ${path}`);
-                    registration = await navigator.serviceWorker.register(path);
-                    console.log('✅ Service Worker registered successfully with path:', path, registration.scope);
-                    break;
-                } catch (error) {
-                    console.log(`❌ Failed with path ${path}:`, error.message);
-                    lastError = error;
-                }
-            }
-            
-            if (!registration) {
-                throw lastError || new Error('All Service Worker paths failed');
-            }
-            
-            // חכה שיהיה active
-            if (registration.installing) {
-                console.log('⏳ Service Worker installing...');
-                registration.installing.addEventListener('statechange', function() {
-                    if (this.state === 'activated') {
-                        console.log('✅ Service Worker activated!');
-                        location.reload(); // רענן דף כדי שהSW יעבוד
-                    }
-                });
-            } else if (registration.active) {
-                console.log('✅ Service Worker already active');
-            }
-            
-            return registration;
-        } catch (error) {
-            console.error('❌ Error registering Service Worker:', error);
-            console.log('💡 Make sure firebase-messaging-sw.js exists in the root directory');
-            console.log('🔍 Available Service Worker files found:');
-            console.log('- ./firebase-messaging-sw.js');
-            console.log('- /firebase-messaging-sw.js');
-            console.log('- ../firebase-messaging-sw.js');
-        }
-    } else {
-        console.log('❌ Service Workers not supported in this browser');
-    }
-};
-
+﻿
 /*
 // =============================================================================
 // NOTIFICATION STYLE SWITCHING - מיותר אם המשתמשים לא משנים סגנון התראות
@@ -206,18 +6,18 @@ window.registerServiceWorker = async function() {
 */
 
 // פונקציה להחלפת סגנון התראות בקלות
-window.switchNotificationStyle = function(style) {
+window.switchNotificationStyle = function (style) {
     const validStyles = ['system', 'inpage', 'auto'];
     if (!validStyles.includes(style)) {
         console.log('❌ Invalid style. Use: system, inpage, or auto');
         return;
     }
-    
+
     // שמור לפי משתמש נוכחי אם יש
     const userId = currentUser && currentUser.id ? currentUser.id : 'global';
     localStorage.setItem(`notificationStyle_${userId}`, style);
     console.log(`✅ Notification style changed to: ${style} for user: ${userId}`);
-    
+
     // בצע בדיקה מיידית
     setTimeout(() => {
         console.log('🔄 Testing new style...');
@@ -232,13 +32,13 @@ window.switchNotificationStyle = function(style) {
 */
 
 // פונקציה לסימולציה של דף לא פעיל (לבדיקת auto mode)
-window.simulatePageHidden = function() {
+window.simulatePageHidden = function () {
     console.log('🙈 Simulating page hidden for auto mode test...');
-    
+
     // שמור מצב מקורי
     const originalVisibilityState = document.visibilityState;
     const originalHidden = document.hidden;
-    
+
     // דמה דף מוסתר
     Object.defineProperty(document, 'visibilityState', {
         value: 'hidden',
@@ -248,10 +48,10 @@ window.simulatePageHidden = function() {
         value: true,
         writable: true
     });
-    
+
     console.log('📋 Page now appears hidden. Testing notification...');
     showCustomNotification('Auto Mode Test', 'This should show as system notification because page appears hidden');
-    
+
     // החזר מצב מקורי אחרי 3 שניות
     setTimeout(() => {
         Object.defineProperty(document, 'visibilityState', {
@@ -276,7 +76,7 @@ window.simulatePageHidden = function() {
 async function validateVAPIDKeyAndProject() {
     try {
         console.log('🔍 Validating VAPID key compatibility...');
-        
+
         // בדוק שהפרויקט והמפתחות תואמים
         const projectInfo = {
             projectId: firebaseConfig.projectId,
@@ -284,24 +84,24 @@ async function validateVAPIDKeyAndProject() {
             apiKey: firebaseConfig.apiKey,
             vapidKey: typeof vapidKey !== 'undefined' ? vapidKey : 'undefined'
         };
-        
+
         console.log('📋 Project Configuration:');
         console.log('- Project ID:', projectInfo.projectId);
         console.log('- Messaging Sender ID:', projectInfo.messagingSenderId);
         console.log('- API Key:', projectInfo.apiKey.substring(0, 20) + '...');
         console.log('- VAPID Key:', projectInfo.vapidKey !== 'undefined' ? projectInfo.vapidKey.substring(0, 20) + '...' : 'Not defined');
-        
+
         // בדוק אם Service Worker מוגדר נכון
         if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
             console.log('🔧 Service Worker registrations found:', registrations.length);
-            
+
             registrations.forEach((registration, index) => {
                 console.log(`📱 SW ${index + 1}: ${registration.scope}`);
                 console.log(`📱 SW ${index + 1} active:`, registration.active ? 'Yes' : 'No');
             });
         }
-        
+
         return true;
     } catch (error) {
         console.error('❌ VAPID validation error:', error);
@@ -309,54 +109,6 @@ async function validateVAPIDKeyAndProject() {
     }
 }
 
-/*
-// =============================================================================
-// VAPID KEY FIXING - מיותר אם המפתחות עובדים
-// =============================================================================
-*/
-
-////// פונקציה לטיפול בבעיות VAPID Key
-//async function fixVAPIDKeyIssues() {
-//    try {
-//        console.log('🔧 Attempting to fix VAPID key issues...');
-        
-//        // 1. נסה לאפס Service Worker
-//        if ('serviceWorker' in navigator) {
-//            console.log('🔄 Unregistering all service workers...');
-//            const registrations = await navigator.serviceWorker.getRegistrations();
-            
-//            for (const registration of registrations) {
-//                await registration.unregister();
-//                console.log('✅ Service worker unregistered:', registration.scope);
-//            }
-            
-//            // חכה רגע ואז רשום מחדש
-//            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-//            console.log('🔄 Re-registering service worker...');
-//            const newRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-//            console.log('✅ Service worker re-registered:', newRegistration.scope);
-//        }
-        
-//        // 2. נקה את הטוקן הנוכחי
-//        currentFCMToken = null;
-//        console.log('🗑️ Cleared current FCM token');
-        
-//        // 3. נסה ליצור טוקן חדש
-//        console.log('🔄 Will retry token generation...');
-        
-//        return true;
-//    } catch (error) {
-//        console.error('❌ Error fixing VAPID issues:', error);
-//        return false;
-//    }
-//}
-
-/*
-// =============================================================================
-// GLOBAL VARIABLES - נחוצים
-// =============================================================================
-*/
 
 // Firebase messaging functions - need to be imported globally
 if (typeof messaging === 'undefined') {
@@ -381,16 +133,16 @@ if (typeof subscribedUserId === 'undefined') {
 // אתחול FCM - תיקרא מ-articlePage.js אחרי שFirebase מאותחל
 async function initializeNotifications() {
     console.log('🔔 Starting notification initialization...');
-    
+
     // מנע אתחול כפול
     if (notificationsInitialized) {
         console.log('⚠️ Notifications already initialized, skipping...');
         return true;
     }
-    
+
     // בדוק הגדרות VAPID
     await validateVAPIDKeyAndProject();
-    
+
     // בדוק אם הדפדפן תומך בהתראות
     if (!('Notification' in window)) {
         console.error('❌ This browser does not support notifications');
@@ -434,11 +186,11 @@ async function initializeNotifications() {
         console.log('✅ Firebase messaging module loaded');
         messaging = messagingModule.getMessaging(window.app);
         await setupMessaging(messagingModule);
-        
+
         // סמן שהאתחול הושלם
         notificationsInitialized = true;
         console.log('✅ Notifications initialization completed');
-        
+
         // טען את סטטוס התראות מיד לאחר האתחול
         setTimeout(() => {
             loadNotificationStatus();
@@ -467,11 +219,11 @@ async function initializeFirebaseApp() {
 
         // ייבא Firebase App
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js');
-        
+
         // אתחל Firebase
         const app = initializeApp(firebaseConfig);
         window.app = app; // הפוך זמין גלובלית
-        
+
         console.log('✅ Firebase app initialized successfully');
         return true;
 
@@ -484,14 +236,14 @@ async function initializeFirebaseApp() {
 
 async function setupMessaging(messagingModule) {
     console.log('⚙️ Setting up Firebase messaging...');
-    
+
     try {
         // וודא שהמסרים מאותחל
         if (!messaging) {
             messaging = messagingModule.getMessaging(window.app);
         }
         console.log('📱 Firebase messaging initialized');
-        
+
         // בקש הרשאה להתראות רק אם עדיין לא ניתנה
         if (Notification.permission === 'default') {
             await requestNotificationPermission(messagingModule);
@@ -502,43 +254,43 @@ async function setupMessaging(messagingModule) {
                 await getFCMToken(messagingModule);
             }
         }
-        
+
         // הגדר מאזין להתראות שמגיעות כשהאפליקציה פתוחה
         messagingModule.onMessage(messaging, (payload) => {
             console.log('🔔 Message received while app is open:', payload);
             console.log('📱 Current notification style:', localStorage.getItem('notificationStyle') || 'auto');
             console.log('👁️ Page visible:', !document.hidden && document.visibilityState === 'visible');
-            
+
             // בדוק אם התראות מופעלות
             const notificationStatus = localStorage.getItem('notificationStatus');
             if (notificationStatus === 'disabled') {
                 console.log('🔕 Skipping notification - notifications are disabled');
                 return;
             }
-            
+
             // בדוק אם זה התראה עבור המשתמש הנוכחי (למנוע התראות על פעולות שלו)
-            if (payload.data && payload.data.excludeUserId && currentUser && 
+            if (payload.data && payload.data.excludeUserId && currentUser &&
                 payload.data.excludeUserId === currentUser.id.toString()) {
                 console.log('🚫 Skipping notification - user is the action performer');
                 return;
             }
-            
+
             // הצג התראה מותאמת בתוך האתר
             if (payload.notification) {
                 showCustomNotification(
-                    payload.notification.title, 
-                    payload.notification.body, 
+                    payload.notification.title,
+                    payload.notification.body,
                     payload.data
                 );
             }
-            
+
             // הצג badge על כפתור התראות
             showNotificationBadge();
-            
+
             // נגן צליל (אופציונלי)
             playNotificationSound();
         });
-        
+
         console.log('✅ Messaging setup completed');
     } catch (error) {
         console.error('❌ Error setting up messaging:', error);
@@ -578,20 +330,20 @@ async function requestNotificationPermission(messagingModule) {
 async function getFCMToken(messagingModule) {
     try {
         console.log('🔐 Getting FCM token...');
-        
+
         // אם כבר יש טוקן, החזר אותו
         if (currentFCMToken) {
             console.log('📧 Using existing FCM token:', currentFCMToken);
             return currentFCMToken;
         }
-        
+
         // וודא שהמסרים מאותחל
         if (!messaging) {
             messaging = messagingModule.getMessaging(window.app);
         }
-        
+
         let token;
-        
+
         // Try to get FCM token with VAPID key if available
         if (typeof vapidKey !== 'undefined') {
             try {
@@ -649,20 +401,20 @@ let tokenSaveInProgress = false; // דגל למניעת שליחות כפולו�
 
 function saveFCMTokenToServer(userId, token) {
     console.log('💾 Saving FCM token to server for user:', userId);
-    
+
     // מנע שליחות כפולות
     if (tokenSaveInProgress) {
         console.log('⚠️ Token save already in progress, skipping...');
         return;
     }
-    
+
     // בדוק אם serverUrl זמין
     if (typeof serverUrl === 'undefined') {
         console.error('serverUrl is not defined. Make sure initServerUrl.js is loaded.');
         showNotificationStatus('Server configuration error', 'danger');
         return;
     }
-    
+
     // בדוק אם ajaxCall זמין
     if (typeof ajaxCall === 'undefined') {
         console.error('ajaxCall is not defined. Make sure ajaxCalls.js is loaded.');
@@ -671,7 +423,7 @@ function saveFCMTokenToServer(userId, token) {
     }
 
     tokenSaveInProgress = true;
-    
+
     // אם הקונטרולר שלך מקבל פרמטרים בשורת הכתובת
     ajaxCall(
         "POST",
@@ -707,7 +459,7 @@ function showInAppNotification(payload) {
 
     // הצג badge על כפתור ההתראות
     showNotificationBadge();
-    
+
     // נסה להשמיע צליל התראה
     playNotificationSound();
 
@@ -746,7 +498,7 @@ function showInAppNotification(payload) {
 
     // הסר אחרי 8 שניות אם לא נסגר ידנית
     setTimeout(() => {
-        $('.notification-popup').fadeOut(500, function() {
+        $('.notification-popup').fadeOut(500, function () {
             $(this).remove();
         });
     }, 8000);
@@ -757,14 +509,14 @@ function showNotificationStatus(message, type = 'info') {
     // ביטול הצגת כל ההתראות כדי לא להפריע למשתמש
     console.log(`Notification Status (${type}):`, message);
     return;
-    
+
     // אל תציג התראות success אם הן עלולות להפריע ל-system notifications
     const userId = currentUser && currentUser.id ? currentUser.id : 'global';
     if (type === 'success' && localStorage.getItem(`notificationStyle_${userId}`) === 'system') {
         console.log('✅ Notification Success (hidden for system notifications):', message);
         return;
     }
-    
+
     const statusHtml = `
         <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
              style="top: 80px; right: 20px; z-index: 9999; max-width: 300px;" role="alert">
@@ -773,9 +525,9 @@ function showNotificationStatus(message, type = 'info') {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
+
     $('body').append(statusHtml);
-    
+
     // זמן ארוך יותר לקריאה
     setTimeout(() => {
         $('.alert').fadeOut();
@@ -791,21 +543,21 @@ function showNotificationStatus(message, type = 'info') {
 // פונקציה לוידוא שהטוקן תקין
 async function validateAndRefreshTokenIfNeeded(userId) {
     console.log('🔍 Validating FCM token for user:', userId);
-    
+
     if (!currentFCMToken) {
         console.log('⚠️ No FCM token to validate');
         return false;
     }
-    
+
     try {
         // בדוק את סטטוס ההתראות בשרת
         const isEnabled = await checkNotificationStatus(userId);
         console.log('📊 Server notification status:', isEnabled);
-        
+
         if (!isEnabled) {
             console.log('⚠️ Notifications disabled on server, token might be invalid');
             showNotificationStatus('Refreshing notification settings...', 'info');
-            
+
             // נסה לרענן הטוקן אוטומטית
             const refreshed = await refreshFCMToken(userId);
             if (refreshed) {
@@ -818,7 +570,7 @@ async function validateAndRefreshTokenIfNeeded(userId) {
                 return false;
             }
         }
-        
+
         return true;
     } catch (error) {
         console.error('❌ Error validating token:', error);
@@ -829,11 +581,11 @@ async function validateAndRefreshTokenIfNeeded(userId) {
 // פונקציה להרשמה להתראות כשמשתמש מתחבר
 function subscribeUserToNotifications(userId) {
     console.log('🔗 Subscribing user to notifications:', userId);
-    
+
     // בדוק אם המשתמש כבר מנוי
     if (subscribedUserId === userId) {
         console.log('⚠️ User already subscribed to notifications, validating token...');
-        
+
         // אבל עדיין וודא שהטוקן תקין
         validateAndRefreshTokenIfNeeded(userId).then(isValid => {
             if (!isValid) {
@@ -842,13 +594,13 @@ function subscribeUserToNotifications(userId) {
                 subscribeUserToNotifications(userId); // נסה שוב
             }
         });
-        
+
         showNotificationButton();
         return;
     }
-    
+
     console.log(`🔍 Current state: subscribedUserId=${subscribedUserId}, userId=${userId}, currentFCMToken=${currentFCMToken ? 'exists' : 'null'}, tokenSaveInProgress=${tokenSaveInProgress}`);
-    
+
     // בדוק אם כבר יש טוקן זמין
     if (currentFCMToken) {
         console.log('📧 Using existing FCM token for user:', userId);
@@ -875,7 +627,7 @@ function subscribeUserToNotifications(userId) {
             console.log('⚠️ Firebase messaging not ready or token already being processed');
         }
     }
-    
+
     // הצג כפתור התראות
     showNotificationButton();
 }
@@ -883,7 +635,7 @@ function subscribeUserToNotifications(userId) {
 // טעינת סטטוס התראות מיד כשהדף נטען
 function loadNotificationStatus(retryCount = 0) {
     console.log(`🔍 Loading notification status on page load... (retry: ${retryCount})`);
-    
+
     const notificationBtn = document.getElementById('notifications-btn');
     if (!notificationBtn) {
         if (retryCount < 10) { // מגבלת ניסיונות
@@ -894,30 +646,30 @@ function loadNotificationStatus(retryCount = 0) {
         }
         return;
     }
-    
+
     console.log('✅ Notification button found!');
-    
+
     // אם אין משתמש מחובר, הצג מצב disabled
     if (!currentUser || !currentUser.id) {
         console.log('📊 No user logged in, showing disabled state');
         updateNotificationIcon(false);
         return;
     }
-    
+
     const userId = currentUser.id;
-    
+
     // קרא מ-localStorage לפי משתמש
     const savedStatus = localStorage.getItem(`notificationStatus_${userId}`) || 'disabled';
     const lastUpdate = localStorage.getItem(`lastNotificationUpdate_${userId}`);
-    
+
     console.log(`📊 Saved status for user ${userId}: ${savedStatus}, Last update: ${lastUpdate}`);
-    
+
     // הצג אייקון מיידית בהתאם לסטטוס השמור
     updateNotificationIcon(savedStatus === 'enabled');
-    
+
     // בדוק בשרת רק אם עבר זמן מהעדכון האחרון
     const shouldCheckServer = !lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000; // 30 שניות
-    
+
     if (shouldCheckServer) {
         console.log('🌐 Checking server for latest status...');
         checkNotificationStatus(userId).then(isEnabled => {
@@ -939,27 +691,27 @@ function loadNotificationStatus(retryCount = 0) {
 // פונקציה חדשה לאתחול סטטוס התראות בכל עמוד
 function initializeNotificationStatusGlobally() {
     console.log('🌐 Initializing notification status globally...');
-    
+
     // בדוק אם יש כפתור התראות בעמוד הנוכחי
     const notificationBtn = document.getElementById('notifications-btn');
-    
+
     if (notificationBtn) {
         console.log('📍 Notification button found - loading full status');
         loadNotificationStatus(0); // קרא עם פרמטר retry
     } else {
         console.log('📍 No notification button on this page - checking cached status');
-        
+
         // בדוק אם יש משתמש מחובר
         if (currentUser && currentUser.id) {
             const userId = currentUser.id;
-            
+
             // גם בעמודים ללא כפתור, נבדוק את הסטטוס השמור לפי משתמש
             const savedStatus = localStorage.getItem(`notificationStatus_${userId}`);
             const savedTimestamp = localStorage.getItem(`lastNotificationUpdate_${userId}`);
-            
+
             if (savedStatus) {
                 console.log(`📱 Found cached notification status for user ${userId}: ${savedStatus} (updated: ${new Date(parseInt(savedTimestamp || 0)).toLocaleString()})`);
-                
+
                 // אם הסטטוס ישן מדי (יותר מיום), נסמן לבדיקה בעמוד הבא
                 const isOld = !savedTimestamp || (Date.now() - parseInt(savedTimestamp)) > 24 * 60 * 60 * 1000;
                 if (isOld) {
@@ -987,36 +739,36 @@ function showNotificationButton() {
     if (notificationBtn) {
         // הצג כפתור גם אם אין משתמש (לבדיקה)
         notificationBtn.style.display = 'inline-block';
-        
+
         // טען סטטוס התראות - עם retry mechanism
         loadNotificationStatus(0);
-        
+
         // הוסף event listener לכפתור רק אם אין כבר
         if (!notificationBtn.onclick) {
-            notificationBtn.onclick = async function() {
+            notificationBtn.onclick = async function () {
                 // הסתר badge כשלוחצים על הכפתור
                 hideNotificationBadge();
-                
+
                 // בדוק אם יש משתמש מחובר
                 if (!currentUser || !currentUser.id) {
                     showNotificationStatus('Please login first to manage notifications', 'warning');
                     return;
                 }
-                
+
                 try {
                     // בדוק מצב התראות נוכחי מהשרת
                     console.log('🔍 Checking notification status from server...');
                     const serverStatus = await checkNotificationStatus(currentUser.id);
                     const hasPermission = Notification.permission === 'granted';
                     const hasToken = !!currentFCMToken;
-                    
+
                     console.log(`📊 Status check: serverStatus=${serverStatus}, hasPermission=${hasPermission}, hasToken=${hasToken}`);
-                    
+
                     // הסטטוס האמיתי הוא שילוב של כל התנאים
                     const isEnabled = hasPermission && hasToken && serverStatus;
-                    
+
                     console.log(`📊 Final status: isEnabled=${isEnabled}`);
-                    
+
                     // לוגיקה פשוטה: אם מופעל - תציע לכבות, אם כבוי - תציע להפעיל
                     if (isEnabled) {
                         console.log('🔇 Current status: ENABLED, offering to disable...');
@@ -1058,7 +810,7 @@ function updateNotificationIcon(isEnabled) {
         if (icon) {
             // הסר קלאסים קיימים
             notificationBtn.classList.remove('notifications-enabled', 'notifications-disabled');
-            
+
             // עדכן את האייקון בהתאם לסטטוס
             if (isEnabled) {
                 icon.className = 'bi bi-bell-fill';
@@ -1071,7 +823,7 @@ function updateNotificationIcon(isEnabled) {
                 notificationBtn.title = '🔕 Notifications DISABLED - Click to enable';
                 console.log('🔕 Notification icon updated: DISABLED');
             }
-            
+
             // שמור גם בכותרת העמוד
             document.title = document.title.replace(/ - (Enabled|Disabled)$/, '') + ` - ${isEnabled ? 'Enabled' : 'Disabled'}`;
         }
@@ -1101,17 +853,17 @@ function playNotificationSound() {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         // הגדרת צליל פעמון קצר
         oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
         oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-        
+
         gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        
+
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.3);
     } catch (error) {
@@ -1119,62 +871,6 @@ function playNotificationSound() {
     }
 }
 
-/*
-// =============================================================================
-// DEBUG SYSTEM FUNCTIONS - מיותר אחרי שהמערכת עובדת
-// =============================================================================
-*/
-
-//// פונקציה לבדיקת debug של המערכת
-//function debugNotificationSystem() {
-//    console.log('🔍 NOTIFICATION SYSTEM DEBUG');
-//    console.log('============================');
-    
-//    // בדוק תמיכת דפדפן
-//    console.log('Browser Support:');
-//    console.log('- Notifications API:', 'Notification' in window);
-//    console.log('- Service Worker:', 'serviceWorker' in navigator);
-//    console.log('- Push Manager:', 'PushManager' in window);
-//    console.log('- Permission:', Notification ? Notification.permission : 'not available');
-    
-//    // בדוק Firebase
-//    console.log('\nFirebase Status:');
-//    console.log('- Firebase App:', typeof window.app !== 'undefined' && window.app);
-//    console.log('- Messaging Object:', typeof messaging !== 'undefined' && messaging);
-//    console.log('- FCM Token:', currentFCMToken ? 'Available' : 'Not available');
-    
-//    // בדוק dependencies
-//    console.log('\nDependencies:');
-//    console.log('- Server URL:', typeof serverUrl !== 'undefined' ? serverUrl : 'not defined');
-//    console.log('- Ajax Function:', typeof ajaxCall !== 'undefined');
-//    console.log('- Current User:', typeof currentUser !== 'undefined' && currentUser ? currentUser.email : 'not logged in');
-    
-//    // בדוק UI elements
-//    console.log('\nUI Elements:');
-//    const notificationBtn = document.getElementById('notifications-btn');
-//    const notificationBadge = document.getElementById('notification-badge');
-//    console.log('- Notification Button:', notificationBtn ? 'Found' : 'Not found');
-//    console.log('- Notification Badge:', notificationBadge ? 'Found' : 'Not found');
-    
-//    // בדוק service worker
-//    if ('serviceWorker' in navigator) {
-//        navigator.serviceWorker.getRegistrations().then(registrations => {
-//            console.log('\nService Workers:');
-//            console.log('- Registrations count:', registrations.length);
-//            registrations.forEach((registration, index) => {
-//                console.log(`- SW ${index + 1}:`, registration.scope);
-//            });
-//        });
-//    }
-    
-//    return {
-//        browserSupport: 'Notification' in window && 'serviceWorker' in navigator,
-//        firebaseReady: typeof window.app !== 'undefined' && window.app,
-//        hasToken: !!currentFCMToken,
-//        hasUser: typeof currentUser !== 'undefined' && currentUser,
-//        uiReady: !!document.getElementById('notifications-btn')
-//    };
-//}
 
 /*
 // =============================================================================
@@ -1203,29 +899,29 @@ function manuallyUnsubscribeFromNotifications(userId) {
 // ביטול התראות
 function disableNotifications(userId) {
     console.log('🔇 Disabling notifications for user:', userId);
-    
+
     ajaxCall(
         "PUT",
         serverUrl + `Notifications/DisableFCMToken?userId=${userId}`,
         null,
-        function(response) {
+        function (response) {
             console.log('✅ Notifications disabled successfully:', response);
-            
+
             // הודעה ברורה למשתמש
             showWarningToast('🔕 Notifications DISABLED\nYou will no longer receive notifications.', 'Notifications Disabled');
             showNotificationStatus('🔕 Notifications disabled successfully', 'info');
-            
+
             // עדכן מצב מקומי
             subscribedUserId = null;
-            
+
             // עדכן אייקון
             updateNotificationIcon(false);
-            
+
             // שמור סטטוס ב-localStorage לפי משתמש
             localStorage.setItem(`notificationStatus_${userId}`, 'disabled');
             localStorage.setItem(`lastNotificationUpdate_${userId}`, Date.now().toString());
         },
-        function(xhr) {
+        function (xhr) {
             console.error('❌ Error disabling notifications:', xhr.responseText);
             showNotificationStatus('❌ Error disabling notifications', 'danger');
         }
@@ -1235,29 +931,29 @@ function disableNotifications(userId) {
 // הפעלת התראות
 function enableNotifications(userId) {
     console.log('🔔 Enabling notifications for user:', userId);
-    
+
     ajaxCall(
         "PUT",
         serverUrl + `Notifications/EnableFCMToken?userId=${userId}`,
         null,
-        function(response) {
+        function (response) {
             console.log('✅ Notifications enabled successfully:', response);
-            
+
             // הודעה ברורה למשתמש
             showSuccessToast('🔔 Notifications ENABLED\nYou will now receive notifications about new articles and updates.', 'Notifications Enabled');
             showNotificationStatus('🔔 Notifications enabled successfully!', 'success');
-            
+
             // עדכן מצב מקומי
             subscribedUserId = userId;
-            
+
             // עדכן אייקון
             updateNotificationIcon(true);
-            
+
             // שמור סטטוס ב-localStorage לפי משתמש
             localStorage.setItem(`notificationStatus_${userId}`, 'enabled');
             localStorage.setItem(`lastNotificationUpdate_${userId}`, Date.now().toString());
         },
-        function(xhr) {
+        function (xhr) {
             console.error('❌ Error enabling notifications:', xhr.responseText);
             showNotificationStatus('❌ Error enabling notifications', 'danger');
         }
@@ -1267,23 +963,23 @@ function enableNotifications(userId) {
 // בדיקת סטטוס התראות
 function checkNotificationStatus(userId) {
     console.log('🔍 Checking notification status for user:', userId);
-    
+
     return new Promise((resolve, reject) => {
         ajaxCall(
             "GET",
             serverUrl + `Notifications/NotificationStatus?userId=${userId}`,
             null,
-            function(response) {
+            function (response) {
                 console.log('✅ Notification status received:', response);
                 console.log('📊 Response type:', typeof response);
                 console.log('📊 Response notificationsEnabled:', response.notificationsEnabled);
-                
+
                 // וודא שהתשובה נכונה
                 const isEnabled = response && response.notificationsEnabled === true;
                 console.log('📊 Parsed isEnabled:', isEnabled);
                 resolve(isEnabled);
             },
-            function(xhr) {
+            function (xhr) {
                 console.error('❌ Error checking notification status:', xhr);
                 reject(xhr);
             }
@@ -1294,20 +990,20 @@ function checkNotificationStatus(userId) {
 // ריענון טוקן FCM (במקרה של טוקן לא תקין)
 async function refreshFCMToken(userId) {
     console.log('🔄 Refreshing FCM token for user:', userId);
-    
+
     try {
         if (!messaging) {
             console.log('❌ Firebase messaging not initialized');
             return false;
         }
-        
+
         // נקה טוקן ישן
         currentFCMToken = null;
-        
+
         // קבל טוקן חדש
         const messagingModule = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js');
         await getFCMToken(messagingModule);
-        
+
         if (currentFCMToken) {
             // שמור טוקן חדש לשרת
             saveFCMTokenToServer(userId, currentFCMToken);
@@ -1334,7 +1030,7 @@ async function refreshFCMToken(userId) {
 // שליחת התראת בדיקה
 function sendTestNotification(userId) {
     console.log('🧪 Sending test notification to user:', userId);
-    
+
     if (!userId) {
         const currentUserId = currentUser ? currentUser.id : null;
         if (!currentUserId) {
@@ -1343,12 +1039,12 @@ function sendTestNotification(userId) {
         }
         userId = currentUserId;
     }
-    
+
     // בדוק אם יש טוקן תקין לפני שליחת הבדיקה
     if (!currentFCMToken) {
         console.log('⚠️ No FCM token available, trying to get one...');
         showNotificationStatus('Getting notification token, please wait...', 'info');
-        
+
         // נסה לקבל טוקן חדש
         if (messaging) {
             import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js')
@@ -1370,28 +1066,28 @@ function sendTestNotification(userId) {
         }
         return;
     }
-    
+
     // קודם שמור את הטוקן החדש לשרת
     console.log('💾 Ensuring current FCM token is saved to server before testing...');
     showNotificationStatus('Saving current token to server...', 'info');
-    
+
     ajaxCall(
         "POST",
         serverUrl + `Notifications/SaveFCMToken?userId=${userId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
         null,
         function (saveResponse) {
             console.log('✅ FCM token saved successfully:', saveResponse);
-            
+
             // בדוק אם השמירה באמת הצליחה
             if (saveResponse && saveResponse.notificationsEnabled !== undefined) {
                 console.log('📊 Server confirms notifications enabled:', saveResponse.notificationsEnabled);
             }
-            
+
             // המתן זמן ארוך יותר לפני שליחת הבדיקה כדי לוודא שה-DB עודכן
             console.log('⏳ Waiting for database to update...');
             setTimeout(() => {
                 console.log('🚀 Now sending test notification...');
-                
+
                 // עכשיו שלח את הבדיקה
                 ajaxCall(
                     "POST",
@@ -1400,11 +1096,11 @@ function sendTestNotification(userId) {
                     function (response) {
                         console.log('✅ Test notification sent successfully:', response);
                         showNotificationStatus('Test notification sent! Check your device.', 'success');
-                        
+
                         // הצג גם התראה מקומית לבדיקה
                         setTimeout(() => {
                             showCustomNotification(
-                                "Test Notification", 
+                                "Test Notification",
                                 "This is a test notification to verify your settings!",
                                 { url: window.location.href }
                             );
@@ -1412,19 +1108,19 @@ function sendTestNotification(userId) {
                     },
                     function (xhr) {
                         console.error('❌ Error sending test notification:', xhr.status, xhr.responseText);
-                        
+
                         // בדוק אם השגיאה קשורה לטוקן לא תקין
-                        const isTokenError = xhr.status === 500 && 
-                            (xhr.responseText.includes('no tokens') || 
-                             xhr.responseText.includes('invalid') ||
-                             xhr.responseText.includes('UNAUTHENTICATED') ||
-                             xhr.responseText.includes('refresh page') ||
-                             xhr.responseText.includes('THIRD_PARTY_AUTH_ERROR'));
-                        
+                        const isTokenError = xhr.status === 500 &&
+                            (xhr.responseText.includes('no tokens') ||
+                                xhr.responseText.includes('invalid') ||
+                                xhr.responseText.includes('UNAUTHENTICATED') ||
+                                xhr.responseText.includes('refresh page') ||
+                                xhr.responseText.includes('THIRD_PARTY_AUTH_ERROR'));
+
                         if (isTokenError) {
                             console.log('🔄 Token issue detected, trying alternative approach...');
                             showNotificationStatus('Database not updated yet. Trying direct test...', 'info');
-                            
+
                             // אם עדיין לא עובד, נסה direct token
                             setTimeout(() => {
                                 console.log('🎯 Falling back to direct token test...');
@@ -1440,7 +1136,7 @@ function sendTestNotification(userId) {
         function (xhr) {
             console.error('❌ Error saving FCM token before test:', xhr.responseText);
             showNotificationStatus('Error saving token before test', 'warning');
-            
+
             // גם אם השמירה נכשלה, נסה לשלוח בדיקה בכל זאת
             console.log('⚠️ Proceeding with test despite save error...');
             ajaxCall(
@@ -1460,38 +1156,6 @@ function sendTestNotification(userId) {
     );
 }
 
-//// בדיקת סטטוס Firebase APIs - מיותר אחרי שFirebase עובד
-//async function checkFirebaseStatus() {
-//    console.log('🔍 Checking Firebase API status...');
-    
-//    try {
-//        const response = await ajaxCall('GET', `${serverUrl}/api/Notifications/firebase-status`, '', 'json');
-        
-//        if (response.status === 'fcm-api-enabled') {
-//            console.log('✅ Firebase APIs are enabled and working');
-//            showNotificationStatus('Firebase APIs are working properly', 'success');
-//            return true;
-//        } else {
-//            console.log('❌ Firebase FCM API is not enabled');
-//            showNotificationStatus('Firebase FCM API needs to be enabled. Check console for instructions.', 'warning');
-            
-//            if (response.instructions) {
-//                console.log('🔧 Instructions to fix Firebase API issues:');
-//                console.log('1.', response.instructions.step1);
-//                console.log('2.', response.instructions.step2);
-//                console.log('3.', response.instructions.step3);
-//                console.log('4.', response.instructions.step4);
-//                console.log('5.', response.instructions.step5);
-//            }
-//            return false;
-//        }
-//    } catch (error) {
-//        console.error('❌ Error checking Firebase status:', error);
-//        showNotificationStatus('Error checking Firebase status', 'danger');
-//        return false;
-//    }
-//}
-
 /*
 // =============================================================================
 // CUSTOM NOTIFICATION DISPLAY - נחוצים להצגת התראות מותאמות
@@ -1501,17 +1165,17 @@ function sendTestNotification(userId) {
 // הצגת התראה מותאמת אישית כשהאפליקציה פתוחה
 function showCustomNotification(title, body, data) {
     console.log('📢 Custom notification called:', title, body);
-    
+
     // קבל הגדרת סוג התראה מהמשתמש - לפי משתמש נוכחי
     const userId = currentUser && currentUser.id ? currentUser.id : 'global';
     const notificationStyle = localStorage.getItem(`notificationStyle_${userId}`) || 'auto';
     console.log(`🔧 Notification style for user ${userId}:`, notificationStyle);
-    
+
     // החלט איזה סוג התראה להציג
     const isPageVisible = !document.hidden && document.visibilityState === 'visible';
     let useSystemNotification = false;
-    
-    switch(notificationStyle) {
+
+    switch (notificationStyle) {
         case 'system':
             useSystemNotification = true;
             break;
@@ -1523,9 +1187,9 @@ function showCustomNotification(title, body, data) {
             useSystemNotification = !isPageVisible;
             break;
     }
-    
+
     console.log('🔔 Use system notification:', useSystemNotification);
-    
+
     // הצג התראת מערכת אם נדרש
     if (useSystemNotification) {
         if (Notification.permission === 'granted') {
@@ -1537,9 +1201,9 @@ function showCustomNotification(title, body, data) {
                 requireInteraction: true,
                 silent: false
             });
-            
+
             // טיפול בלחיצה על התראת מערכת
-            notification.onclick = function() {
+            notification.onclick = function () {
                 console.log('🖱️ System notification clicked');
                 window.focus();
                 if (data && data.url) {
@@ -1547,7 +1211,7 @@ function showCustomNotification(title, body, data) {
                 }
                 notification.close();
             };
-            
+
             // סגור התראה אחרי 10 שניות
             setTimeout(() => {
                 notification.close();
@@ -1557,7 +1221,7 @@ function showCustomNotification(title, body, data) {
         }
         return;
     }
-    
+
     // בדיקה שיש jQuery
     if (typeof $ === 'undefined') {
         // fallback לדפדפן
@@ -1569,7 +1233,7 @@ function showCustomNotification(title, body, data) {
         }
         return;
     }
-    
+
     // יצירת התראה ויזואלית באתר עם אפשרויות אינטראקציה
     const notificationHtml = `
         <div class="custom-notification alert alert-info alert-dismissible fade show position-fixed" 
@@ -1607,28 +1271,28 @@ function showCustomNotification(title, body, data) {
     $('body').append(notificationHtml);
 
     // הוסף event listeners לכפתורים
-    $('.notification-action').off('click').on('click', function() {
+    $('.notification-action').off('click').on('click', function () {
         const action = $(this).data('action');
         const url = $(this).data('url');
         const notification = $(this).closest('.custom-notification');
-        
-        switch(action) {
+
+        switch (action) {
             case 'view':
                 if (url) {
                     window.open(url, '_blank');
                 }
-                notification.fadeOut(300, function() { $(this).remove(); });
+                notification.fadeOut(300, function () { $(this).remove(); });
                 break;
             case 'dismiss':
             case 'close':
-                notification.fadeOut(300, function() { $(this).remove(); });
+                notification.fadeOut(300, function () { $(this).remove(); });
                 break;
         }
     });
 
     // הסר אחרי 10 שניות אם לא הוסר ידנית
     setTimeout(() => {
-        $('.custom-notification').fadeOut(500, function() {
+        $('.custom-notification').fadeOut(500, function () {
             $(this).remove();
         });
     }, 10000);
@@ -1655,7 +1319,7 @@ function showVanillaNotification(title, body, data) {
         transform: translateX(100%);
         transition: all 0.3s ease;
     `;
-    
+
     notification.innerHTML = `
         <div style="display: flex; align-items: start;">
             <span style="font-size: 20px; margin-right: 10px;">🔔</span>
@@ -1663,12 +1327,12 @@ function showVanillaNotification(title, body, data) {
                 <strong style="color: #0d47a1; display: block; margin-bottom: 5px;">${title}</strong>
                 <div style="color: #424242; font-size: 14px;">${body}</div>
                 <div style="margin-top: 10px;">
-                    ${data && data.url && data.type !== "new_comment" ? 
-                        `<button onclick="window.open('${data.url}', '_blank'); this.closest('.custom-notification').remove();" 
+                    ${data && data.url && data.type !== "new_comment" ?
+            `<button onclick="window.open('${data.url}', '_blank'); this.closest('.custom-notification').remove();" 
                                 style="background: #007bff; color: white; border: none; padding: 5px 10px; margin-right: 5px; border-radius: 4px; cursor: pointer;">
                             👁️ View
                         </button>` : ''
-                    }
+        }
                     <button onclick="this.closest('.custom-notification').remove();" 
                             style="background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
                         ✅ OK
@@ -1681,23 +1345,23 @@ function showVanillaNotification(title, body, data) {
             </button>
         </div>
     `;
-    
+
     // הוסף לעמוד
     document.body.appendChild(notification);
-    
+
     // אנימציה
     setTimeout(() => {
         notification.style.opacity = '1';
         notification.style.transform = 'translateX(0)';
     }, 100);
-    
+
     // הסר אחרי 10 שניות
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => notification.remove(), 300);
     }, 10000);
-    
+
     console.log('✅ Vanilla notification displayed');
 }
 
@@ -1710,20 +1374,20 @@ function showVanillaNotification(title, body, data) {
 // $(document).ready ייקרא רק אם Firebase מוכן
 function initNotificationsWhenReady() {
     console.log('🔍 Checking if notifications can be initialized...');
-    
+
     // בדוק אם כבר אותחל
     if (notificationsInitialized) {
         console.log('⚠️ Notifications already initialized, skipping initNotificationsWhenReady...');
         return;
     }
-    
+
     // בדוק אם כל הדרישות זמינות
     if (typeof serverUrl === 'undefined') {
         console.log('⏳ Waiting for serverUrl to be defined...');
         setTimeout(initNotificationsWhenReady, 500);
         return;
     }
-    
+
     if (typeof ajaxCall === 'undefined') {
         console.log('⏳ Waiting for ajaxCall to be defined...');
         setTimeout(initNotificationsWhenReady, 500);
@@ -1739,7 +1403,7 @@ function initNotificationsWhenReady() {
 
     console.log('🚀 All dependencies ready, initializing notifications...');
     initializeNotifications();
-    
+
     // בדוק אם יש משתמש נוכחי
     if (typeof currentUser !== 'undefined' && currentUser) {
         console.log('👤 Current user found, subscribing to notifications...');
@@ -1751,11 +1415,11 @@ function initNotificationsWhenReady() {
 
 $(document).ready(function () {
     console.log('📱 DOM ready, starting notification initialization process...');
-    
+
     // בדוק אם כבר אותחל כדי למנוע אתחול כפול
     if (notificationsInitialized) {
         console.log('⚠️ Notifications already initialized, skipping DOM ready initialization...');
-        
+
         // אבל עדיין בדוק אם יש משתמש חדש
         if (typeof currentUser !== 'undefined' && currentUser) {
             const notificationBtn = document.getElementById('notifications-btn');
@@ -1769,114 +1433,37 @@ $(document).ready(function () {
         }
         return;
     }
-    
+
     // המתן קצת לפני שמתחילים לבדוק כדי לתת זמן לסקריפטים להיטען
     setTimeout(initNotificationsWhenReady, 100);
 });
 
-/*
-// =============================================================================
-// TROUBLESHOOTING FUNCTIONS - מיותר אחרי שהמערכת עובדת יציב
-// =============================================================================
-*/
-
-//// פונקציה לתיקון בעיות נפוצות
-//function fixCommonNotificationIssues() {
-//    console.log('🔧 Attempting to fix common notification issues...');
-    
-//    const issues = [];
-//    const fixes = [];
-    
-//    // בדוק והתחל service worker אם חסר
-//    if ('serviceWorker' in navigator) {
-//        navigator.serviceWorker.getRegistrations().then(registrations => {
-//            if (registrations.length === 0) {
-//                issues.push('No service worker registered');
-//                fixes.push('Attempting to register service worker...');
-                
-//                navigator.serviceWorker.register('/firebase-messaging-sw.js')
-//                    .then(registration => {
-//                        console.log('✅ Service worker registered successfully');
-//                        showNotificationStatus('Service worker registered successfully', 'success');
-//                    })
-//                    .catch(error => {
-//                        console.error('❌ Service worker registration failed:', error);
-//                        showNotificationStatus('Service worker registration failed', 'danger');
-//                    });
-//            }
-//        });
-//    }
-    
-//    // בדוק permissions
-//    if (Notification && Notification.permission === 'default') {
-//        issues.push('Notification permission not requested');
-//        fixes.push('Requesting notification permission...');
-//        requestNotificationPermission();
-//    }
-    
-//    // בדוק Firebase app
-//    if (typeof window.app === 'undefined' || !window.app) {
-//        issues.push('Firebase app not initialized');
-//        fixes.push('Waiting for Firebase initialization...');
-//        setTimeout(() => {
-//            if (typeof window.app !== 'undefined' && window.app) {
-//                console.log('✅ Firebase app now available');
-//                initializeNotifications();
-//            }
-//        }, 2000);
-//    }
-    
-//    // בדוק FCM token
-//    if (!currentFCMToken && messaging) {
-//        issues.push('No FCM token available');
-//        fixes.push('Attempting to get FCM token...');
-//        import('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js')
-//            .then(messagingModule => getFCMToken(messagingModule));
-//    }
-    
-//    console.log('Issues found:', issues);
-//    console.log('Fixes applied:', fixes);
-    
-//    if (issues.length === 0) {
-//        showNotificationStatus('No issues found! Notifications should work properly.', 'success');
-//    } else {
-//        showNotificationStatus(`Found ${issues.length} issues. Attempting fixes...`, 'warning');
-//    }
-    
-//    return { issues, fixes };
-//}
-
-/*
-// =============================================================================
-// USER SESSION MANAGEMENT - נחוצים לניהול מעבר בין משתמשים
-// =============================================================================
-*/
 
 // פונקציה לביטול הרשמה כשמשתמש מתנתק
 function unsubscribeUserFromNotifications() {
     console.log('🚪 Unsubscribing user from notifications...');
-    
+
     // נקה את הטוקן מהשרת לפני התנתקות
     clearFCMTokenOnLogout();
-    
+
     // הסתר כפתור התראות
     hideNotificationButton();
-    
+
     // נקה את המשתמש המנוי
     subscribedUserId = null;
-    
+
     // אל תנקה את currentFCMToken כי הוא עדיין רלוונטי למכשיר
-    
+
     console.log('✅ User unsubscribed from notifications');
 }
 
 // פונקציה להחלפת משתמש
 function switchUserNotifications(newUserId) {
     console.log('🔄 Switching user notifications to:', newUserId);
-    
+
     // בטל הרשמה של המשתמש הקודם
     unsubscribeUserFromNotifications();
-    
+
     // הרשם למשתמש החדש
     setTimeout(() => {
         if (newUserId && notificationsInitialized) {
@@ -1892,18 +1479,18 @@ function switchUserNotifications(newUserId) {
 */
 
 // פונקציית בדיקה פשוטה להצגת מצב הטוקן
-window.checkTokenStatus = async function() {
+window.checkTokenStatus = async function () {
     if (!currentUser) {
         console.log('❌ No user logged in');
         showNotificationStatus('Please log in to check token status', 'warning');
         return false;
     }
-    
+
     console.log('� Checking FCM token status...');
     console.log('User ID:', currentUser.id);
     console.log('Current FCM Token:', currentFCMToken ? `${currentFCMToken.substring(0, 20)}...` : 'None');
     console.log('Notifications Initialized:', notificationsInitialized);
-    
+
     if (currentFCMToken) {
         console.log('✅ Token exists and will be sent to server');
         showNotificationStatus('FCM Token is ready', 'success');
@@ -1925,41 +1512,41 @@ window.sendTestNotification = sendTestNotification;
 */
 
 // פונקציה ראשית להפעלת התראות בכל דף
-window.initNotificationsOnPageLoad = function() {
+window.initNotificationsOnPageLoad = function () {
     console.log('🌐 Initializing notifications for current page...');
-    
+
     // המתן לטעינת Firebase config
     if (typeof firebaseConfig === 'undefined') {
         console.log('⏳ Waiting for Firebase config...');
         setTimeout(window.initNotificationsOnPageLoad, 200);
         return;
     }
-    
+
     // המתן לטעינת serverUrl
     if (typeof serverUrl === 'undefined') {
         console.log('⏳ Waiting for serverUrl...');
         setTimeout(window.initNotificationsOnPageLoad, 200);
         return;
     }
-    
+
     // המתן לטעינת ajaxCall
     if (typeof ajaxCall === 'undefined') {
         console.log('⏳ Waiting for ajaxCall...');
         setTimeout(window.initNotificationsOnPageLoad, 200);
         return;
     }
-    
+
     console.log('✅ All dependencies loaded, starting notifications...');
-    
+
     // הראה כפתור פעמון תמיד
     showNotificationButton();
-    
+
     // אתחל התראות אם עדיין לא אותחל
     if (!notificationsInitialized) {
         console.log('🔔 Starting notification initialization...');
         initializeNotifications();
     }
-    
+
     // אם יש משתמש מחובר, הרשם להתראות
     if (typeof currentUser !== 'undefined' && currentUser && currentUser.id) {
         console.log('👤 User found, subscribing to notifications...');
@@ -1968,9 +1555,9 @@ window.initNotificationsOnPageLoad = function() {
 };
 
 // הרץ כשהדף נטען
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('📄 Page loaded, starting notification setup...');
-    
+
     // חכה שה-navbar יהיה מוכן לפני איתחול
     function waitForNavbarAndInitialize() {
         const notificationBtn = document.getElementById('notifications-btn');
@@ -1982,17 +1569,17 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(waitForNavbarAndInitialize, 200);
         }
     }
-    
+
     waitForNavbarAndInitialize();
 });
 
 // הרץ גם כשמשתמש נכנס (מ-auth.js)
-window.onUserLogin = function(user) {
+window.onUserLogin = function (user) {
     console.log('👤 User logged in, setting up notifications for:', user.email);
     if (user && user.id) {
         // נקה localStorage ישן שלא מבוסס על user ID
         cleanOldLocalStorage();
-        
+
         switchUserNotifications(user.id);
     }
 };
@@ -2001,10 +1588,10 @@ window.onUserLogin = function(user) {
 function cleanOldLocalStorage() {
     const oldKeys = [
         'notificationStatus',
-        'lastNotificationUpdate', 
+        'lastNotificationUpdate',
         'notificationStyle'
     ];
-    
+
     oldKeys.forEach(key => {
         if (localStorage.getItem(key)) {
             console.log(`🧹 Cleaning old localStorage key: ${key}`);
@@ -2020,187 +1607,32 @@ function cleanOldLocalStorage() {
 
 
 // הרץ כשמשתמש יוצא - מיותר אם לא משתמשים
-window.onUserLogout = function() {
+window.onUserLogout = function () {
     console.log('👤 User logged out, cleaning up notifications...');
     unsubscribeUserFromNotifications();
 };
 
-/*
-// =============================================================================
-// ADVANCED DEBUG FUNCTIONS - מיותר לפרודקשן, שימושי רק לפיתוח
-// =============================================================================
-*/
-
-//// פונקציה פשוטה לבדיקת FCM token
-//window.debugNotifications = debugNotificationSystem;
-
-////// פונקציה מתקדמת לבדיקת מצב התראות
-//window.advancedNotificationTest = async function() {
-//    if (!currentUser) {
-//        console.log('❌ No user logged in');
-//        showNotificationStatus('Please log in first', 'warning');
-//        return false;
-//    }
-    
-//    console.log('🔬 Running advanced notification test...');
-//    console.log('==========================================');
-    
-//    const userId = currentUser.id;
-//    console.log('👤 User ID:', userId);
-//    console.log('📧 Current FCM Token:', currentFCMToken ? `${currentFCMToken.substring(0, 30)}...` : 'None');
-    
-//    try {
-//        // שלב 1: שמור טוקן
-//        console.log('\n📤 Step 1: Saving current token to server...');
-//        if (!currentFCMToken) {
-//            console.log('❌ No token to save');
-//            return false;
-//        }
-        
-//        const saveResult = await new Promise((resolve, reject) => {
-//            ajaxCall(
-//                "POST",
-//                serverUrl + `Notifications/SaveFCMToken?userId=${userId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
-//                null,
-//                resolve,
-//                reject
-//            );
-//        });
-        
-//        console.log('✅ Save result:', saveResult);
-        
-//        // שלב 2: בדוק סטטוס התראות בשרת
-//        console.log('\n📊 Step 2: Checking notification status on server...');
-//        const statusResult = await checkNotificationStatus(userId);
-//        console.log('📊 Server status:', statusResult);
-        
-//        // שלב 3: המתן ונסה שליחת בדיקה
-//        console.log('\n⏳ Step 3: Waiting 2 seconds for DB sync...');
-//        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-//        console.log('🧪 Step 4: Sending test notification...');
-//        const testResult = await new Promise((resolve, reject) => {
-//            ajaxCall(
-//                "POST",
-//                serverUrl + `Notifications/TestNotification?userId=${userId}`,
-//                null,
-//                (response) => resolve({ success: true, response }),
-//                (xhr) => resolve({ success: false, error: xhr.responseText, status: xhr.status })
-//            );
-//        });
-        
-//        if (testResult.success) {
-//            console.log('✅ Test notification sent successfully!');
-//            showNotificationStatus('Advanced test completed successfully!', 'success');
-//        } else {
-//            console.log('❌ Test notification failed:', testResult.error);
-            
-//            // שלב 5: אם נכשל, נסה direct test
-//            console.log('\n🎯 Step 5: Trying direct token test as fallback...');
-//            testDirectToken("Fallback Test", "Direct test after DB test failed");
-//        }
-        
-//        console.log('==========================================');
-//        return testResult.success;
-        
-//    } catch (error) {
-//        console.error('❌ Advanced test error:', error);
-//        showNotificationStatus('Advanced test failed: ' + error, 'danger');
-//        return false;
-//    }
-//};
-
-//// פונקציה נוספת לבדיקה מהירה של הטוקן
-//window.quickTokenCheck = function() {
-//    console.log('=== Quick Token Check ===');
-//    console.log('Current User:', currentUser ? `${currentUser.email} (ID: ${currentUser.id})` : 'Not logged in');
-//    console.log('FCM Token:', currentFCMToken ? `${currentFCMToken.substring(0, 30)}...` : 'None');
-//    console.log('Notifications Initialized:', notificationsInitialized);
-//    console.log('Firebase App:', window.app ? 'Available' : 'Not available');
-//    console.log('Messaging Object:', messaging ? 'Available' : 'Not available');
-    
-//    if (currentUser && currentFCMToken) {
-//        console.log('✅ Ready to send notifications');
-        
-//        // אפשרות לבדוק ישירות את הטוקן
-//        console.log('\n🎯 You can test the token directly by running:');
-//        console.log('testDirectToken()');
-//        console.log('\n📤 Or send token to server by running:');
-//        console.log('sendTokenToServer()');
-        
-//        return true;
-//    } else {
-//        console.log('❌ Not ready for notifications');
-        
-//        if (!currentUser) {
-//            console.log('💡 Please log in first');
-//        }
-//        if (!currentFCMToken) {
-//            console.log('💡 No FCM token - try refreshing page or check browser permissions');
-//        }
-        
-//        return false;
-//    }
-//};
 
 // פונקציה לשליחת הטוקן לשרת ידנית
-window.sendTokenToServer = function() {
+window.sendTokenToServer = function () {
     if (!currentUser) {
         console.log('❌ No user logged in');
         showNotificationStatus('Please log in first', 'warning');
         return;
     }
-    
+
     if (!currentFCMToken) {
         console.log('❌ No FCM token available');
         showNotificationStatus('No FCM token available', 'warning');
         return;
     }
-    
+
     console.log('📤 Sending FCM token to server...');
     console.log('User ID:', currentUser.id);
     console.log('Token:', `${currentFCMToken}`);
-    
+
     saveFCMTokenToServer(currentUser.id, currentFCMToken);
 };
-
-//// פונקציה לבדיקת טוקן ישירה (בלי בדיקה ב-DB) - מיותר לפרודקשן
-//window.testDirectToken = function(title = "Direct Token Test", body = "This is a direct token test notification!") {
-//    if (!currentFCMToken) {
-//        console.log('❌ No FCM token available');
-//        showNotificationStatus('No FCM token available - please refresh page', 'warning');
-//        return;
-//    }
-    
-//    console.log('🎯 Testing direct token...');
-//    console.log('Token:', `${currentFCMToken.substring(0, 30)}...`);
-//    console.log('Title:', title);
-//    console.log('Body:', body);
-    
-//    // שלח בקשה ל-endpoint החדש
-//    ajaxCall(
-//        "POST",
-//        serverUrl + `Notifications/TestDirectToken?fcmToken=${encodeURIComponent(currentFCMToken)}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`,
-//        null,
-//        function(response) {
-//            console.log('✅ Direct token test successful:', response);
-//            showNotificationStatus('Direct token test sent successfully! Check your device.', 'success');
-            
-//            // הצג גם התראה מקומית לבדיקה
-//            setTimeout(() => {
-//                showCustomNotification(
-//                    title, 
-//                    body,
-//                    { url: window.location.href }
-//                );
-//            }, 1000);
-//        },
-//        function(xhr) {
-//            console.error('❌ Direct token test failed:', xhr.status, xhr.responseText);
-//            showNotificationStatus(`Direct token test failed: ${xhr.status} - ${xhr.responseText}`, 'danger');
-//        }
-//    );
-//}
 
 /*
 // =============================================================================
@@ -2211,29 +1643,29 @@ window.sendTokenToServer = function() {
 // פונקציה לניקוי טוקן FCM כשמשתמש מתנתק
 function clearFCMTokenOnLogout() {
     console.log('🗑️ Clearing FCM token on logout...');
-    
+
     if (currentFCMToken && subscribedUserId) {
         console.log(`   Clearing token for user: ${subscribedUserId}`);
         console.log(`   Token: ${currentFCMToken.substring(0, 30)}...`);
-        
+
         // שלח בקשה לשרת להסיר את הטוקן הזה מהמשתמש הישן
         ajaxCall(
             "DELETE",
             `${serverUrl}Notifications/ClearSpecificFCMToken?userId=${subscribedUserId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
             null,
-            function(response) {
+            function (response) {
                 console.log('✅ FCM token cleared successfully from previous user');
             },
-            function(xhr) {
+            function (xhr) {
                 console.log('⚠️ Failed to clear FCM token:', xhr.responseText);
             }
         );
     }
-    
+
     // נקה משתנים מקומיים
     subscribedUserId = null;
     // אל תנקה את currentFCMToken כי זה עדיין רלוונטי למכשיר
-    
+
     console.log('✅ Token cleanup completed');
 }
 
@@ -2241,16 +1673,16 @@ function clearFCMTokenOnLogout() {
 window.clearFCMTokenOnLogout = clearFCMTokenOnLogout;
 
 // פונקציה משופרת להחלפת משתמש שמנקה טוקן ישן
-window.switchUserNotifications = function(newUserId) {
+window.switchUserNotifications = function (newUserId) {
     console.log('🔄 Switching user notifications...');
     console.log(`   From user: ${subscribedUserId || 'None'}`);
     console.log(`   To user: ${newUserId}`);
-    
+
     // נקה טוקן מהמשתמש הקודם
     if (subscribedUserId && subscribedUserId !== newUserId) {
         clearFCMTokenOnLogout();
     }
-    
+
     // המתן רגע ואז הרשם למשתמש החדש
     setTimeout(() => {
         if (newUserId && notificationsInitialized) {
@@ -2258,49 +1690,4 @@ window.switchUserNotifications = function(newUserId) {
             subscribeUserToNotifications(newUserId);
         }
     }, 500); // חצי שנייה
-};;
-
-/*
-// =============================================================================
-// FILE SUMMARY - סיכום הקובץ notifications.js
-// =============================================================================
-//
-// קובץ זה מכיל את מערכת ההתראות המלאה של האתר.
-// הקובץ מאורגן לפי קטגוריות עם הערות המסבירות את המטרה של כל קטגוריה:
-//
-// ✅ FUNCTIONS NEEDED FOR PRODUCTION (פונקציות נחוצות לפרודקשן):
-// - Global Variables
-// - Core Notification Functions  
-// - Firebase Initialization Functions
-// - Permission and Token Management
-// - Notification Display Functions
-// - Utility and Status Functions
-// - User Interface Functions
-// - Notification Control Functions
-// - Custom Notification Display
-// - Initialization Management
-// - Page Integration Functions
-// - User Session Management
-// - Token Cleanup Functions
-//
-// ⚠️ FUNCTIONS USEFUL BUT NOT ESSENTIAL (שימושי אבל לא חיוני):
-// - VAPID Key Validation - שימושי לשמור למקרי בעיות
-// - Service Worker Manual Registration - שימושי לשמור למקרי בעיות
-// - Testing Functions - שימושי לבדיקות אבל מיותר לפרודקשן
-//
-// ❌ FUNCTIONS NOT NEEDED IN PRODUCTION (מיותר לפרודקשן):
-// - Debug Functions - מיותר אחרי שהמערכת עובדת
-// - Debug Console Commands - מיותר כי המערכת כבר עובדת
-// - VAPID Key Fixing - מיותר אם המפתחות עובדים
-// - Notification Style Switching - מיותר אם המשתמשים לא משנים סגנון התראות
-// - Page Visibility Simulation - מיותר לפרודקשן
-// - Debug System Functions - מיותר אחרי שהמערכת עובדת
-// - Troubleshooting Functions - מיותר אחרי שהמערכת עובדת יציב
-// - Global Debug Functions - מיותר לפרודקשן אבל שימושי לפיתוח
-// - Advanced Debug Functions - מיותר לפרודקשן, שימושי רק לפיתוח
-// - Cleanup Functions (onUserLogout) - מיותר אם לא משתמשים
-//
-// רוב הפונקציות המוערות כמיותרות כבר מוערות בתוך הקוד ולא מבוצעות.
-// ניתן להסיר אותן בעתיד אבל הן נשארות כעת לצורכי תיעוד ובעיות.
-// =============================================================================
-*/
+};

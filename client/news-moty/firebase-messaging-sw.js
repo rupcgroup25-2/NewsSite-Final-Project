@@ -1,6 +1,6 @@
-﻿// Firebase Messaging Service Worker
-importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js');
+﻿// Firebase Messaging Service Worker - Updated Version
+importScripts('https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging-compat.js');
 
 // Firebase configuration
 const firebaseConfig = {

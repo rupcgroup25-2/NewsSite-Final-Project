@@ -1,6 +1,6 @@
 ﻿// ניהול push notifications עם Firebase
 
-// פונקציה לבדיקת מצב התראות מפורט
+//// פונקציה לבדיקת מצב התראות מפורט
 function debugNotificationStatus() {
     console.log('🔍 === NOTIFICATION DEBUG STATUS ===');
     console.log('📱 Notification permission:', Notification.permission);
@@ -273,7 +273,7 @@ async function validateVAPIDKeyAndProject() {
     }
 }
 
-// פונקציה לטיפול בבעיות VAPID Key
+//// פונקציה לטיפול בבעיות VAPID Key
 async function fixVAPIDKeyIssues() {
     try {
         console.log('🔧 Attempting to fix VAPID key issues...');

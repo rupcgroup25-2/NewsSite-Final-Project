@@ -543,7 +543,7 @@ function renderFollowingUsers() {
         <div class="following-users-container">
             <div class="row g-3">
             ${followingUsers.map((user, index) => {
-                const imageUrl = user.imageUrl || `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg?t=${Date.now()}`;
+                const imageUrl = user.imageUrl || `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg`;
                 const fallbackInitial = (user.name || 'U').charAt(0).toUpperCase();
                 const statusClass = user.active ? 'following-user-status-active' : 'following-user-status-blocked';
                 const statusTitle = user.active ? 'Active' : 'Blocked';
@@ -985,11 +985,8 @@ function renderProfileError() {
 
 // פונקציה ליצירת HTML של תמונת פרופיל עם ברירת מחדל
 function getProfileImageHtml(profile) {
-    const baseImageUrl = currentUser.imageUrl || 
-        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg?t=${Date.now()}`;
-    
-    // הוסף cache-busting parameter כדי למנוע בעיות cache בדפדפן
-    const imageUrl = baseImageUrl + '?t=' + new Date().getTime();
+    const imageUrl = profile.imageUrl || 
+        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${profile.id}.jpg`;
     
     const fallbackInitial = (profile.name || 'User').charAt(0).toUpperCase();
     
@@ -1379,62 +1376,19 @@ $(document).on('click', '#testNotificationBtn', function () {
     }, 3000);
 });
 
-// פונקציה לרענון תמונת פרופיל בכל האתר
+// פונקציה לרענון תמונת פרופיל פשוטה
 function refreshProfileImageGlobally() {
-    const timestamp = new Date().getTime();
-    const baseImageUrl = currentUser.imageUrl || 
-        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg?t=${Date.now()}`;
-    const imageUrlWithCache = baseImageUrl + '?t=' + timestamp;
+    const imageUrl = currentUser.imageUrl || 
+        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg`;
     
     // עדכן את תמונת הפרופיל בכל מקום שהיא מופיעה
-    $('#profilePic').attr('src', imageUrlWithCache);
+    $('#profilePic').attr('src', imageUrl);
+    $('.user-profile-image').attr('src', imageUrl);
+    $('.current-user-avatar').attr('src', imageUrl);
     
-    // עדכן גם במקומות אחרים אם יש (navbar, header וכו')
-    $('.user-profile-image').attr('src', imageUrlWithCache);
-    $('.current-user-avatar').attr('src', imageUrlWithCache);
-    
-    // שלח הודעה לעמוד האדמין על עדכון התמונה
-    localStorage.setItem('profileImageUpdated', timestamp.toString());
-    
-    // שלח גם PostMessage לכל הטאבים/חלונות הפתוחים
-    try {
-        // שלח לחלון הנוכחי
-        window.postMessage({ type: 'profileImageUpdated', timestamp: timestamp }, '*');
-        
-        // שלח לחלונות אחרים באמצעות localStorage event
-        localStorage.removeItem('profileImageUpdatedEvent');
-        localStorage.setItem('profileImageUpdatedEvent', JSON.stringify({
-            type: 'profileImageUpdated',
-            timestamp: timestamp,
-            userId: currentUser.id
-        }));
-    } catch (e) {
-        console.warn('Could not send cross-window message:', e);
-    }
-    
-    console.log('🖼️ Profile image refreshed globally with cache-busting');
+    console.log('🖼️ Profile image refreshed globally');
 }
 
-// פונקציה למחיקת cache של תמונות בדפדפן
-function clearImageCache() {
-    // יצירת תמונה חדשה כדי לאלץ טעינה מחדש
-    const img = new Image();
-    const baseImageUrl = currentUser.imageUrl || 
-        `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${currentUser.id}.jpg?t=${Date.now()}`;
-    
-    img.onload = function() {
-        console.log('🗑️ Image cache cleared and reloaded');
-        refreshProfileImageGlobally();
-    };
-    
-    img.onerror = function() {
-        console.log('⚠️ Image reload failed, but cache cleared');
-        refreshProfileImageGlobally();
-    };
-    
-    // טען את התמונה עם timestamp חדש
-    img.src = baseImageUrl + '?clear=' + new Date().getTime();
-}
 
 //adding profile picture
 function getAuthToken() {
@@ -1487,8 +1441,8 @@ function bindProfileImageUploadEvents() {
                     currentUser.imageUrl = data.imageUrl;
                     localStorage.setItem('user', JSON.stringify(currentUser));
                     
-                    // נקה את ה-cache ורענן את התמונה
-                    clearImageCache();
+                    // רענן את התמונה
+                    refreshProfileImageGlobally();
                 } else if (data) {
                     showErrorAlert('Image upload failed', 'Upload Failed');
                 }
@@ -1544,8 +1498,8 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
                 currentUser.imageUrl = data.imageUrl;
                 localStorage.setItem('user', JSON.stringify(currentUser));
                 
-                // נקה את ה-cache ורענן את התמונה
-                clearImageCache();
+                // רענן את התמונה
+                refreshProfileImageGlobally();
                 
                 showSuccessAlert('Profile image generated successfully!', 'Image Generated');
             } else {

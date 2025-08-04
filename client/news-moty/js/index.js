@@ -208,9 +208,9 @@ async function fetchAllArticlesOncePerDay() {
 
         // Normal category request
         const apiCategory = categoryMapping[cat];
-        let url = serverUrl + `Articles/top-headlines/pageSize/12/language/en/country/us`;
+        let url = `${serverUrl}Articles/top-headlines?pageSize=12&language=en&country=us`;
         if (apiCategory) {
-            url += `/category/${apiCategory}`;
+            url += `&category=${encodeURIComponent(apiCategory)}`;
         }
 
         return $.ajax({ url, method: "GET" })

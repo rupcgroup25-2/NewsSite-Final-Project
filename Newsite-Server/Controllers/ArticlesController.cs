@@ -522,10 +522,10 @@ namespace Newsite_Server.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetTopHeadlines(
             [FromQuery] int pageSize,
-            [FromQuery] string? language,    // אופציונלי
-            [FromQuery] string? country,     // אופציונלי
-            [FromQuery] string category,     // חובה
-            [FromQuery] int page)
+            [FromQuery] string? language,    // Optional
+            [FromQuery] string? country,     // Optional
+            [FromQuery] string category,     // Required
+            [FromQuery] int page = 0)        // Optional with default value
         {
             if (string.IsNullOrWhiteSpace(category))
                 return BadRequest("Category is required.");

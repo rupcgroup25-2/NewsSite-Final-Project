@@ -269,6 +269,22 @@
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
+/* Fix country names visibility in dark mode */
+[data-bs-theme="dark"] .country-map-container .jvectormap-label {
+    color: #000 !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    font-weight: 500 !important;
+}
+
+[data-bs-theme="dark"] .country-map-container .jvectormap-tip {
+    color: #000 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid #333 !important;
+}
+
 /* Category Pills Enhancement */
 .category-pills {
     background: rgba(var(--bs-primary-rgb), 0.05);
@@ -408,6 +424,16 @@
     
     .search-section {
         padding: 1.5rem;
+    }
+    
+    .search-section .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        color: var(--bs-primary);
+    }
+    
+    .search-date-input {
+        font-size: 0.875rem;
     }
     
     .category-pills {

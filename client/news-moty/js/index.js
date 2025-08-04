@@ -66,17 +66,21 @@ function renderHomeTab() {
             </ul>
         </div>
         <div class="search-section mb-4">
-            <div class="row mb-2">
-                <div class="col-md-6">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="archiveQuery" class="form-label fw-bold">Search Topic</label>
                     <input type="text" id="archiveQuery" class="form-control search-input" placeholder="Search articles by topic...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
+                    <label for="fromDate" class="form-label fw-bold">From Date</label>
                     <input type="date" id="fromDate" class="form-control search-date-input">
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
+                    <label for="toDate" class="form-label fw-bold">To Date</label>
                     <input type="date" id="toDate" class="form-control search-date-input">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label d-none d-md-block">&nbsp;</label>
                     <button class="btn search-btn w-100" onclick="searchArchive()">
                         <i class="bi bi-search"></i> Search
                     </button>

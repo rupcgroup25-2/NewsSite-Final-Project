@@ -239,14 +239,20 @@ function renderProfile() {
                             </h5>
                         </div>
                         <div class="card-body p-4">
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="bi bi-lightbulb text-warning"></i>
-                                </span>
-                                <input type="text" id="profileImagePrompt" 
-                                       class="form-control border-0 shadow-sm" 
-                                       placeholder="Describe your ideal profile image (e.g., 'Professional headshot with blue background')...">
-                                <button class="profile-btn profile-btn-success" 
+                            <div class="profile-image-generate-container">
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="input-group-text bg-light border-0 rounded me-3">
+                                        <i class="bi bi-lightbulb text-warning"></i>
+                                    </span>
+                                    <label for="profileImagePrompt" class="form-label fw-semibold mb-0">
+                                        Describe Your Profile Image
+                                    </label>
+                                </div>
+                                <textarea id="profileImagePrompt" 
+                                       class="form-control border-0 shadow-sm mb-3" 
+                                       rows="3"
+                                       placeholder="Describe your ideal profile image in detail (e.g., 'Professional headshot with blue background, business attire, friendly smile')..."></textarea>
+                                <button class="profile-btn profile-btn-success w-100" 
                                         id="generateProfileImageBtn" type="button">
                                     <i class="bi bi-stars me-2"></i>Generate Image
                                 </button>

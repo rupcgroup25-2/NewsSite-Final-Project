@@ -63,7 +63,7 @@ function createAuthModals() {
                         <div class="auth-icon-container">
                             <i class="bi bi-person-plus-fill"></i>
                         </div>
-                        <h5 class="modal-title fw-bold mb-0" id="registerModalLabel">Join News Hub</h5>
+                        <h5 class="modal-title fw-bold mb-0" id="registerModalLabel">Join MYNews</h5>
                     </div>
                     <button type="button" class="btn-close modern-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

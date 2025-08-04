@@ -999,3 +999,59 @@ h1, h2, h3, h4, h5, h6 {
         #8b5cf6 100%
     );
 }
+
+/* Mobile optimizations for profile image generation */
+@media (max-width: 768px) {
+    .profile-image-generate-container {
+        padding: 1rem 0;
+    }
+    
+    .profile-image-generate-container .input-group-text {
+        width: 50px;
+        height: 50px;
+        border-radius: 50% !important;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.25rem;
+    }
+    
+    #profileImagePrompt {
+        min-height: 120px;
+        font-size: 1rem;
+        padding: 1rem;
+        line-height: 1.5;
+        resize: vertical;
+        border-radius: 0.75rem !important;
+    }
+    
+    #generateProfileImageBtn {
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 0.75rem !important;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    #profileImagePrompt {
+        min-height: 100px;
+        font-size: 0.95rem;
+        padding: 0.875rem;
+    }
+    
+    #generateProfileImageBtn {
+        padding: 0.875rem 1.25rem;
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .profile-image-generate-container .input-group-text {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+}

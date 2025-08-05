@@ -270,8 +270,12 @@ function loadSingleArticle(userId, articleId) {
     return new Promise((resolve, reject) => {
         const params = new URLSearchParams(window.location.search);
         let collection = params.get('collection');
+        let reporterId = params.get('reporterId');
         let apiUrl = '';
-        if (collection == "Shared")
+        if (reporterId.length >= 0 && collection == 'Reported') {
+            apiUrl = serverUrl + `Articles/single${collection}/userId/${reporterId}/articleId/${articleId}`;
+        }
+        else if (collection == "Shared")
             apiUrl = serverUrl + `Articles/single${collection}/articleId/${articleId}`;//add an SP to get article by ID, use the endpoint here.
         else {
             apiUrl = serverUrl + `Articles/single${collection}/userId/${userId}/articleId/${articleId}`;

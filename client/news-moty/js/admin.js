@@ -391,7 +391,7 @@ function renderAdminDashboard({
                                                 <td class="py-3">
                                                     <div class="admin-actions-container">
                                                         ${r.ArticleId !== null ? `
-                                                            <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
+                                                            <a href="article.html?${'&reporterId='+r.ReporterId}&id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
                                                                class="admin-action-btn admin-view-btn"
                                                                target="_blank" title="View Article">
                                                                 <i class="bi bi-eye me-1"></i>View
@@ -717,7 +717,7 @@ function loadTopTags(topCount) {
                                             <h5 class="fw-bold mb-1 text-dark">${tag.tagName}</h5>
                                             <div class="text-muted">
                                                 <i class="bi bi-graph-up me-1"></i>
-                                                ${tag.tagCount} articles
+                                                ${tag.tagCount} users
                                             </div>
                                         </div>
                                         <div class="text-end">
@@ -853,7 +853,7 @@ function renderReportsTable(reports, articles) {
                     <td class="py-3">
                         <div class="admin-actions-container">
                             ${r.ArticleId !== null ? `
-                                <a href="article.html?id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
+                                <a href="article.html?${'&reporterId=' + r.ReporterId}&id=${r.ArticleId}${r.SharerComment ? '&collection=Shared' : '&collection=Reported'}"
                                    class="admin-action-btn admin-view-btn"
                                    target="_blank" title="View Article">
                                     <i class="bi bi-eye me-1"></i>View

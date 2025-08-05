@@ -209,11 +209,5 @@ namespace Newsite_Server.BL
         {
             return this.Email == "admin@newshub.com";
         }
-
-        // Static function to check if email is admin
-        public static bool IsAdminEmail(string email)
-        {
-            return email == "admin@newshub.com";
-        }
     }
 }

@@ -41,6 +41,5 @@ namespace Newsite_Server.BL
         {
             return dbs.GetAllReportsOnArticle();
         }
-
     }
 }

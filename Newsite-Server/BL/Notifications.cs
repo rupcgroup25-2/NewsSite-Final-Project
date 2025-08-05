@@ -17,33 +17,6 @@ namespace Newsite_Server.BL
             notificationService = new NotificationService();
         }
 
-        // Test database connection
-        public bool TestDatabaseConnection()
-        {
-            try
-            {
-                return dbs.TestConnection();
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        //// Test Firebase APIs connection
-        //public async Task<bool> TestFirebaseConnection()
-        //{
-        //    try
-        //    {
-        //        return await notificationService.TestFirebaseProjectConnection();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"❌ Firebase connection test failed: {ex.Message}");
-        //        return false;
-        //    }
-        //}
-
         // Save FCM Token
         public int SaveFCMToken(int userId, string fcmToken)
         {
@@ -73,53 +46,6 @@ namespace Newsite_Server.BL
         {
             return dbs.IsUserNotificationsEnabled(userId);
         }
-
-        // Send test notification
-        public async Task<bool> SendTestNotification(int userId)
-        {
-            try
-            {
-                bool result = await notificationService.SendNotificationToUser(
-                    userId,
-                    "Test Notification",
-                    "This is a test notification from News Hub!",
-                    null // Without data
-                );
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        //// Send direct notification to specific token (without DB check)
-        //public async Task<bool> SendDirectTokenNotification(string fcmToken, string title, string body)
-        //{
-        //    try
-        //    {
-        //        Console.WriteLine($"🎯 Sending direct notification to token: {fcmToken?.Substring(0, Math.Min(30, fcmToken?.Length ?? 0))}...");
-
-        //        bool result = await notificationService.SendDirectNotificationToToken(fcmToken, title, body);
-
-        //        if (result)
-        //        {
-        //            Console.WriteLine("✅ Direct token notification sent successfully");
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine("❌ Failed to send direct token notification");
-        //        }
-
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"❌ Error sending direct token notification: {ex.Message}");
-        //        throw;
-        //    }
-        //}
 
         // Notification for new comment
         public async Task NotifyNewComment(int articleId, string articleTitle, int commenterId, string commenterName)
@@ -218,99 +144,5 @@ namespace Newsite_Server.BL
             var allActiveUsers = dbs.GetAllActiveUserIds();
             await notificationService.SendNotificationToUsers(allActiveUsers, title, message, data);
         }
-
-        // Notification for system update to all users except action performer
-        public async Task NotifySystemUpdateExcludingUser(string title, string message, int excludeUserId)
-        {
-            var data = new Dictionary<string, string>
-            {
-                {"type", "system_update"},
-                {"excludeUserId", excludeUserId.ToString()}, // Add to prevent notifications to action performer
-                {"url", "/"}
-            };
-
-            var allActiveUsers = dbs.GetAllActiveUserIds();
-
-            // Remove the user performing the action
-            allActiveUsers.RemoveAll(userId => userId == excludeUserId);
-
-            if (allActiveUsers.Count > 0)
-            {
-                await notificationService.SendNotificationToUsers(allActiveUsers, title, message, data);
-            }
-        }
-
-        // Birthday notification for user
-        public async Task NotifyBirthday(int userId, string userName)
-        {
-            var data = new Dictionary<string, string>
-            {
-                {"type", "birthday"},
-                {"url", "/profile.html"}
-            };
-
-            await notificationService.SendNotificationToUser(
-                userId,
-                "Happy Birthday!",
-                $"Happy Birthday {userName}! 🎉",
-                data
-            );
-        }
-
-        //// Diagnostic method for Firebase connection
-        //public async Task<bool> DiagnoseFirebaseConnection()
-        //{
-        //    try
-        //    {
-        //        return await notificationService.TestFirebaseProjectConnection();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"❌ Firebase diagnosis failed: {ex.Message}");
-        //        return false;
-        //    }
-        //}
-
-        // Cleanup invalid FCM tokens
-        public async Task<int> CleanupInvalidTokens()
-        {
-            try
-            {
-                return await notificationService.CleanupInvalidTokens();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Token cleanup failed: {ex.Message}");
-                return 0;
-            }
-        }
-
-        //// Statistics for FCM tokens
-        //public object GetTokenStatistics()
-        //{
-        //    try
-        //    {
-        //        return notificationService.GetTokenStatistics();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"❌ Token statistics failed: {ex.Message}");
-        //        return new { error = ex.Message };
-        //    }
-        //}
-
-        //// Comprehensive diagnosis with solutions
-        //public async Task<object> GetComprehensiveDiagnosis()
-        //{
-        //    try
-        //    {
-        //        return await notificationService.GetFCMDiagnosisAndSolutions();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"❌ Comprehensive diagnosis failed: {ex.Message}");
-        //        return new { error = ex.Message, timestamp = DateTime.Now };
-        //    }
-        //}
     }
 }

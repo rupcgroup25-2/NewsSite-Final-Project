@@ -124,7 +124,7 @@ namespace Newsite_Server.Controllers
 
             foreach (var claim in userClaims)
             {
-                Console.WriteLine($"   - {claim.Type}: {claim.Value}");
+                //Console.WriteLine($"   - {claim.Type}: {claim.Value}");
             }
 
             // Verify admin role for debugging purposes
@@ -158,7 +158,7 @@ namespace Newsite_Server.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to send follow notification: {ex.Message}");
+                    //Console.WriteLine($"Failed to send follow notification: {ex.Message}");
                 }
 
                 return Ok("Follow successfully");

@@ -155,22 +155,6 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Article already exists");
         }
 
-        //[HttpPost("AssignTagToArticle")]
-        //public IActionResult AssignTagToArticle(int articleId, int tagId)
-        //{
-        //    if (articleId <= 0 || tagId <= 0)
-        //        return BadRequest("Invalid IDs");
-
-        //    Article article = new Article();
-        //    int result = article.AssignArticleTag(articleId, tagId);
-        //    if (result > 0)
-        //        return Ok("Tag assigned to the article");
-        //    else
-        //    {
-        //        return BadRequest("Couldn't assign tag to the article");
-        //    }
-        //}
-
         // Saves an article for a specific user
         [HttpPost("SaveArticle")]
         public IActionResult SaveArticle(int userId, [FromBody] Article article)
@@ -215,7 +199,7 @@ namespace Newsite_Server.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to send share notification: {ex.Message}");
+                    //Console.WriteLine($"Failed to send share notification: {ex.Message}");
                 }
 
                 return Ok("Article shared successfully");
@@ -491,15 +475,4 @@ namespace Newsite_Server.Controllers
         }
 
     }
-
-
-
-
-
-
-
-
-
 }
-
-

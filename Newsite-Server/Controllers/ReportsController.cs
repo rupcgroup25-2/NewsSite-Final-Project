@@ -34,14 +34,10 @@ namespace Newsite_Server.Controllers
                 // Send notification only to admins, not to the reporting user
                 try
                 {
-                    Console.WriteLine($"🔍 Report submitted: Sending admin notification");
-                    Console.WriteLine($"   Reporter ID: {dto.Report.ReporterId}");
-                    Console.WriteLine($"   Article: {dto.Article.Title}");
-                    
                     // Get the reporter's name
                     User user = new User();
                     string reporterName = user.GetUserNameById(dto.Report.ReporterId) ?? "Unknown User";
-                    Console.WriteLine($"   Reporter name: {reporterName}");
+                    //Console.WriteLine($"   Reporter name: {reporterName}");
                     
                     await notifications.NotifyAdminNewReport(
                         "Article Report", 
@@ -49,8 +45,6 @@ namespace Newsite_Server.Controllers
                         reporterName,
                         dto.Report.ReporterId
                     );
-                    
-                    Console.WriteLine($"✅ Admin notification sent successfully");
                 }
                 catch (Exception ex)
                 {

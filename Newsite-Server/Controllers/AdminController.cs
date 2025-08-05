@@ -47,6 +47,7 @@ namespace Newsite_Server.Controllers
             else
                 return NotFound("No shared articles");
         }
+
         // Gets count of blocked users in the system
         [HttpGet("BlockedUsersCount")]
         public IActionResult GetBlockedUsersCount()
@@ -70,6 +71,7 @@ namespace Newsite_Server.Controllers
             else
                 return NotFound("No reports");
         }
+
         // Gets count of API pull requests for a specific API
         [HttpGet("ArticlePullRequestsCount")]
         public IActionResult ArticlePullRequestsCount(string apiName)

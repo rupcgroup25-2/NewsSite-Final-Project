@@ -56,7 +56,7 @@ namespace Newsite_Server.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to send comment notification: {ex.Message}");
+                    //Console.WriteLine($"Failed to send comment notification: {ex.Message}");
                 }
 
                 return Ok("Comment added successfully.");
@@ -87,102 +87,7 @@ namespace Newsite_Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-        //// Debug endpoint to get notification recipients for an article
-        //[HttpGet("debug/notification-recipients/{articleId}")]
-        //[AllowAnonymous]
-        //public IActionResult GetNotificationRecipients(int articleId, int excludeUserId = 0)
-        //{
-        //    try
-        //    {
-        //        Comment c = new Comment();
-        //        var dbServices = new DAL.DBservices();
-                
-        //        // Get all users who commented on the article
-        //        var usersWhoCommented = dbServices.GetUsersWhoCommentedOnArticle(articleId, excludeUserId);
-                
-        //        // Get all comments on the article
-        //        var allComments = c.GetCommentsByArticle(articleId);
-                
-        //        // Get all FCM Tokens of users who commented
-        //        var usersFromComments = allComments.Select(comment => comment.UserId).Distinct().ToList();
-        //        var fcmTokensForCommenters = dbServices.GetFCMTokensForUsers(usersFromComments);
-                
-        //        var result = new
-        //        {
-        //            ArticleId = articleId,
-        //            ExcludeUserId = excludeUserId,
-        //            UsersWhoWillReceiveNotifications = usersWhoCommented,
-        //            AllCommentsOnArticle = allComments.Select(comment => new { 
-        //                UserId = comment.UserId, 
-        //                CommentText = comment.CommentText,
-        //                Date = comment.CreatedAt
-        //            }),
-        //            UsersFromAllComments = usersFromComments,
-        //            FCMTokensForCommenters = fcmTokensForCommenters,
-        //            TotalNotificationRecipients = usersWhoCommented.Count,
-        //            TotalCommentsOnArticle = allComments.Count,
-        //            TotalUniqueCommenters = usersFromComments.Count,
-        //            CommentersWithFCMTokens = fcmTokensForCommenters.Count
-        //        };
-                
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest($"Error: {ex.Message}");
-        //    }
-        //}
-
-        //// Debug endpoint to analyze FCM tokens for article commenters
-        //[HttpGet("debug/fcm-analysis/{articleId}")]
-        //[AllowAnonymous]
-        //public IActionResult GetFCMAnalysis(int articleId, int excludeUserId = 0)
-        //{
-        //    try
-        //    {
-        //        Comment c = new Comment();
-        //        var dbServices = new DAL.DBservices();
-                
-        //        // Get all comments on the article
-        //        var allComments = c.GetCommentsByArticle(articleId);
-        //        var uniqueCommenters = allComments.Select(comment => comment.UserId).Distinct().ToList();
-                
-        //        // Check FCM Tokens for all commenters
-        //        var analysis = new List<object>();
-        //        foreach (var userId in uniqueCommenters)
-        //        {
-        //            if (userId != excludeUserId)
-        //            {
-        //                var userTokens = dbServices.GetFCMTokensForUsers(new List<int> { userId });
-        //                analysis.Add(new
-        //                {
-        //                    UserId = userId,
-        //                    HasFCMToken = userTokens.Count > 0,
-        //                    FCMTokenCount = userTokens.Count,
-        //                    WillReceiveNotification = userTokens.Count > 0
-        //                });
-        //            }
-        //        }
-                
-        //        var result = new
-        //        {
-        //            ArticleId = articleId,
-        //            ExcludeUserId = excludeUserId,
-        //            TotalCommenters = uniqueCommenters.Count,
-        //            CommentersExcludingRequester = uniqueCommenters.Where(id => id != excludeUserId).Count(),
-        //            CommentersWithFCMTokens = analysis.Count(a => (bool)a.GetType().GetProperty("HasFCMToken").GetValue(a)),
-        //            FCMAnalysis = analysis
-        //        };
-                
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest($"Error: {ex.Message}");
-        //    }
-        //}
-
+        
         // Gets all comments for a specific article
         [HttpGet("article/{articleId}")]
         [AllowAnonymous]

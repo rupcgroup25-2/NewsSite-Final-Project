@@ -41,13 +41,13 @@ namespace Newsite_Server.DAL
             {
                 using (SqlConnection con = connect("myProjDB"))
                 {
-                    Console.WriteLine("✅ Database connection successful");
+                    //Console.WriteLine("✅ Database connection successful");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Database connection failed: {ex.Message}");
+                //Console.WriteLine($"❌ Database connection failed: {ex.Message}");
                 return false;
             }
         }
@@ -91,7 +91,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return null;
             }
         }
@@ -356,7 +356,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -377,7 +377,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -455,7 +455,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return null;
             }
 
@@ -487,7 +487,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return null;
             }
 
@@ -514,7 +514,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -530,7 +530,7 @@ namespace Newsite_Server.DAL
             }
             catch (SqlException ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -552,7 +552,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -579,7 +579,7 @@ namespace Newsite_Server.DAL
             }
             catch (SqlException ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -603,7 +603,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return topTags;
             }
 
@@ -627,7 +627,7 @@ namespace Newsite_Server.DAL
             }
             catch (SqlException ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return topTags;
             }
             finally
@@ -651,7 +651,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -669,7 +669,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -694,7 +694,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -711,7 +711,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -741,7 +741,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -758,7 +758,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -788,7 +788,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
 
@@ -808,19 +808,19 @@ namespace Newsite_Server.DAL
                 }
                 else
                 {
-                    Console.WriteLine("Failed to retrieve TagId.");
+                    //Console.WriteLine("Failed to retrieve TagId.");
                     return 0;
                 }
             }
             catch (SqlException ex)
             {
                 // Handles RAISERROR from SQL
-                Console.WriteLine("SQL Exception: " + ex.Message);
+                //Console.WriteLine("SQL Exception: " + ex.Message);
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -846,7 +846,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
 
@@ -863,12 +863,12 @@ namespace Newsite_Server.DAL
             }
             catch (SqlException ex)
             {
-                Console.WriteLine("SQL Exception: " + ex.Message);
+                //Console.WriteLine("SQL Exception: " + ex.Message);
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -996,7 +996,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1013,7 +1013,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1038,7 +1038,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1054,7 +1054,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1082,7 +1082,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1099,7 +1099,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1125,7 +1125,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1141,7 +1141,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1168,7 +1168,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1185,7 +1185,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1211,7 +1211,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1231,7 +1231,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1372,7 +1372,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1395,7 +1395,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1423,7 +1423,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return null;
             }
 
@@ -1452,7 +1452,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Error: " + ex.Message);
+                //Console.WriteLine("Execution Error: " + ex.Message);
                 return null;
             }
             finally
@@ -1475,7 +1475,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -1492,7 +1492,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -1517,7 +1517,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
 
@@ -1536,7 +1536,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Error: " + ex.Message);
+                //Console.WriteLine("Execution Error: " + ex.Message);
                 return 0;
             }
             finally
@@ -2072,7 +2072,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                //Console.WriteLine("Error: " + ex.Message);
                 return 0;
             }
             finally { con.Close(); }
@@ -2153,7 +2153,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                //Console.WriteLine("Error: " + ex.Message);
                 return 0;
             }
             finally { con.Close(); }
@@ -2180,7 +2180,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                //Console.WriteLine("Error: " + ex.Message);
                 return 0;
             }
             finally { con.Close(); }
@@ -2202,7 +2202,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2221,7 +2221,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Exception: " + ex.Message);
+                //Console.WriteLine("Execution Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2297,7 +2297,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2314,7 +2314,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2339,7 +2339,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2356,7 +2356,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2382,7 +2382,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2408,7 +2408,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2433,7 +2433,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2450,7 +2450,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2519,7 +2519,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
 
@@ -2540,7 +2540,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Error: " + ex.Message);
+                //Console.WriteLine("Execution Error: " + ex.Message);
                 return 0;
             }
             finally
@@ -2563,7 +2563,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
 
@@ -2584,7 +2584,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Execution Error: " + ex.Message);
+                //Console.WriteLine("Execution Error: " + ex.Message);
                 return 0;
             }
             finally
@@ -2606,7 +2606,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
             SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_CountBlockedUsersFinal", con, null);
@@ -2626,7 +2626,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("CountBlockedUsers error: " + ex.Message);
+                //Console.WriteLine("CountBlockedUsers error: " + ex.Message);
                 return 0;
             }
             finally
@@ -2647,7 +2647,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Error: " + ex.Message);
+                //Console.WriteLine("Connection Error: " + ex.Message);
                 return 0;
             }
             SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("sp_GetReportsCountFinal", con, null);
@@ -2667,7 +2667,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("CountBlockedUsers error: " + ex.Message);
+                //Console.WriteLine("CountBlockedUsers error: " + ex.Message);
                 return 0;
             }
             finally
@@ -2692,7 +2692,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2717,7 +2717,7 @@ namespace Newsite_Server.DAL
                     cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
 
                     int updateResult = cmd.ExecuteNonQuery();
-                    Console.WriteLine($"✅ FCM Token updated for existing record, affected rows: {updateResult}");
+                    //Console.WriteLine($"✅ FCM Token updated for existing record, affected rows: {updateResult}");
                     return updateResult > 0 ? 1 : 0;
                 }
                 else
@@ -2730,7 +2730,7 @@ namespace Newsite_Server.DAL
                     cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
 
                     int insertResult = cmd.ExecuteNonQuery();
-                    Console.WriteLine($"✅ New FCM Token inserted, affected rows: {insertResult}");
+                    //Console.WriteLine($"✅ New FCM Token inserted, affected rows: {insertResult}");
                     return insertResult > 0 ? 1 : 0;
                 }
             }
@@ -2739,18 +2739,18 @@ namespace Newsite_Server.DAL
                 // טיפול ספציפי בשגיאות SQL
                 if (sqlEx.Number == 2627 || sqlEx.Number == 2601) // UNIQUE constraint violation
                 {
-                    Console.WriteLine($"⚠️ FCM Token already exists for user {userId}, this is expected");
+                    //Console.WriteLine($"⚠️ FCM Token already exists for user {userId}, this is expected");
                     return 1; // מחזיר הצלחה כי הטוקן כבר קיים
                 }
                 else
                 {
-                    Console.WriteLine($"SQL Exception: {sqlEx.Message} (Error Number: {sqlEx.Number})");
+                    //Console.WriteLine($"SQL Exception: {sqlEx.Message} (Error Number: {sqlEx.Number})");
                     return 0;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2773,7 +2773,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2789,7 +2789,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2812,7 +2812,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2828,7 +2828,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2851,7 +2851,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
 
@@ -2864,12 +2864,12 @@ namespace Newsite_Server.DAL
             try
             {
                 int result = cmd.ExecuteNonQuery();
-                Console.WriteLine($"🗑️ Cleared FCM token for user {userId}, affected rows: {result}");
+                //Console.WriteLine($"🗑️ Cleared FCM token for user {userId}, affected rows: {result}");
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2893,12 +2893,12 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return tokens;
             }
 
             string userIdsString = string.Join(",", userIds);
-            Console.WriteLine($"🔍 Getting FCM tokens for users: {userIdsString}");
+            //Console.WriteLine($"🔍 Getting FCM tokens for users: {userIdsString}");
 
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@UserIds", userIdsString);
@@ -2912,16 +2912,16 @@ namespace Newsite_Server.DAL
                 {
                     string token = reader["FCMToken"].ToString();
                     tokens.Add(token);
-                    Console.WriteLine($"📱 Found token: {token.Substring(0, Math.Min(20, token.Length))}...");
+                    //Console.WriteLine($"📱 Found token: {token.Substring(0, Math.Min(20, token.Length))}...");
                 }
 
-                Console.WriteLine($"📊 Total tokens retrieved: {tokens.Count}");
+                //Console.WriteLine($"📊 Total tokens retrieved: {tokens.Count}");
 
                 // בדיקת כפילויות נוספת ברמת הקוד
                 var uniqueTokens = tokens.Distinct().ToList();
                 if (uniqueTokens.Count != tokens.Count)
                 {
-                    Console.WriteLine($"⚠️ Found duplicates! Original: {tokens.Count}, Unique: {uniqueTokens.Count}");
+                    //Console.WriteLine($"⚠️ Found duplicates! Original: {tokens.Count}, Unique: {uniqueTokens.Count}");
                     tokens = uniqueTokens;
                 }
 
@@ -2929,7 +2929,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Exception in GetFCMTokensForUsers: {ex.Message}");
+                //Console.WriteLine($"❌ Exception in GetFCMTokensForUsers: {ex.Message}");
                 return tokens;
             }
             finally
@@ -2952,7 +2952,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return false;
             }
 
@@ -2967,7 +2967,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return false;
             }
             finally
@@ -2991,7 +2991,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return userIds;
             }
 
@@ -3008,7 +3008,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return userIds;
             }
             finally
@@ -3022,7 +3022,7 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         public List<int> GetUsersWhoCommentedOnArticle(int articleId, int excludeUserId)
         {
-            Console.WriteLine($"🔍 GetUsersWhoCommentedOnArticle called - ArticleId: {articleId}, ExcludeUserId: {excludeUserId}");
+            //Console.WriteLine($"🔍 GetUsersWhoCommentedOnArticle called - ArticleId: {articleId}, ExcludeUserId: {excludeUserId}");
 
             SqlConnection con = null;
             SqlCommand cmd;
@@ -3034,7 +3034,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return userIds;
             }
 
@@ -3046,23 +3046,23 @@ namespace Newsite_Server.DAL
 
             try
             {
-                Console.WriteLine($"📊 Executing SP: sp_GetUsersWhoCommentedOnArticleFinal with ArticleId={articleId}, ExcludeUserId={excludeUserId}");
+                //Console.WriteLine($"📊 Executing SP: sp_GetUsersWhoCommentedOnArticleFinal with ArticleId={articleId}, ExcludeUserId={excludeUserId}");
 
                 SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (reader.Read())
                 {
                     int userId = (int)reader["UserId"];
                     userIds.Add(userId);
-                    Console.WriteLine($"👤 Found user who commented: {userId}");
+                    //Console.WriteLine($"👤 Found user who commented: {userId}");
                 }
                 reader.Close();
 
-                Console.WriteLine($"📊 Total users found: {userIds.Count}");
+                //Console.WriteLine($"📊 Total users found: {userIds.Count}");
                 return userIds;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return userIds;
             }
             finally
@@ -3085,7 +3085,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return followers;
             }
 
@@ -3105,7 +3105,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return followers;
             }
             finally
@@ -3129,7 +3129,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return userIds;
             }
 
@@ -3137,20 +3137,20 @@ namespace Newsite_Server.DAL
 
             try
             {
-                Console.WriteLine("🔍 Debug: Calling sp_GetAllUsersWithNotificationsFinal");
+                //Console.WriteLine("🔍 Debug: Calling sp_GetAllUsersWithNotificationsFinal");
                 SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (reader.Read())
                 {
                     int userId = (int)reader["Id"];
                     userIds.Add(userId);
-                    Console.WriteLine($"   Found user ID: {userId}");
+                    //Console.WriteLine($"   Found user ID: {userId}");
                 }
-                Console.WriteLine($"🔍 Debug: Total users returned by SP: {userIds.Count}");
+                //Console.WriteLine($"🔍 Debug: Total users returned by SP: {userIds.Count}");
                 return userIds;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return userIds;
             }
             finally
@@ -3197,7 +3197,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Connection Exception: " + ex.Message);
+                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
@@ -3208,12 +3208,12 @@ namespace Newsite_Server.DAL
                 cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
 
                 int result = cmd.ExecuteNonQuery();
-                Console.WriteLine($"✅ Deleted {result} invalid FCM token(s)");
+                //Console.WriteLine($"✅ Deleted {result} invalid FCM token(s)");
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("General Exception: " + ex.Message);
+                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -3245,7 +3245,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception getting all FCM tokens: " + ex.Message);
+                //Console.WriteLine("Exception getting all FCM tokens: " + ex.Message);
             }
             finally
             {
@@ -3272,7 +3272,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception getting total FCM tokens count: " + ex.Message);
+                //Console.WriteLine("Exception getting total FCM tokens count: " + ex.Message);
                 return 0;
             }
             finally
@@ -3295,7 +3295,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception getting active FCM tokens count: " + ex.Message);
+                //Console.WriteLine("Exception getting active FCM tokens count: " + ex.Message);
                 return 0;
             }
             finally
@@ -3318,7 +3318,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception getting enabled FCM tokens count: " + ex.Message);
+                //Console.WriteLine("Exception getting enabled FCM tokens count: " + ex.Message);
                 return 0;
             }
             finally
@@ -3341,7 +3341,7 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception getting users with tokens count: " + ex.Message);
+                //Console.WriteLine("Exception getting users with tokens count: " + ex.Message);
                 return 0;
             }
             finally

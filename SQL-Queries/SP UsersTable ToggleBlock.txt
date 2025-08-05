@@ -1,6 +1,6 @@
 USE [igroup102_test2]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_SaveArticleForUserFinal]    Script Date: 21/06/2025 15:45:35 ******/
+/****** Object:  StoredProcedure [dbo].[sp_ToggleBlockSharingFinal]    Script Date: 05/08/2025 11:48:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10,7 +10,7 @@ GO
 -- Create date: <21.06.25>
 -- Description:	<Block or unblock user>
 -- =============================================
-ALTER PROCEDURE sp_ToggleBlockSharingFinal
+ALTER PROCEDURE [dbo].[sp_ToggleBlockSharingFinal]
     @UserId INT
 AS
 BEGIN
@@ -24,5 +24,5 @@ BEGIN
                       WHEN BlockSharing = 0 THEN GETDATE() 
                       ELSE NULL 
                     END
-    WHERE Id = @UserId
+    WHERE Id = @UserId AND [Email] != 'admin@newshub.com'
 END

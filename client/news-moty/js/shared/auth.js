@@ -369,10 +369,6 @@ function checkValidation() {
 
 // Logout
 $(document).on('click', '#logout-btn', function () {
-    currentUser = null;
-    localStorage.removeItem('user');
-    localStorage.removeItem('cachedFollowingUsers');
-    localStorage.removeItem('newsApiCacheV2');
     
     // בטל הרשמה להתראות
     if (typeof unsubscribeUserFromNotifications === 'function') {
@@ -383,6 +379,11 @@ $(document).on('click', '#logout-btn', function () {
     if (typeof window.onUserLogout === 'function') {
         window.onUserLogout();
     }
+
+    currentUser = null;
+    localStorage.removeItem('user');
+    localStorage.removeItem('cachedFollowingUsers');
+    localStorage.removeItem('newsApiCacheV2');
     
     renderUserActions();
     location.reload();

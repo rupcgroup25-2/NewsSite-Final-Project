@@ -321,21 +321,6 @@ class NotificationManager {
         this.loadUserStatus();
     }
 
-    unsubscribeUser() {
-        if (this.subscribedUserId && this.currentFCMToken && typeof serverUrl !== 'undefined' && typeof ajaxCall !== 'undefined') {
-            ajaxCall(
-                "DELETE",
-                serverUrl + `Notifications/ClearFCMToken?userId=${this.subscribedUserId}`,
-                null,
-                () => { }, // Silent success
-                (xhr) => { } // Silent fail
-            );
-        }
-
-        this.subscribedUserId = null;
-        this.hideButton();
-    }
-
     updateUserStatus(userId, isEnabled) {
         localStorage.setItem(`notificationStatus_${userId}`, isEnabled ? 'enabled' : 'disabled');
         localStorage.setItem(`lastNotificationUpdate_${userId}`, Date.now().toString());
@@ -715,7 +700,6 @@ window.onUserLogin = function (user) {
 };
 
 window.onUserLogout = function () {
-    notificationManager.unsubscribeUser();
     clearFCMTokenOnLogout();
 };
 

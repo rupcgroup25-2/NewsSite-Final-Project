@@ -198,9 +198,9 @@ class NotificationManager {
                 window.currentFCMToken = token;
                 currentFCMToken = token;
                 
-                if (currentUser?.id) {
-                    this.saveTokenToServer(currentUser.id, token);
-                }
+                // if (currentUser?.id) {
+                //     this.saveTokenToServer(currentUser.id, token);
+                // }
                 return token;
             } else {
                 // Try to handle service worker registration
@@ -280,7 +280,7 @@ class NotificationManager {
             serverUrl + `Notifications/SaveFCMToken?userId=${userId}&fcmToken=${encodeURIComponent(token)}`,
             null,
             (response) => {
-                this.updateUserStatus(userId, true);
+                // this.updateUserStatus(userId, true);
                 this.isTokenSaving = false;
             },
             (xhr) => {
@@ -304,14 +304,14 @@ class NotificationManager {
         window.subscribedUserId = userId;
         subscribedUserId = userId;
         
-        if (this.currentFCMToken) {
-            this.saveTokenToServer(userId, this.currentFCMToken);
-        } else if (this.messaging) {
-            // Try to get token, but don't wait for it
-            this.getToken().catch(() => {
-                // Silent fail
-            });
-        }
+        // if (this.currentFCMToken) {
+        //     this.saveTokenToServer(userId, this.currentFCMToken);
+        // } else if (this.messaging) {
+        //     // Try to get token, but don't wait for it
+        //     this.getToken().catch(() => {
+        //         // Silent fail
+        //     });
+        // }
         
         this.showButton();
         this.loadUserStatus();
@@ -350,10 +350,10 @@ class NotificationManager {
         
         this.updateIcon(savedStatus === 'enabled');
         
-        // Check server if data is old (30 seconds)
-        if (!lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000) {
-            this.checkServerStatus(userId);
-        }
+        // // Check server if data is old (30 seconds)
+        // if (!lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000) {
+        //     this.checkServerStatus(userId);
+        // }
     }
 
     async checkServerStatus(userId) {
@@ -429,7 +429,7 @@ class NotificationManager {
             });
             
             this.updateUserStatus(userId, false);
-            this.showStatus('Notifications disabled successfully', 'success');
+            this.showStatus('Notifications disabled successfully', 'warning');
         } catch (error) {
             console.error('❌ Error disabling notifications:', error);
             this.showStatus('Error disabling notifications', 'danger');

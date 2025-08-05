@@ -775,10 +775,3 @@ async function fetchMoreArticlesFromAPI(category, offset, limit) {
         return [];
     }
 }
-
-
-
-
-
-
-

@@ -272,7 +272,7 @@ function loadSingleArticle(userId, articleId) {
         let collection = params.get('collection');
         let reporterId = params.get('reporterId');
         let apiUrl = '';
-        if (reporterId.length >= 0 && collection == 'Reported') {
+        if (reporterId != null && collection == 'Reported') {
             apiUrl = serverUrl + `Articles/single${collection}/userId/${reporterId}/articleId/${articleId}`;
         }
         else if (collection == "Shared")
@@ -782,6 +782,7 @@ $(document).ready(async function () {
                 });
         });
     }
+
     $('#articleContainer').html(html);
     if (extractedContent) {
         $('.article-body').html(wrapWordsInSpans(extractedContent));
@@ -858,135 +859,6 @@ function loadVoices() {
     if (!document.getElementById('voice-dropdown-styles')) {
         const style = document.createElement('style');
         style.id = 'voice-dropdown-styles';
-        style.textContent = `
-            /* Light mode styles (default) */
-            .voice-selector-container {
-                background: rgba(255, 255, 255, 0.9);
-                padding: 8px 12px;
-                border-radius: 12px;
-                border: 1px solid #e0e0e0;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            }
-            .voice-selector-container label {
-                color: #6c757d !important;
-                font-weight: 500;
-            }
-            .voice-dropdown {
-                border: 1px solid #d0d0d0 !important;
-                border-radius: 8px !important;
-                background: white !important;
-                color: #333 !important;
-                font-size: 0.85rem !important;
-                padding: 6px 10px !important;
-                transition: all 0.2s ease !important;
-            }
-            .voice-dropdown:focus {
-                border-color: #0d6efd !important;
-                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15) !important;
-                background: #f8f9fa !important;
-            }
-            .voice-dropdown option {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-                background: white;
-                color: #333;
-            }
-            .voice-dropdown option:hover,
-            .voice-dropdown option:checked {
-                background: #f8f9fa !important;
-                color: #212529 !important;
-            }
-
-            /* Dark mode styles */
-            @media (prefers-color-scheme: dark) {
-                .voice-selector-container {
-                    background: rgba(40, 44, 52, 0.95);
-                    border: 1px solid #495057;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-                }
-                .voice-selector-container label {
-                    color: #e9ecef !important;
-                }
-                .voice-dropdown {
-                    border: 1px solid #6c757d !important;
-                    background: #343a40 !important;
-                    color: #f8f9fa !important;
-                }
-                .voice-dropdown:focus {
-                    background: #495057 !important;
-                    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
-                }
-                .voice-dropdown option {
-                    background: #343a40;
-                    color: #f8f9fa;
-                }
-                .voice-dropdown option:hover,
-                .voice-dropdown option:checked {
-                    background: #495057 !important;
-                    color: #ffffff !important;
-                }
-            }
-
-            /* Manual dark mode class support */
-            [data-bs-theme="dark"] .voice-selector-container,
-            .dark-mode .voice-selector-container {
-                background: rgba(40, 44, 52, 0.95);
-                border: 1px solid #495057;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            }
-            [data-bs-theme="dark"] .voice-selector-container label,
-            .dark-mode .voice-selector-container label {
-                color: #e9ecef !important;
-            }
-            [data-bs-theme="dark"] .voice-dropdown,
-            .dark-mode .voice-dropdown {
-                border: 1px solid #6c757d !important;
-                background: #343a40 !important;
-                color: #f8f9fa !important;
-            }
-            [data-bs-theme="dark"] .voice-dropdown:focus,
-            .dark-mode .voice-dropdown:focus {
-                background: #495057 !important;
-                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
-            }
-            [data-bs-theme="dark"] .voice-dropdown option,
-            .dark-mode .voice-dropdown option {
-                background: #343a40;
-                color: #f8f9fa;
-            }
-            [data-bs-theme="dark"] .voice-dropdown option:hover,
-            [data-bs-theme="dark"] .voice-dropdown option:checked,
-            .dark-mode .voice-dropdown option:hover,
-            .dark-mode .voice-dropdown option:checked {
-                background: #495057 !important;
-                color: #ffffff !important;
-            }
-
-            /* Text-to-Speech highlighting styles */
-            .tts-word.highlighted {
-                background-color: #ffeb3b !important;
-                color: #000 !important;
-                padding: 2px 4px;
-                border-radius: 3px;
-                box-shadow: 0 1px 3px rgba(255, 235, 59, 0.5);
-                font-weight: 500;
-                transition: all 0.15s ease-in-out;
-            }
-
-            /* Dark mode highlighting */
-            @media (prefers-color-scheme: dark) {
-                .tts-word.highlighted {
-                    background-color: #ffc107 !important;
-                    color: #000 !important;
-                }
-            }
-            [data-bs-theme="dark"] .tts-word.highlighted,
-            .dark-mode .tts-word.highlighted {
-                background-color: #ffc107 !important;
-                color: #000 !important;
-            }
-        `;
-        document.head.appendChild(style);
     }
 }
 

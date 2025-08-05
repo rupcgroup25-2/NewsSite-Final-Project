@@ -45,23 +45,23 @@ class NotificationManager {
             await this.initFirebase();
             await this.setupMessaging();
             this.isInitialized = true;
-            
+
             // Update global variables for compatibility
             window.notificationsInitialized = true;
             notificationsInitialized = true;
-            
+
             this.loadUserStatus();
             return true;
         } catch (error) {
             console.error('❌ NotificationManager initialization failed:', error);
-            
+
             // Even if Firebase fails, we can still do basic notifications
             this.isInitialized = true;
-            
+
             // Update global variables for compatibility
             window.notificationsInitialized = true;
             notificationsInitialized = true;
-            
+
             this.loadUserStatus();
             return true; // Return true to continue with basic functionality
         }
@@ -95,12 +95,12 @@ class NotificationManager {
             setTimeout(() => this.init(), 200);
             return false;
         }
-        
+
         // Set the VAPID key from global variable if available
         if (typeof vapidKey !== 'undefined') {
             this.vapidKey = window.vapidKey;
         }
-        
+
         return true;
     }
 
@@ -197,24 +197,27 @@ class NotificationManager {
                 // Update global variable for compatibility
                 window.currentFCMToken = token;
                 currentFCMToken = token;
-                
-                // if (currentUser?.id) {
-                //     this.saveTokenToServer(currentUser.id, token);
-                // }
-                return token;
+
+               if (currentUser?.id) {
+                const status = localStorage.getItem(`notificationStatus_${currentUser.id}`);
+                if (status === 'enabled') {
+                    this.saveTokenToServer(currentUser.id, token);
+                }
+            }
+            return token;
             } else {
                 // Try to handle service worker registration
                 await this.handleServiceWorkerRegistration();
             }
         } catch (error) {
             console.error('❌ Error getting FCM token:', error);
-            
+
             // Check if it's a specific Firebase error
             if (error.code === 'messaging/token-subscribe-failed') {
                 // Don't retry if it's an auth error
                 return null;
             }
-            
+
             // For other errors, try service worker fix
             await this.handleServiceWorkerRegistration();
         }
@@ -234,7 +237,7 @@ class NotificationManager {
                             '../firebase-messaging-sw.js',
                             'cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js'
                         ];
-                        
+
                         let registered = false;
                         for (const path of possiblePaths) {
                             try {
@@ -245,7 +248,7 @@ class NotificationManager {
                                 // Silent fail and try next path
                             }
                         }
-                        
+
                         if (registered) {
                             // Wait a bit and retry token generation only if no auth error
                             setTimeout(() => {
@@ -266,21 +269,21 @@ class NotificationManager {
 
     saveTokenToServer(userId, token) {
         if (this.isTokenSaving) return;
-        
+
         // Check if serverUrl is available
         if (typeof serverUrl === 'undefined' || typeof ajaxCall === 'undefined') {
             setTimeout(() => this.saveTokenToServer(userId, token), 1000);
             return;
         }
-        
+
         this.isTokenSaving = true;
-        
+
         ajaxCall(
             "POST",
             serverUrl + `Notifications/SaveFCMToken?userId=${userId}&fcmToken=${encodeURIComponent(token)}`,
             null,
             (response) => {
-                // this.updateUserStatus(userId, true);
+                this.updateUserStatus(userId, true);
                 this.isTokenSaving = false;
             },
             (xhr) => {
@@ -297,22 +300,23 @@ class NotificationManager {
 
     subscribeUser(userId) {
         if (this.subscribedUserId === userId) return;
-        
+
         this.subscribedUserId = userId;
-        
+
         // Update global variables for compatibility
         window.subscribedUserId = userId;
         subscribedUserId = userId;
-        
-        // if (this.currentFCMToken) {
-        //     this.saveTokenToServer(userId, this.currentFCMToken);
-        // } else if (this.messaging) {
-        //     // Try to get token, but don't wait for it
-        //     this.getToken().catch(() => {
-        //         // Silent fail
-        //     });
-        // }
-        
+
+        const status = localStorage.getItem(`notificationStatus_${userId}`);
+        if (this.currentFCMToken && status === 'enabled') {
+            this.saveTokenToServer(userId, this.currentFCMToken);
+        } else if (this.messaging) {
+            // Try to get token, but don't wait for it
+            this.getToken().catch(() => {
+                // Silent fail
+            });
+        }
+
         this.showButton();
         this.loadUserStatus();
     }
@@ -323,11 +327,11 @@ class NotificationManager {
                 "DELETE",
                 serverUrl + `Notifications/ClearFCMToken?userId=${this.subscribedUserId}`,
                 null,
-                () => {}, // Silent success
-                (xhr) => {} // Silent fail
+                () => { }, // Silent success
+                (xhr) => { } // Silent fail
             );
         }
-        
+
         this.subscribedUserId = null;
         this.hideButton();
     }
@@ -347,13 +351,13 @@ class NotificationManager {
         const userId = currentUser.id;
         const savedStatus = localStorage.getItem(`notificationStatus_${userId}`) || 'disabled';
         const lastUpdate = localStorage.getItem(`lastNotificationUpdate_${userId}`);
-        
+
         this.updateIcon(savedStatus === 'enabled');
-        
-        // // Check server if data is old (30 seconds)
-        // if (!lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000) {
-        //     this.checkServerStatus(userId);
-        // }
+
+        // Check server if data is old (30 seconds)
+        if (!lastUpdate || (Date.now() - parseInt(lastUpdate)) > 30000) {
+            this.checkServerStatus(userId);
+        }
     }
 
     async checkServerStatus(userId) {
@@ -372,7 +376,7 @@ class NotificationManager {
                     reject
                 );
             });
-            
+
             const isEnabled = response?.notificationsEnabled === true;
             this.updateUserStatus(userId, isEnabled);
         } catch (error) {
@@ -390,7 +394,7 @@ class NotificationManager {
             this.showStatus('Server not ready, please try again in a moment', 'warning');
             return;
         }
-        
+
         try {
             await new Promise((resolve, reject) => {
                 ajaxCall(
@@ -401,7 +405,7 @@ class NotificationManager {
                     reject
                 );
             });
-            
+
             this.updateUserStatus(userId, true);
             this.showStatus('Notifications enabled successfully', 'success');
         } catch (error) {
@@ -416,7 +420,7 @@ class NotificationManager {
             this.showStatus('Server not ready, please try again in a moment', 'warning');
             return;
         }
-        
+
         try {
             await new Promise((resolve, reject) => {
                 ajaxCall(
@@ -427,9 +431,9 @@ class NotificationManager {
                     reject
                 );
             });
-            
+
             this.updateUserStatus(userId, false);
-            this.showStatus('Notifications disabled successfully', 'warning');
+            this.showStatus('Notifications disabled successfully', 'success');
         } catch (error) {
             console.error('❌ Error disabling notifications:', error);
             this.showStatus('Error disabling notifications', 'danger');
@@ -447,7 +451,7 @@ class NotificationManager {
             this.showStatus('Server not ready, please try again in a moment', 'warning');
             return;
         }
-        
+
         try {
             // If we have a token, save it first
             if (this.currentFCMToken) {
@@ -474,20 +478,20 @@ class NotificationManager {
             });
 
             this.showStatus('Test notification sent! Check your device.', 'success');
-            
+
             // Show local test notification
             setTimeout(() => {
                 this.showCustomNotification(
-                    "Test Notification", 
+                    "Test Notification",
                     "This is a test notification to verify your settings!"
                 );
             }, 1000);
         } catch (error) {
             console.error('❌ Test notification failed:', error);
-            
+
             // Still show local notification as fallback
             this.showCustomNotification(
-                "Test Notification", 
+                "Test Notification",
                 "This is a test notification (local only - server test failed)"
             );
             this.showStatus('Test notification failed on server, but local notification works', 'warning');
@@ -539,7 +543,7 @@ class NotificationManager {
         const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
 
         let useSystem = false;
-        switch(style) {
+        switch (style) {
             case 'system': useSystem = true; break;
             case 'inpage': useSystem = false; break;
             case 'auto': useSystem = !isVisible; break;
@@ -640,7 +644,7 @@ class NotificationManager {
         try {
             const audio = new Audio('/sounds/notification.mp3');
             audio.volume = 0.3;
-            audio.play().catch(() => {});
+            audio.play().catch(() => { });
         } catch (error) {
             // Sound not available, ignore
         }
@@ -667,7 +671,7 @@ class NotificationManager {
 
         const userId = currentUser.id;
         const currentStatus = localStorage.getItem(`notificationStatus_${userId}`) || 'disabled';
-        
+
         if (currentStatus === 'enabled') {
             await this.disable(userId);
         } else {
@@ -676,7 +680,7 @@ class NotificationManager {
     }
 }
 
-window.checkNotificationCapabilities = function() {
+window.checkNotificationCapabilities = function () {
     console.log('🔍 === NOTIFICATION CAPABILITIES CHECK ===');
     console.log('📱 Notification permission:', Notification.permission);
     console.log('🔧 Service Worker support:', 'serviceWorker' in navigator);
@@ -692,31 +696,31 @@ window.checkNotificationCapabilities = function() {
 const notificationManager = new NotificationManager();
 
 // Legacy function compatibility
-window.initNotificationsOnPageLoad = function() {
+window.initNotificationsOnPageLoad = function () {
     notificationManager.showButton();
-    
+
     if (!notificationManager.isInitialized) {
         notificationManager.init();
     }
-    
+
     if (currentUser?.id) {
         notificationManager.subscribeUser(currentUser.id);
     }
 };
 
-window.onUserLogin = function(user) {
+window.onUserLogin = function (user) {
     if (user?.id) {
         notificationManager.subscribeUser(user.id);
     }
 };
 
-window.onUserLogout = function() {
+window.onUserLogout = function () {
     notificationManager.unsubscribeUser();
     clearFCMTokenOnLogout();
 };
 
 // פונקציה לניקוי טוקן FCM כשמשתמש מתנתק
-window.clearFCMTokenOnLogout = function() {
+window.clearFCMTokenOnLogout = function () {
     if (currentFCMToken && subscribedUserId) {
         // שלח בקשה לשרת להסיר את הטוקן הזה מהמשתמש הישן
         if (typeof ajaxCall !== 'undefined' && typeof serverUrl !== 'undefined') {
@@ -724,28 +728,28 @@ window.clearFCMTokenOnLogout = function() {
                 "DELETE",
                 `${serverUrl}Notifications/ClearSpecificFCMToken?userId=${subscribedUserId}&fcmToken=${encodeURIComponent(currentFCMToken)}`,
                 null,
-                function(response) {
+                function (response) {
                     // Token cleared successfully
                 },
-                function(xhr) {
+                function (xhr) {
                     console.error('⚠️ Failed to clear FCM token:', xhr.responseText);
                 }
             );
         }
     }
-    
+
     // נקה משתנים מקומיים
     subscribedUserId = null;
     // אל תנקה את currentFCMToken כי זה עדיין רלוונטי למכשיר
 };
 
 // פונקציה משופרת להחלפת משתמש שמנקה טוקן ישן
-window.switchUserNotifications = function(newUserId) {
+window.switchUserNotifications = function (newUserId) {
     // נקה טוקן מהמשתמש הקודם
     if (subscribedUserId && subscribedUserId !== newUserId) {
         clearFCMTokenOnLogout();
     }
-    
+
     // הרשם למשתמש החדש
     if (newUserId && notificationManager) {
         notificationManager.subscribeUser(newUserId);
@@ -753,14 +757,14 @@ window.switchUserNotifications = function(newUserId) {
 };
 
 // פונקציה לביטול הרשמה למשתמש
-window.unsubscribeUserFromNotifications = function() {
+window.unsubscribeUserFromNotifications = function () {
     // נקה את הטוקן מהשרת לפני התנתקות
     clearFCMTokenOnLogout();
-    
+
     // נקה משתנים גלובליים
     subscribedUserId = null;
     notificationsInitialized = false;
-    
+
     // עדכן UI
     if (notificationManager && notificationManager.hideButton) {
         notificationManager.hideButton();
@@ -768,55 +772,55 @@ window.unsubscribeUserFromNotifications = function() {
 };
 
 // Alias for backward compatibility
-window.hideNotificationButton = function() {
+window.hideNotificationButton = function () {
     if (notificationManager && notificationManager.hideButton) {
         notificationManager.hideButton();
     }
 };
 
-window.sendTestNotification = function(userId) {
+window.sendTestNotification = function (userId) {
     notificationManager.sendTest(userId || currentUser?.id);
 };
 
-window.enableNotifications = function(userId) {
+window.enableNotifications = function (userId) {
     notificationManager.enable(userId || currentUser?.id);
 };
 
-window.disableNotifications = function(userId) {
+window.disableNotifications = function (userId) {
     notificationManager.disable(userId || currentUser?.id);
 };
 
 // פונקציה להחלפת סגנון התראות בקלות
-window.switchNotificationStyle = function(style) {
+window.switchNotificationStyle = function (style) {
     const validStyles = ['system', 'inpage', 'auto'];
     if (!validStyles.includes(style)) {
         console.error('❌ Invalid style. Use: system, inpage, or auto');
         return;
     }
-    
+
     // שמור לפי משתמש נוכחי אם יש
     const userId = currentUser && currentUser.id ? currentUser.id : 'global';
     localStorage.setItem(`notificationStyle_${userId}`, style);
 };
 
 // פונקציה לסימולציה של דף לא פעיל (לבדיקת auto mode)
-window.simulatePageHidden = function() {
+window.simulatePageHidden = function () {
     // שמור מצב מקורי
     const originalVisibilityState = document.visibilityState;
     const originalHidden = document.hidden;
-    
+
     // סמלט מצב hidden
-    Object.defineProperty(document, 'visibilityState', { 
-        value: 'hidden', 
-        writable: true 
+    Object.defineProperty(document, 'visibilityState', {
+        value: 'hidden',
+        writable: true
     });
-    Object.defineProperty(document, 'hidden', { 
-        value: true, 
-        writable: true 
+    Object.defineProperty(document, 'hidden', {
+        value: true,
+        writable: true
     });
-    
+
     console.log('📱 Page simulated as hidden - testing notification...');
-    
+
     // שלח התראת בדיקה
     if (notificationManager) {
         notificationManager.displayInAppNotification({
@@ -826,35 +830,35 @@ window.simulatePageHidden = function() {
             }
         });
     }
-    
+
     // החזר למצב מקורי אחרי 3 שניות
     setTimeout(() => {
-        Object.defineProperty(document, 'visibilityState', { 
-            value: originalVisibilityState, 
-            writable: true 
+        Object.defineProperty(document, 'visibilityState', {
+            value: originalVisibilityState,
+            writable: true
         });
-        Object.defineProperty(document, 'hidden', { 
-            value: originalHidden, 
-            writable: true 
+        Object.defineProperty(document, 'hidden', {
+            value: originalHidden,
+            writable: true
         });
         console.log('👁️ Page visibility restored');
     }, 3000);
 };
 
-window.manuallyUnsubscribeFromNotifications = function(userId) {
+window.manuallyUnsubscribeFromNotifications = function (userId) {
     if (notificationManager.currentFCMToken && confirm('Are you sure you want to stop receiving notifications?')) {
         notificationManager.disable(userId || currentUser?.id);
     }
 };
 
-window.refreshFCMToken = async function(userId) {
+window.refreshFCMToken = async function (userId) {
     if (notificationManager && notificationManager.getToken) {
         try {
             // Clear current token and get new one
             notificationManager.currentFCMToken = null;
             currentFCMToken = null;
             window.currentFCMToken = null;
-            
+
             const newToken = await notificationManager.getToken();
             if (newToken && userId) {
                 notificationManager.saveTokenToServer(userId, newToken);
@@ -868,15 +872,15 @@ window.refreshFCMToken = async function(userId) {
     return false;
 };
 
-window.validateAndRefreshTokenIfNeeded = async function(userId) {
+window.validateAndRefreshTokenIfNeeded = async function (userId) {
     if (!userId || !notificationManager) return false;
-    
+
     try {
         // If no token exists, try to get one
         if (!notificationManager.currentFCMToken) {
             return await window.refreshFCMToken(userId);
         }
-        
+
         // Token exists, assume it's valid
         return true;
     } catch (error) {
@@ -885,7 +889,7 @@ window.validateAndRefreshTokenIfNeeded = async function(userId) {
     }
 };
 
-window.loadNotificationStatus = function(retryCount = 0) {
+window.loadNotificationStatus = function (retryCount = 0) {
     if (notificationManager && notificationManager.loadUserStatus) {
         notificationManager.loadUserStatus();
     } else if (retryCount < 5) {
@@ -894,7 +898,7 @@ window.loadNotificationStatus = function(retryCount = 0) {
     }
 };
 
-window.subscribeUserToNotifications = function(userId) {
+window.subscribeUserToNotifications = function (userId) {
     if (notificationManager && notificationManager.subscribeUser) {
         notificationManager.subscribeUser(userId);
     } else {
@@ -903,7 +907,7 @@ window.subscribeUserToNotifications = function(userId) {
     }
 };
 
-window.initializeNotifications = async function() {
+window.initializeNotifications = async function () {
     if (notificationManager && notificationManager.init) {
         return await notificationManager.init();
     } else {
@@ -912,16 +916,16 @@ window.initializeNotifications = async function() {
     }
 };
 
-window.checkNotificationStatus = function(userId) {
+window.checkNotificationStatus = function (userId) {
     return notificationManager.checkServerStatus(userId || currentUser?.id);
 };
 
-window.showCustomNotification = function(title, body, data) {
+window.showCustomNotification = function (title, body, data) {
     notificationManager.showCustomNotification(title, body, data);
 };
 
 // Also provide it as global function
-window.showCustomNotification = function(title, body, data) {
+window.showCustomNotification = function (title, body, data) {
     if (notificationManager && notificationManager.showCustomNotification) {
         notificationManager.showCustomNotification(title, body, data);
     } else {
@@ -931,7 +935,7 @@ window.showCustomNotification = function(title, body, data) {
 };
 
 // Debug function to check notification status
-window.checkNotificationCapabilities = function() {
+window.checkNotificationCapabilities = function () {
     console.log('🔍 === NOTIFICATION CAPABILITIES CHECK ===');
     console.log('Browser Notification API:', 'Notification' in window ? '✅' : '❌');
     console.log('Service Worker API:', 'serviceWorker' in navigator ? '✅' : '❌');
@@ -939,7 +943,7 @@ window.checkNotificationCapabilities = function() {
     console.log('Firebase Initialized:', notificationManager.isInitialized ? '✅' : '❌');
     console.log('FCM Token Available:', notificationManager.currentFCMToken ? '✅' : '❌');
     console.log('User Subscribed:', notificationManager.subscribedUserId ? `✅ (${notificationManager.subscribedUserId})` : '❌');
-    
+
     if (notificationManager.currentFCMToken) {
         console.log('🚀 Full push notification support');
     } else {
@@ -948,9 +952,9 @@ window.checkNotificationCapabilities = function() {
         console.log('  • In-app notifications when browsing');
         console.log('  • Browser notifications when page is open');
     }
-    
+
     console.log('=====================================');
-    
+
     return {
         browserSupport: 'Notification' in window && 'serviceWorker' in navigator,
         permission: Notification.permission,
@@ -965,14 +969,14 @@ window.checkNotificationCapabilities = function() {
 // ========================================
 
 // Initialize when DOM is ready
-$(document).ready(function() {
+$(document).ready(function () {
     console.log('📱 DOM ready, initializing notifications...');
     // Give more time for all dependencies to load
     setTimeout(() => notificationManager.init(), 500);
 });
 
 // Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     function waitForNavbar() {
         const navbar = document.querySelector('.navbar') || document.getElementById('navbar');
         if (navbar) {

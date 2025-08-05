@@ -323,9 +323,6 @@ function renderProfile() {
                                     Get notified about comments, shares, and updates<br>
                                     <span id="currentStyleHint" class="fw-semibold"></span>
                                 </small>
-                                <button class="profile-btn profile-btn-outline-primary" id="testNotificationBtn">
-                                    <i class="bi bi-bell-fill me-2"></i>Test Notification
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -1114,77 +1111,6 @@ $(document).on('click', '#follow-user-btn', function () {
         }
     );
 });
-
-function addNotificationSettingsToProfile() {
-    if (!currentUser) return;
-
-    const notificationSettings = `
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-bell me-2"></i>Notification Settings
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="notificationsSwitch">
-                    <label class="form-check-label" for="notificationsSwitch">
-                        Receive push notifications
-                    </label>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Notification Style:</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="notificationStyle" id="styleAuto" value="auto" checked>
-                        <label class="form-check-label" for="styleAuto">
-                            🤖 Auto - In-page when visible, system when not
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="notificationStyle" id="styleInPage" value="inpage">
-                        <label class="form-check-label" for="styleInPage">
-                            🎨 In-page - Always show notifications inside the website
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="notificationStyle" id="styleSystem" value="system">
-                        <label class="form-check-label" for="styleSystem">
-                            📱 System - Always show as browser notifications
-                        </label>
-                    </div>
-                </div>
-                
-                <small class="text-muted d-block mb-3">
-                    Get notified about new comments, article shares, and system updates
-                </small>
-                <button class="btn modern-btn-outline btn-sm" id="testNotificationBtn">
-                    <i class="bi bi-bell"></i> Send Test Notification
-                </button>
-            </div>
-        </div>
-    `;
-
-    // הוסף לאחר הכרטיס הראשון בפרופיל
-    const $firstCard = $('#profile .card:first');
-    
-    if ($firstCard.length > 0) {
-        $firstCard.after(notificationSettings);
-    } else {
-        // נסה להוסיף בסוף האזור של הפרופיל
-        const $profile = $('#profile');
-        if ($profile.length > 0) {
-            $profile.append(`<div class="col-12">${notificationSettings}</div>`);
-        }
-    }
-
-    // טען הגדרות נוכחיות
-    loadNotificationSettings();
-    
-    // עדכן את ההסבר הראשוני
-    const currentStyle = localStorage.getItem('notificationStyle') || 'auto';
-    updateStyleHint(currentStyle);
-}
 
 // פונקציה לעדכון הטקסט המסביר
 function updateStyleHint(style) {

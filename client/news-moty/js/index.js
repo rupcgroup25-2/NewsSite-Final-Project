@@ -1,35 +1,4 @@
-﻿
-// Renders the Home tab: welcome message, category filter buttons, and the articles container
-function isAdmin() {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (user == 'admin@newshub.com')
-        return true;
-    else return false
-}
-
-function AdminLinkIfNeeded() {
-    if (isAdmin()) {
-        // מוסיף ל־navbar
-        const navList = document.querySelector('.navbar-nav');
-        const adminItem = document.createElement('li');
-        adminItem.className = 'nav-item';
-        adminItem.innerHTML = '<a class="nav-link" href="admin.html">Admin</a>';
-        navList.appendChild(adminItem);
-
-        // מוסיף גם ל־footer
-        const footerNav = document.querySelector('footer ul.nav');
-        if (footerNav) {
-            const footerItem = document.createElement('li');
-            footerItem.className = 'nav-item';
-            footerItem.innerHTML = '<a class="nav-link text-muted" href="admin.html">Admin</a>';
-            footerNav.appendChild(footerItem);
-        }
-    }
-}
-
-document.addEventListener('DOMContentLoaded', AdminLinkIfNeeded);
-
-// Renders the articles list filtered by a specific category
+﻿// Renders the articles list filtered by a specific category
 // Add NewsAPI category mapping
 const categoryMapping = {
     technology: "technology",

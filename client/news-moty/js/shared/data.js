@@ -18,7 +18,7 @@ availableTags = [
     { id: "environment", name: "Environment", color: "secondary" },
 ];
 
-let currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('currentUser'));
+let currentUser = JSON.parse(localStorage.getItem('user'));
 console.log('Initial currentUser loaded:', currentUser);
 let savedArticles = [];
 let sharedArticles = [];
@@ -26,7 +26,7 @@ let userTags = [];
 
 // Function to update current user when it changes
 function updateCurrentUser() {
-    currentUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('currentUser'));
+    currentUser = JSON.parse(localStorage.getItem('user'));
     console.log('Current user updated:', currentUser);
 }
 

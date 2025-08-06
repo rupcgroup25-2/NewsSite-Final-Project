@@ -1,8 +1,4 @@
 // About Page JavaScript
-
-// Get current user from localStorage
-let currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the page
     initializeAboutPage();

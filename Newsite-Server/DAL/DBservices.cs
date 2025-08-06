@@ -32,25 +32,6 @@ namespace Newsite_Server.DAL
             return con;
         }
 
-        //--------------------------------------------------------------------------------------------------
-        // Test database connection
-        //--------------------------------------------------------------------------------------------------
-        public bool TestConnection()
-        {
-            try
-            {
-                using (SqlConnection con = connect("myProjDB"))
-                {
-                    //Console.WriteLine("✅ Database connection successful");
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                //Console.WriteLine($"❌ Database connection failed: {ex.Message}");
-                return false;
-            }
-        }
 
 
         //===============User===============================================================================
@@ -93,6 +74,14 @@ namespace Newsite_Server.DAL
             {
                 //Console.WriteLine("Execution Exception: " + ex.Message);
                 return null;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
             }
         }
 
@@ -3322,4 +3311,3 @@ namespace Newsite_Server.DAL
 
     }
 }
-

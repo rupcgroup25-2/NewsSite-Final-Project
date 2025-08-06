@@ -735,11 +735,6 @@ function saveProfileChanges() {
         localStorage.setItem('user', JSON.stringify(currentUser));
     }
 
-    // שלח הודעה לעמוד האדמין על עדכון פרופיל משתמש
-    const timestamp = new Date().getTime();
-    localStorage.setItem('userProfileUpdated', timestamp.toString());
-    window.postMessage({ type: 'userProfileUpdated', timestamp: timestamp }, '*');
-
     // Reload profile
     loadUserProfile();
 
@@ -1107,10 +1102,6 @@ function loadNotificationSettings() {
 }
 
 //adding profile picture
-function getAuthToken() {
-    return JSON.parse(localStorage.getItem("user")).token;
-}
-
 function bindProfileImageUploadEvents() {
     // Open file dialog when button is clicked
     $(document).off('click', '#uploadProfileImageBtn').on('click', '#uploadProfileImageBtn', function () {

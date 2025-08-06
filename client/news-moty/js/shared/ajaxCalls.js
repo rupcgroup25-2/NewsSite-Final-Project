@@ -45,31 +45,3 @@ function ajaxCall(method, api, data, successCB, errorCB) {
 
     $.ajax(ajaxSettings);
 }
-
-
-//function ajaxCall(method, api, data, successCB, errorCB) {
-//    const token = getAuthToken();
-
-//    $.ajax({
-//        type: method,
-//        url: api,
-//        data: data,
-//        cache: false,
-//        contentType: "application/json",
-//        //dataType: "json",
-//        success: successCB,
-//        error: function (xhr, status, error) {
-//            // טיפול ב-401 Unauthorized
-//            if (xhr.status === 401) {
-//                removeAuthToken();
-//                alert('Your session has expired. Please log in again.');
-//                window.location.reload();
-//                return;
-//            }
-
-//            if (errorCB) {
-//                errorCB(xhr, status, error);
-//            }
-//        }
-//    });
-//}

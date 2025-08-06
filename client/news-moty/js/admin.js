@@ -593,7 +593,6 @@ async function loadAdminDashboardData() {
             reportsCount: parseCount(reportsCountText),
             dailyLoginsCount: parseCount(dailyLoginsText),
             ArticlePullRequestsCount: parseCount(ArticlePullRequestsCount)
-
         };
 
         renderAdminDashboard({
@@ -984,10 +983,3 @@ function deleteArticleFromNewsApiCacheByUrl(urlToDelete) {
         localStorage.setItem("newsApiCacheV2", JSON.stringify(parsedData));
     }
 }
-
-// הקריאה ל-loadAllReports() הוסרה כדי למנוע שכפול של טבלת הדיווחים
-// הטבלה נוצרת כבר בתוך renderAdminDashboard() עם התמונות
-
-$(document).ready(function () {
-    // אפשר להוסיף כאן פונקציונליות נוספת עבור הדף אם נדרש
-});

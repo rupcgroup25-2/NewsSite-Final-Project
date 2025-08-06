@@ -33,23 +33,11 @@ $(document).ready(function () {
 
     $("#activityCountSelect").on("change", function () {
         const selectedCount = parseInt($(this).val()) || 10;
-        console.log("activityCountSelect changed to:", selectedCount);
         loadRecentActivities(currentUser.id, selectedCount);
     });
 
     loadEmails();
     
-    // פונקציית debug לבדיקת העדפות התראות
-    window.checkNotificationPreferences = function() {
-        console.log('🔍 === NOTIFICATION PREFERENCES DEBUG ===');
-        console.log('📱 localStorage notificationStyle:', localStorage.getItem('notificationStyle'));
-        console.log('📱 Selected radio value:', $('input[name="notificationStyle"]:checked').val());
-        console.log('📱 Radio buttons state:');
-        $('input[name="notificationStyle"]').each(function() {
-            console.log(`  - ${$(this).val()}: ${$(this).is(':checked') ? 'CHECKED' : 'unchecked'}`);
-        });
-        console.log('=====================================');
-    };
 });
 function renderLoginRequired() {
     $('#profile').html(`
@@ -130,9 +118,7 @@ function loadFollowingUsersSCB(response) {
                 });
             }
         }
-        
-        console.log("Loaded following users:", followingUsers);
-        
+                
         // Cache the following users
         localStorage.setItem('cachedFollowingUsers', JSON.stringify(followingUsers));
         
@@ -144,7 +130,6 @@ function loadFollowingUsersSCB(response) {
         if (cached) {
             try {
                 followingUsers = JSON.parse(cached);
-                console.log("Loaded following users from cache");
             } catch (e) {
                 followingUsers = [];
             }
@@ -163,7 +148,6 @@ function loadFollowingUsersECB(xhr) {
     if (cached) {
         try {
             followingUsers = JSON.parse(cached);
-            console.log("Loaded following users from cache due to server error");
         } catch (e) {
             followingUsers = [];
         }
@@ -278,13 +262,6 @@ function renderProfile() {
                             </h5>
                         </div>
                         <div class="card-body p-4">
-                            <div class="form-check form-switch mb-4">
-                                <input class="form-check-input" type="checkbox" id="notificationsSwitch" style="transform: scale(1.2);">
-                                <label class="form-check-label fw-semibold fs-6 user-select-none" for="notificationsSwitch">
-                                    Enable Push Notifications
-                                </label>
-                            </div>
-                            
                             <div class="mb-4">
                                 <label class="form-label fw-semibold user-select-none">Notification Display Style:</label>
                                 <div class="row g-2">
@@ -629,7 +606,6 @@ function bindProfileEvents() {
     // Notification style change handler
     $(document).off('change', 'input[name="notificationStyle"]').on('change', 'input[name="notificationStyle"]', function() {
         const selectedStyle = $(this).val();
-        console.log('📱 Notification style changed to:', selectedStyle);
         localStorage.setItem('notificationStyle', selectedStyle);
         
         // עדכן את הטקסט המסביר
@@ -638,8 +614,6 @@ function bindProfileEvents() {
         // הצג הודעה על השינוי
         $('.notification-status').removeClass('text-warning text-success text-muted text-danger')
             .addClass('text-success').text(`Notification style updated to: ${selectedStyle}`);
-            
-        console.log('✅ Notification style saved to localStorage');
     });
 
     // Unfollow user
@@ -669,8 +643,6 @@ function bindProfileEvents() {
             apiUrl,
             null,
             function success(response) {
-                console.log("Tag added successfully:", response);
-                
                 // הצג הודעת הצלחה עם alert מותאם
                 showSuccessAlert(`Interest "${newTagName}" added successfully!`, 'Interest Added');
                 
@@ -704,8 +676,6 @@ function bindProfileEvents() {
             url,
             null, // No body needed
             function success(response) {
-                console.log("Tag removed successfully:", response);
-                
                 // הצג alert יפה במקום alert רגיל
                 showSuccessAlert(response || `Interest "${tagName}" removed successfully!`, 'Interest Removed');
                 
@@ -1011,7 +981,6 @@ function loadEmails() {
         function success(data) {
             try {
                 allEmails = Array.isArray(data) ? data : [];
-                console.log("Loaded emails:", allEmails.length);
             } catch (error) {
                 console.error("Error processing emails data:", error);
                 allEmails = [];
@@ -1019,7 +988,6 @@ function loadEmails() {
             }
         },
         function error(xhr) {
-            console.log("Failed to fetch emails: " + (xhr.responseText || xhr.statusText));
             allEmails = [];
             // Don't hide the search, just show a message
             if (xhr.status === 500) {
@@ -1121,7 +1089,6 @@ function updateStyleHint(style) {
     };
     
     $('#currentStyleHint').text(hints[style] || hints['auto']);
-    console.log('🎨 Style hint updated to:', style);
 }
 
 // טעינת הגדרות התראות
@@ -1130,177 +1097,14 @@ function loadNotificationSettings() {
     
     // טען הגדרת סוג התראה מ-localStorage קודם כל
     const savedStyle = localStorage.getItem('notificationStyle') || 'auto';
-    console.log('🔄 Loading notification style from localStorage:', savedStyle);
-    
+
     // בחר את הרדיו הנכון
     $(`input[name="notificationStyle"][value="${savedStyle}"]`).prop('checked', true);
     
     // עדכן את ההסבר
     updateStyleHint(savedStyle);
     
-    // בדוק שהפונקציות הנדרשות קיימות
-    if (typeof checkNotificationStatus !== 'function') {
-        console.log('⏳ checkNotificationStatus not ready, retrying...');
-        setTimeout(loadNotificationSettings, 1000); // נסה שוב אחרי שנייה
-        return;
-    }
-    
-    // הוסף loading state
-    $('#notificationsSwitch').prop('disabled', true);
-    $('#testNotificationBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Loading...');
-
-    checkNotificationStatus(currentUser.id).then(isEnabled => {
-        $('#notificationsSwitch').prop('checked', isEnabled).prop('disabled', false);
-        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell-fill me-2"></i>Test Notification');
-        
-        // הצג סטטוס נוכחי
-        const statusText = isEnabled ? 'enabled' : 'disabled';
-        const statusClass = isEnabled ? 'text-success' : 'text-muted';
-        $('.notification-status').remove();
-        $('#notificationsSwitch').parent().append(`
-            <small class="notification-status ${statusClass} d-block mt-1">
-                Notifications are currently ${statusText}
-            </small>
-        `);
-        
-        console.log('✅ Notification settings loaded successfully');
-    }).catch(err => {
-        console.error('❌ Error loading notification status:', err);
-        $('#notificationsSwitch').prop('disabled', false);
-        $('#testNotificationBtn').prop('disabled', false).html('<i class="bi bi-bell-fill me-2"></i>Test Notification');
-        
-        $('.notification-status').remove();
-        $('#notificationsSwitch').parent().append(`
-            <small class="notification-status text-danger d-block mt-1">
-                Error loading notification status
-            </small>
-        `);
-    });
 }
-
-// טיפול בשינוי הגדרות
-$(document).on('change', '#notificationsSwitch', function () {
-    if (!currentUser) return;
-
-    const isEnabled = $(this).is(':checked');
-    const switchElement = $(this);
-    
-    // הוסף visual feedback
-    switchElement.prop('disabled', true);
-    $('.notification-status').removeClass('text-success text-muted text-danger').addClass('text-warning').text('Updating...');
-
-    const originalValue = !isEnabled; // הערך המקורי לפני השינוי
-    
-    const updatePromise = isEnabled ? 
-        new Promise(resolve => {
-            if (typeof enableNotifications === 'function') {
-                enableNotifications(currentUser.id);
-            }
-            setTimeout(resolve, 1000);
-        }) :
-        new Promise(resolve => {
-            if (typeof disableNotifications === 'function') {
-                disableNotifications(currentUser.id);
-            }
-            setTimeout(resolve, 1000);
-        });
-    
-    updatePromise.then(() => {
-        // בדוק את הסטטוס החדש
-        return checkNotificationStatus(currentUser.id);
-    }).then(newStatus => {
-        const statusText = newStatus ? 'enabled' : 'disabled';
-        const statusClass = newStatus ? 'text-success' : 'text-muted';
-        $('.notification-status').removeClass('text-warning text-danger').addClass(statusClass).text(`Notifications are currently ${statusText}`);
-    }).catch(error => {
-        // החזר את המתג למצב המקורי
-        switchElement.prop('checked', originalValue);
-        $('.notification-status').removeClass('text-warning text-success text-muted').addClass('text-danger').text('Error updating notification settings');
-    }).finally(() => {
-        // החזר את השליטה
-        switchElement.prop('disabled', false);
-    });
-});
-
-// שליחת התראת בדיקה
-$(document).on('click', '#testNotificationBtn', function () {
-    if (!currentUser) return;
-    
-    const $btn = $(this);
-    const originalText = $btn.html();
-    
-    // הוסף loading state
-    $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Sending...');
-    
-    // קבל הגדרת סוג התראה מהמשתמש
-    const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
-    console.log('🔧 Testing notification with style:', notificationStyle);
-    
-    // החלט איזה סוג התראה להציג (בדיוק כמו ב-showCustomNotification)
-    const isPageVisible = !document.hidden && document.visibilityState === 'visible';
-    let useSystemNotification = false;
-    
-    switch(notificationStyle) {
-        case 'system':
-            useSystemNotification = true;
-            break;
-        case 'inpage':
-            useSystemNotification = false;
-            break;
-        case 'auto':
-        default:
-            useSystemNotification = !isPageVisible;
-            break;
-    }
-    
-    console.log('🔔 Will use system notification:', useSystemNotification);
-    
-    // הצג התראה לפי הבחירה
-    if (useSystemNotification) {
-        if (Notification.permission === 'granted') {
-            console.log('🔔 Testing system notification');
-            const testNotification = new Notification('Test - System Notification', {
-                body: 'This is a test system notification based on your settings!',
-                icon: '/favicon.ico',
-                tag: 'profile-test',
-                requireInteraction: true
-            });
-            
-            testNotification.onclick = function() {
-                console.log('Profile test notification clicked!');
-                testNotification.close();
-            };
-            
-            setTimeout(() => testNotification.close(), 8000);
-        } else {
-            showWarningAlert('Please allow notifications in your browser first!', 'Notifications Blocked');
-            $btn.prop('disabled', false).html(originalText);
-            return;
-        }
-    } else {
-        // הצג התראת in-page
-        console.log('🔔 Testing in-page notification');
-        if (typeof showCustomNotification === 'function') {
-            showCustomNotification(
-                'Test - In-Page Notification',
-                'This is a test in-page notification based on your settings!',
-                { url: window.location.href }
-            );
-        }
-    }
-    
-    // גם שלח דרך השרת (אם יש) לבדיקת Firebase
-    if (typeof sendTestNotification === 'function') {
-        console.log('🚀 Also sending server test notification...');
-        sendTestNotification(currentUser.id);
-    }
-    
-    // החזר למצב הרגיל אחרי 3 שניות
-    setTimeout(() => {
-        $btn.prop('disabled', false).html(originalText);
-    }, 3000);
-});
-
 
 //adding profile picture
 function getAuthToken() {

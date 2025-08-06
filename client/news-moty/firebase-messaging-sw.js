@@ -19,17 +19,14 @@ firebase.initializeApp(firebaseConfig);
 // Initialize Firebase Messaging
 const messaging = firebase.messaging();
 
-console.log('🔥 Firebase messaging service worker initialized successfully!');
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Received background message:', payload);
     
     // בדוק אם התראות מופעלות עבור המשתמש הנוכחי
     try {
         const notificationStatus = localStorage.getItem('notificationStatus');
         if (notificationStatus === 'disabled') {
-            console.log('🔕 [SW] Skipping background notification - notifications are disabled');
             return Promise.resolve(); // אל תציג את ההתראה
         }
     } catch (error) {
@@ -38,7 +35,6 @@ messaging.onBackgroundMessage((payload) => {
     
     // בדוק אם זה התראה שצריכה להיסנן (למנוע התראות על פעולות של המשתמש הנוכחי)
     if (payload.data && payload.data.excludeUserId) {
-        console.log('🚫 Service Worker: Filtering notification for user:', payload.data.excludeUserId);
         
         // נמנע מהצגת התראה כי זה למשתמש הנוכחי
         return Promise.resolve();
@@ -46,11 +42,9 @@ messaging.onBackgroundMessage((payload) => {
     
     // בדוק הגדרות התראה מlocalStorage
     const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
-    console.log('[SW] Notification style from localStorage:', notificationStyle);
     
     // אם זה inpage only, אל תציג התראת מערכת
     if (notificationStyle === 'inpage') {
-        console.log('[SW] Skipping system notification - inpage mode only');
         return Promise.resolve();
     }
     
@@ -75,13 +69,11 @@ messaging.onBackgroundMessage((payload) => {
         ]
     };
     
-    console.log('[SW] Showing system notification:', notificationTitle);
     return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-    console.log('Notification clicked:', event);
     
     event.notification.close();
     

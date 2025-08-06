@@ -2692,65 +2692,35 @@ namespace Newsite_Server.DAL
             }
             catch (Exception ex)
             {
-                //Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
 
             try
             {
-                // בדוק אם הטוקן כבר קיים
-                string checkQuery = "SELECT COUNT(*) FROM FCMTokensFinal WHERE UserId = @UserId AND FCMToken = @FCMToken";
-                cmd = new SqlCommand(checkQuery, con);
-                cmd.Parameters.AddWithValue("@UserId", userId);
-                cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
+                Dictionary<string, object> paramDic = new Dictionary<string, object>();
+                paramDic.Add("@UserId", userId);
+                paramDic.Add("@FCMToken", fcmToken);
 
-                int count = (int)cmd.ExecuteScalar();
+                // יש להניח שה-SP מבצע UPSERT (הכנסה או עדכון)
+                cmd = CreateCommandWithStoredProcedureGeneral("sp_SaveFCMTokenFinal", con, paramDic);
 
-                if (count > 0)
-                {
-                    // הטוקן כבר קיים, עדכן רק את הזמנים והסטטוס
-                    string updateQuery = @"UPDATE FCMTokensFinal 
-                                         SET IsActive = 1, NotificationsEnabled = 1, UpdatedAt = GETDATE() 
-                                         WHERE UserId = @UserId AND FCMToken = @FCMToken";
-                    cmd = new SqlCommand(updateQuery, con);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-                    cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
-
-                    int updateResult = cmd.ExecuteNonQuery();
-                    //Console.WriteLine($"✅ FCM Token updated for existing record, affected rows: {updateResult}");
-                    return updateResult > 0 ? 1 : 0;
-                }
-                else
-                {
-                    // הטוקן לא קיים, הכנס חדש
-                    string insertQuery = @"INSERT INTO FCMTokensFinal (UserId, FCMToken, IsActive, NotificationsEnabled, CreatedAt, UpdatedAt)
-                                         VALUES (@UserId, @FCMToken, 1, 1, GETDATE(), GETDATE())";
-                    cmd = new SqlCommand(insertQuery, con);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-                    cmd.Parameters.AddWithValue("@FCMToken", fcmToken);
-
-                    int insertResult = cmd.ExecuteNonQuery();
-                    //Console.WriteLine($"✅ New FCM Token inserted, affected rows: {insertResult}");
-                    return insertResult > 0 ? 1 : 0;
-                }
+                int result = cmd.ExecuteNonQuery();
+                return result > 0 ? 1 : 0;
             }
             catch (SqlException sqlEx)
             {
-                // טיפול ספציפי בשגיאות SQL
-                if (sqlEx.Number == 2627 || sqlEx.Number == 2601) // UNIQUE constraint violation
+                // טיפול בשגיאת ייחודיות (אם צריך)
+                if (sqlEx.Number == 2627 || sqlEx.Number == 2601)
                 {
-                    //Console.WriteLine($"⚠️ FCM Token already exists for user {userId}, this is expected");
-                    return 1; // מחזיר הצלחה כי הטוקן כבר קיים
+                    return 1;
                 }
                 else
                 {
-                    //Console.WriteLine($"SQL Exception: {sqlEx.Message} (Error Number: {sqlEx.Number})");
                     return 0;
                 }
             }
             catch (Exception ex)
             {
-                //Console.WriteLine("General Exception: " + ex.Message);
                 return 0;
             }
             finally
@@ -2950,24 +2920,24 @@ namespace Newsite_Server.DAL
             {
                 con = connect("myProjDB");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //Console.WriteLine("General Exception: " + ex.Message);
                 return false;
             }
 
-            string query = "SELECT COUNT(*) FROM FCMTokensFinal WHERE UserId = @UserId AND IsActive = 1 AND NotificationsEnabled = 1";
-            cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@UserId", userId);
-
             try
             {
-                int count = (int)cmd.ExecuteScalar();
+                Dictionary<string, object> paramDic = new Dictionary<string, object>();
+                paramDic.Add("@UserId", userId);
+
+                cmd = CreateCommandWithStoredProcedureGeneral("sp_IsUserNotificationsEnabled", con, paramDic);
+
+                object result = cmd.ExecuteScalar();
+                int count = result != null ? Convert.ToInt32(result) : 0;
                 return count > 0;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //Console.WriteLine("General Exception: " + ex.Message);
                 return false;
             }
             finally

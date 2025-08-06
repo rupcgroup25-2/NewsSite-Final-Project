@@ -126,7 +126,20 @@ function loadSharedArticles(userId) {
             renderSharedTab();
         },
         function () {
-            $("#shared").html('<div class="alert alert-danger text-center">Failed to load shared articles.</div>');
+            $("#shared").html(`
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 350px;">
+                    <div class="card text-center shadow-sm p-4" style="max-width: 450px; width: 100%;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="bi bi-share text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title mb-2">No Shared Articles</h5>
+                            <p class="card-text text-muted">No shared articles found. Be the first to share an article with the community!</p>
+                            <small class="text-muted">Share articles from the home page to see them here.</small>
+                        </div>
+                    </div>
+                </div>
+            `);
         }
     );
 }

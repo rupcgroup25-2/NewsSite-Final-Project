@@ -457,7 +457,14 @@ function loadRecentActivities(userId, count = 10) {
         },
         function error(xhr) {
             console.error("Failed to fetch activities:", xhr.responseText || xhr.statusText);
-            $("#recent-activities-container").html('<p class="text-muted">Could not load recent activities.</p>');
+            $("#recent-activities-container").html(`
+                <div class="text-center p-4">
+                    <i class="bi bi-clock-history display-4 text-muted mb-3 user-select-none"></i>
+                    <h6 class="fw-semibold user-select-none">No Activities Yet</h6>
+                    <p class="text-muted user-select-none">Start using the app to see your activities here!</p>
+                    <small class="text-muted user-select-none">Save articles, share content, or follow users to begin.</small>
+                </div>
+            `);
         }
     );
 }

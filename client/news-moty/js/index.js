@@ -764,7 +764,11 @@ async function loadMoreArticles(category) {
             const newArticles = await fetchMoreArticlesFromAPI(category, currentlyDisplayed, 12);
             if (newArticles.length > 0) {
                 // Update localStorage
-                const updatedArticles = [...articles, ...newArticles];
+                const mergedArticles = [...articles, ...newArticles];
+                const updatedArticles = mergedArticles.filter(
+                    (article, index, self) =>
+                        index === self.findIndex(a => a.id === article.id)
+                );
                 const cacheValue = {
                     date: new Date().toISOString(),
                     articles: updatedArticles

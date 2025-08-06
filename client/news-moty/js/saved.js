@@ -184,7 +184,21 @@ function renderError(message) {
         $articlesContainer = $('#articles-container');
     }
     
-    $articlesContainer.html(`<div class="saved-alert alert-danger">${message}</div>`);
+    // Modern server-style error card
+    $articlesContainer.html(`
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 250px;">
+            <div class="card text-center shadow-sm p-4" style="max-width: 400px; width: 100%;">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-search text-warning" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title mb-2">No Results Found</h5>
+                    <p class="card-text text-muted">${message}</p>
+                    <small class="text-muted">Try adjusting your search terms or browse all saved articles.</small>
+                </div>
+            </div>
+        </div>
+    `);
 }
 
 // Event handlers

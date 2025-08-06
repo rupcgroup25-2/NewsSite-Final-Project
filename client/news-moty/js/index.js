@@ -685,7 +685,12 @@ function fetchArticlesByCategory(category) {
     const $list = $("#articles-list");
     $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
     currentCategory = category;
-    displayedCountByCategory[category] = 0; // Reset count when changing category
+    if (category === "all") {
+         $("#load-more-btn").hide();//hide button in search 
+        displayedCountByCategory[category] = getCachedArticles()?.length || 0;
+    } else {
+        displayedCountByCategory[category] = 12;
+    }
     // Update UI
     $('#category-pills .nav-link').removeClass('active');
     $(`#category-pills .nav-link[data-category="${category}"]`).addClass('active');
@@ -707,22 +712,33 @@ function fetchArticlesByCategory(category) {
 function renderArticlesPage(category, allArticles) {
     const PAGE_SIZE = 12;
     let filtered = filterArticlesByCategory(allArticles, category);
-    let start = displayedCountByCategory[category] || 12;
-    let end = start + PAGE_SIZE;
+
+     let end;
+    if (category === "all") {
+        end = filtered.length; // Show all articles for 'all'
+
+    } else {
+        let start = displayedCountByCategory[category] || PAGE_SIZE;
+        end = start;
+    }
 
     let articlesToShow = filtered.slice(0, end);
     displayedCountByCategory[category] = articlesToShow.length;
 
     renderHeroAndArticles(articlesToShow);
 
-    renderLoadMoreButton(category, filtered.length);
+    renderLoadMoreButton(category);
 }
 
 // Renders the "Load More" button for pagination (hidden for recommended)
 function renderLoadMoreButton(category) {
     const $container = $("#load-more-container");
-    
-    if (category !== "recommended") {
+    if (category === "all" || category === "recommended") {
+        $container.html('');
+        return;
+    }
+
+    if (category !== "recommended" && category !== "all") {
         $container.html(`<button id="load-more-btn" class="btn btn-primary">Load more articles</button>`);
         $("#load-more-btn").off("click").on("click", () => loadMoreArticles(category));
     } else {

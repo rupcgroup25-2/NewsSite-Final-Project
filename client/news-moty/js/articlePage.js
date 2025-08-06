@@ -350,6 +350,8 @@ $(document).on('click', '.save-article-btn-from-view', function () {
 // ================================================
 
 // Global variable for share functionality
+let shareArticleId = null;
+
 $(document).on('click', '.share-article-btn-from-view', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');

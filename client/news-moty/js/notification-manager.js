@@ -544,8 +544,8 @@ window.initNotificationsOnPageLoad = function () {
 
 window.onUserLogin = function (user) {
     if (user?.id) {
-        if (localStorage.getItem("notificationStatus" + user.id) == null)
-            localStorage.setItem("notificationStatus" + user.id, 'enabled')
+        if (localStorage.getItem("notificationStatus_" + user.id) == null)
+            localStorage.setItem("notificationStatus_" + user.id, 'enabled')
         notificationManager.subscribeUser(user.id);
     }
 };

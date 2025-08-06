@@ -109,7 +109,7 @@ class NotificationManager {
                 window.app = initializeApp(firebaseConfig);
             }
 
-            // --- הוספה: רישום Service Worker ידני מהנתיב שלך ---
+            // --- Manual Service Worker registration from your path ---
             const swPath = '/cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js';
             if ('serviceWorker' in navigator) {
                 await navigator.serviceWorker.register(swPath);
@@ -173,7 +173,7 @@ class NotificationManager {
             if (this.currentFCMToken) return this.currentFCMToken;
             if (!this.messaging || !this.messagingModule) return null;
 
-            // --- הוספה: קבל את ה-registration מהנתיב שלך ---
+            // --- Addition: Get registration from your path ---
             const swRegistration = await navigator.serviceWorker.getRegistration('/cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js');
             // ------------------------------------------------
 
@@ -555,7 +555,7 @@ window.onUserLogout = function () {
     clearFCMTokenOnLogout();
 };
 
-// פונקציה לניקוי טוקן FCM כשמשתמש מתנתק
+// Function to clean up FCM token when user logs out
 window.clearFCMTokenOnLogout = function () {
     if (currentFCMToken && subscribedUserId) {
         // שלח בקשה לשרת להסיר את הטוקן הזה מהמשתמש הישן

@@ -1,4 +1,7 @@
-﻿//firebase chat
+﻿// ================================================
+// ================== FIREBASE IMPORTS ===========
+// ================================================
+//firebase chat
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
@@ -6,6 +9,10 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 // Import will be done via script tag in HTML
+
+// ================================================
+// ================== MODALS SETUP ===============
+// ================================================
 
 // Create article-specific modals
 function createArticleModals() {
@@ -73,6 +80,9 @@ function createArticleModals() {
     $('body').append(modalsHtml);
 }
 
+// ================================================
+// ============= FIREBASE INITIALIZATION ==========
+// ================================================
 
 // Import Firebase configuration
 // Firebase configuration will be imported from firebaseConfig.js
@@ -106,7 +116,7 @@ function initializeFirebase() {
     }
 }
 
-// Firebase Auth Setup - התחברות אנונימית לצורך הצ'אט
+// Firebase Auth Setup - Anonymous authentication for chat
 function initializeFirebaseAuth() {
     return new Promise((resolve, reject) => {
         onAuthStateChanged(auth, (user) => {
@@ -114,7 +124,7 @@ function initializeFirebaseAuth() {
                 console.log("User signed in:", user.uid);
                 resolve(user);
             } else {
-                // התחברות אנונימית אם אין משתמש
+                // Anonymous authentication if no user
                 signInAnonymously(auth)
                     .then((result) => {
                         console.log("Anonymous sign in successful:", result.user.uid);
@@ -129,15 +139,19 @@ function initializeFirebaseAuth() {
     });
 }
 
-// פונקציה לאתחול הצ'אט של כתבה
+// ================================================
+// ================ CHAT SYSTEM ===================
+// ================================================
+
+// Initialize chat for the current article
 async function initChat(articleData, userName) {
-    // אתחל Firebase אם עדיין לא אותחל
+    // Initialize Firebase if not already initialized
     if (!app && !initializeFirebase()) {
         console.error("Failed to initialize Firebase");
         return;
     }
 
-    // במקום לקבל articleId, נקבל את כל נתוני הכתבה
+    // Instead of receiving articleId, we get all article data
     const unifiedId = generateUnifiedArticleId(articleData);
 
     if (!unifiedId) {
@@ -147,7 +161,7 @@ async function initChat(articleData, userName) {
 
     console.log("Using unified chat ID:", unifiedId);
 
-    // וודא שהמשתמש מחובר ל-Firebase Auth
+    // Ensure user is connected to Firebase Auth
     try {
         await initializeFirebaseAuth();
     } catch (error) {
@@ -160,29 +174,29 @@ async function initChat(articleData, userName) {
     const chatInput = document.getElementById('chatInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    // בדיקה שכל הרכיבים קיימים
+    // Check that all components exist
     if (!chatContainer || !chatMessages || !chatInput || !sendBtn) {
         console.error("Chat elements not found in DOM");
         return;
     }
 
-    // יצירת reference לאוסף ההודעות של הצ'אט ב-Firestore
+    // Create reference to chat messages collection in Firestore
     const messagesRef = collection(db, 'chatrooms', unifiedId, 'messages');
 
-    // שאילתה למיון ההודעות לפי timestamp
+    // Query to sort messages by timestamp
     const q = query(messagesRef, orderBy('timestamp'));
 
     try {
-        // האזנה לשינויים בזמן אמת
+        // Listen to real-time changes
         const unsubscribe = onSnapshot(q, (snapshot) => {
             chatMessages.innerHTML = '';
             snapshot.forEach(doc => {
                 const msg = doc.data();
-                // בדוק אם זו ההודעה שלי
+                // Check if this is my message
                 const isMine = (msg.userName === userName);
                 const messageClass = isMine ? 'my-message' : 'other-message';
                 const alignClass = isMine ? 'text-end' : 'text-start';
-                // צבע רקע נוסף כבר ב-CSS
+                // Additional background color already in CSS
 
                 const div = document.createElement('div');
                 div.className = `chat-message p-2 mb-1 rounded ${messageClass} ${alignClass}`;
@@ -200,13 +214,13 @@ async function initChat(articleData, userName) {
                 `;
                 chatMessages.appendChild(div);
             });
-            chatMessages.scrollTop = chatMessages.scrollHeight; // גלילה לתחתית
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
         }, (error) => {
             console.error("Error listening to messages:", error);
             chatMessages.innerHTML = '<div class="alert alert-danger">Error loading chat messages</div>';
         });
 
-        // שליחת הודעה
+        // Send message
         sendBtn.onclick = async () => {
             const text = chatInput.value.trim();
             if (!text) return;
@@ -216,7 +230,7 @@ async function initChat(articleData, userName) {
                     text,
                     userName,
                     timestamp: serverTimestamp(),
-                    articleTitle: articleData.title // הוסף את כותרת הכתבה למעקב
+                    articleTitle: articleData.title // Add article title for tracking
                 });
                 chatInput.value = '';
             } catch (error) {
@@ -225,7 +239,7 @@ async function initChat(articleData, userName) {
             }
         };
 
-        // אפשרות לשלוח הודעה בעזרת Enter
+        // Allow sending message with Enter
         chatInput.onkeypress = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -239,26 +253,30 @@ async function initChat(articleData, userName) {
     }
 }
 
+// ================================================
+// ============== ARTICLE LOADING =================
+// ================================================
 
+// Generates unified article ID for chat room identification
 function generateUnifiedArticleId(article) {
     if (!article) return null;
 
-    // אופציה 1: אם יש URL, השתמש בו
+    // Option 1: If there's a URL, use it
     if (article.url) {
-        // נוציא את הדומיין ונשמור רק את החלק הייחודי
+        // Extract domain and keep only the unique part
         const url = new URL(article.url);
         const path = url.pathname + url.search;
-        // נסיר תווים לא חוקיים עבור Firestore collection ID
+        // Remove invalid characters for Firestore collection ID
         return btoa(path).replace(/[^a-zA-Z0-9]/g, '').substring(0, 50);
     }
 
-    // אופציה 2: אם אין URL, נשתמש בכותרת + תאריך פרסום
+    // Option 2: If no URL, use title + publication date
     if (article.title && article.publishedAt) {
         const combined = article.title + article.publishedAt;
         return btoa(combined).replace(/[^a-zA-Z0-9]/g, '').substring(0, 50);
     }
 
-    // אופציה 3: אם זה כתבה מקומית עם ID מספרי, נשתמש בו
+    // Option 3: If it's a local article with numeric ID, use it
     if (article.id && !isNaN(article.id)) {
         return `local_${article.id}`;
     }
@@ -299,7 +317,11 @@ function getArticleIdFromUrl() {
     return params.get('id');
 }
 
-// --- Save Article ---
+// ================================================
+// ================ SAVE ARTICLE ==================
+// ================================================
+
+// Success callback for saving articles
 function saveSCB(responseText) {
     showSuccessToast(responseText, "Article Saved");
     $('.save-article-btn-from-view').text("Article Saved");
@@ -323,8 +345,11 @@ $(document).on('click', '.save-article-btn-from-view', function () {
     saveArticle(article, saveSCB, saveECB);
 });
 
-// --- Share Article ---
-let shareArticleId = null;
+// ================================================
+// ================ SHARE ARTICLE =================
+// ================================================
+
+// Global variable for share functionality
 $(document).on('click', '.share-article-btn-from-view', function () {
     if (!currentUser) {
         $('#loginModal').modal('show');
@@ -351,8 +376,12 @@ $(document).on('click', '#btnShareArticle', function () {
     shareArticle(window.article, comment, shareSCB, shareECB);
 });
 
-// --- Report Article ---
-$(document).on('click', '.report-article-btn-from-view', function () { //inserting the article id to the modal report button
+// ================================================
+// ================ REPORT ARTICLE ================
+// ================================================
+
+// Handle report button clicks from article view
+$(document).on('click', '.report-article-btn-from-view', function () {
     const articleId = $(this).data("id");
     $('#btnReportArticle').data("id", articleId);
     $('#reportModal').modal('show');
@@ -375,7 +404,11 @@ $(document).on('click', '#btnReportArticle', function () {
     reportArticle(window.article, reportSCB, reportECB);
 });
 
-//to split the words in the body to spans
+// ================================================
+// ============= TEXT PROCESSING UTILS ============
+// ================================================
+
+// Wraps individual words in spans for text-to-speech highlighting
 function wrapWordsInSpans(text) {
     return text.split(/(\s+)/).map((word, i) => {
         if (word.trim() === '') return word;
@@ -396,6 +429,11 @@ function findArticleInDB(url) {
     });
 }
 
+// ================================================
+// ============== MAIN PAGE SETUP =================
+// ================================================
+
+// Main document ready function - initializes the article page
 $(document).ready(async function () {
     // Initialize auth modals first
     if (typeof createAuthModals === 'function') {
@@ -408,7 +446,7 @@ $(document).ready(async function () {
     const id = getArticleIdFromUrl();
 
     let articles;
-    window.article = {}; // הוסף את זה לגלובל scope
+    window.article = {}; // Add this to global scope
 
     if (isNaN(id)) {
         const cached = getCachedArticles() || [];
@@ -575,7 +613,7 @@ $(document).ready(async function () {
       </div>
     </div>
 
-    <!-- Live Chat - מועבר לסיידבר -->
+    <!-- Live Chat - moved to sidebar -->
     <div class="card shadow-sm">
       <div class="card-body">
         <h6 class="fw-bold mb-3"><i class="bi bi-chat-square-dots"></i> Live Chat</h6>
@@ -605,7 +643,7 @@ $(document).ready(async function () {
             },
             function (xhr) {
                 console.error("Failed to load comments:", xhr.status, xhr.responseText);
-                // אם נכשל, נסה שוב אחרי רגע
+                // If failed, try again after a moment
                 setTimeout(() => {
                     loadComments(articleId);
                 }, 1000);
@@ -704,10 +742,10 @@ $(document).ready(async function () {
             function (response) {
                 $(e.target).find('#commentInput').val('');
                 
-                // רענן את התגובות והמתן לסיום
+                // Refresh comments and wait for completion
                 loadComments(window.article.id);
                 
-                // הצג הודעת הצלחה רק אחרי שהתגובות נטענו
+                // Show success message only after comments are loaded
                 setTimeout(() => {
                     showSuccessToast(response, "Comment Added");
                 }, 500);
@@ -786,29 +824,33 @@ $(document).ready(async function () {
     $('#articleContainer').html(html);
     if (extractedContent) {
         $('.article-body').html(wrapWordsInSpans(extractedContent));
-        window.extractedContent = extractedContent; // שמור גלובלית לצורך TTS
+        window.extractedContent = extractedContent; // Save globally for TTS
     } else if (window.article.fullText) {
         $('.article-body').html(wrapWordsInSpans(window.article.fullText));
-        window.extractedContent = window.article.fullText; // שמור גלובלית לצורך TTS
+        window.extractedContent = window.article.fullText; // Save globally for TTS
     }
 
-    // אתחל את הצ'אט אחרי שכל ה-HTML נוצר
+    // Initialize chat after all HTML is created
     const userName = currentUser ?
         currentUser.name :
         `Guest_${Math.random().toString(36).substr(2, 5)}`;
 
-    // אתחול בחירת קולות TTS
+    // Initialize TTS voice selection
     setTimeout(() => {
         loadVoices();
     }, 100);
 
-    // וודא שכל האלמנטים קיימים לפני אתחול הצ'אט
+    // Ensure all elements exist before initializing chat
     setTimeout(async () => {
         await initChat(window.article, userName);
-    }, 500); // המתנה קצרה לוודא שהכל נטען
+    }, 500); // Short wait to ensure everything is loaded
 });
 
-//TTS READER
+// ================================================
+// ============ TEXT-TO-SPEECH (TTS) ==============
+// ================================================
+
+// Text-to-Speech functionality
 let speechUtterance = null;
 let isPaused = false;
 let availableVoices = [];
@@ -816,34 +858,34 @@ let pausedText = ''; // Store remaining text when paused
 let pausedAtIndex = 0; // Track where we paused
 let selectedVoice = null; // Store the selected voice globally
 
-// פונקציה לטעינת קולות זמינים
+// Function to load available voices
 function loadVoices() {
     availableVoices = window.speechSynthesis.getVoices();
     const voiceSelect = document.getElementById('voiceSelect');
     
     if (!voiceSelect) return;
 
-    // נקה את הרשימה הקיימת
+    // Clear existing list
     voiceSelect.innerHTML = '<option value="">🎙️ Default Voice</option>';
     
-    // סנן רק קולות באנגלית
+    // Filter only English voices
     const englishVoices = availableVoices.filter(voice => 
         voice.lang.startsWith('en') || voice.lang.includes('US') || voice.lang.includes('GB')
     );
     
-    // הוסף את הקולות הבאנגלית בלבד
+    // Add English voices only
     englishVoices.forEach((voice, index) => {
         const option = document.createElement('option');
-        option.value = availableVoices.indexOf(voice); // שמור את האינדקס המקורי
+        option.value = availableVoices.indexOf(voice); // Store original index
         
-        // הוסף אייקונים לפי סוג הקול
+        // Add icons based on voice type
         let voiceIcon = '🎵';
         if (voice.name.toLowerCase().includes('google')) voiceIcon = '🤖';
         else if (voice.name.toLowerCase().includes('microsoft')) voiceIcon = '💻';
         else if (voice.name.toLowerCase().includes('male')) voiceIcon = '👨';
         else if (voice.name.toLowerCase().includes('female')) voiceIcon = '👩';
         
-        // יצירת שם נקי יותר
+        // Create cleaner name
         let cleanName = voice.name.replace(/Microsoft|Google|Apple/gi, '').trim();
         let region = '';
         if (voice.lang.includes('US')) region = '🇺🇸';
@@ -855,14 +897,14 @@ function loadVoices() {
         voiceSelect.appendChild(option);
     });
     
-    // הוסף CSS לדropdown
+    // Add CSS for dropdown
     if (!document.getElementById('voice-dropdown-styles')) {
         const style = document.createElement('style');
         style.id = 'voice-dropdown-styles';
     }
 }
 
-// טען קולות כשהם מוכנים
+// Load voices when they are ready
 if (window.speechSynthesis.onvoiceschanged !== undefined) {
     window.speechSynthesis.onvoiceschanged = loadVoices;
 }
@@ -886,7 +928,7 @@ function startSpeaking(text) {
     speechUtterance.pitch = 0.9;
     speechUtterance.rate = 0.9;
 
-    // בחירת קול לפי הבחירה של המשתמש
+    // Select voice based on user choice
     const voiceSelect = document.getElementById('voiceSelect');
     const selectedVoiceIndex = voiceSelect ? voiceSelect.value : '';
     
@@ -894,7 +936,7 @@ function startSpeaking(text) {
         selectedVoice = availableVoices[selectedVoiceIndex];
         speechUtterance.voice = selectedVoice;
     } else {
-        // ברירת מחדל - מצא קול באנגלית
+        // Default - find English voice
         const voices = window.speechSynthesis.getVoices();
         let voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Microsoft')));
         if (!voice && voices.length > 0) voice = voices[0];
@@ -1105,7 +1147,10 @@ function highlightSpokenWord(start, end) {
     }
 }
 
-//SUMMARIZE
+// ================================================
+// ================ SUMMARIZE ======================
+// ================================================
+
 $(document).on('click', '#generateSummaryBtn', function () {
     $('#summaryLoading').show();
     $('#articleSummary').text('');

@@ -1,6 +1,11 @@
-﻿// renderAdminDashboard.js - Modern Version
+﻿// ================================================
+// ================ ADMIN DASHBOARD ===============
+// ================================================
+
+// renderAdminDashboard.js - Modern Version
 let allArticles = [];
 
+// Renders the main admin dashboard with statistics and management features
 function renderAdminDashboard({
     users,
     activeUsersCount,
@@ -15,7 +20,7 @@ function renderAdminDashboard({
 }) {
     const $tab = $('#admin');
 
-    // בדיקת הרשאות admin
+    // Check admin permissions
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
         $tab.html(`
             <div class="container-fluid d-flex justify-content-center align-items-center min-height-60vh">
@@ -435,6 +440,12 @@ function renderAdminDashboard({
 
     $tab.html(html);
 }
+
+// ================================================
+// ================ UTILITY FUNCTIONS =============
+// ================================================
+
+// Creates profile image HTML with fallback options
 function getUserProfileImageHtml(user, size = 40) {
     const imageUrl = user.imageUrl ||
         `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${user.id}.jpg`;
@@ -453,7 +464,12 @@ function getUserProfileImageHtml(user, size = 40) {
     `;
 }
 
-// פונקציות עזר לטעינת נתונים עם אימות Token
+// ================================================
+// ================ API AUTHENTICATION ============
+// ================================================
+
+// Helper functions for loading data with token authentication
+// Performs GET request with authentication token
 function getWithAuth(endpoint) {
     return new Promise((resolve, reject) => {
         ajaxCall(
@@ -474,6 +490,7 @@ function getWithAuth(endpoint) {
     });
 }
 
+// Performs GET request with authentication and returns JSON response
 function getWithAuthJson(endpoint) {
     return new Promise((resolve, reject) => {
         ajaxCall(
@@ -481,13 +498,13 @@ function getWithAuthJson(endpoint) {
             serverUrl + endpoint, 
             null,
             function(response) {
-                // אם response הוא כבר object, נחזיר אותו כמו שהוא
-                // אם זה string, ננסה לעשות parse
+                // If response is already an object, return it as is
+                // If it's a string, try to parse it
                 try {
                     const jsonResponse = typeof response === 'string' ? JSON.parse(response) : response;
                     resolve(jsonResponse);
                 } catch (e) {
-                    resolve(response); // נחזיר את הresponse כמו שהוא
+                    resolve(response); // Return the response as is
                 }
             },
             function(xhr, status, error) {
@@ -497,6 +514,7 @@ function getWithAuthJson(endpoint) {
     });
 }
 
+// Performs PUT request with authentication token
 function putWithAuth(endpoint) {
     return new Promise((resolve, reject) => {
         ajaxCall(
@@ -513,13 +531,17 @@ function putWithAuth(endpoint) {
     });
 }
 
-// פונקציה לניתוח טקסטים שמחזירים ספירה (מספרים בלבד)
+// Parses text responses that return counts (numbers only)
 function parseCount(text) {
     const match = text.match(/\d+/);
     return match ? parseInt(match[0], 10) : 0;
 }
 
-// טעינת כל הנתונים לדשבורד
+// ================================================
+// ================ DATA LOADING ==================
+// ================================================
+
+// Loads all data for the admin dashboard
 async function loadAdminDashboardData() {
 
     if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
@@ -540,7 +562,7 @@ async function loadAdminDashboardData() {
 
     $('#admin-tab-li').removeClass('d-none');
 
-    // הצגת Loading
+    // Show loading screen
     $('#admin').html(`
         <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 50vh;">
             <div class="text-center">
@@ -578,7 +600,7 @@ async function loadAdminDashboardData() {
             getWithAuthJson("Reports")
         ]);
 
-        // הנתונים כבר מוכנים - לא צריך להמיר אותם
+        // Data is already ready - no need to transform it
         const users = usersResponse;
         const articles = articlesResponse;
         const reports = reportsResponse;
@@ -622,12 +644,16 @@ async function loadAdminDashboardData() {
     }
 }
 
-// אירועים לכפתורים לשינוי סטטוס משתמשים
+// ================================================
+// ================ USER MANAGEMENT ===============
+// ================================================
+
+// Event handlers for user status change buttons
 $(document).on('click', '.toggle-deactivate-btn', async function () {
     const userId = $(this).data('id');
     const $btn = $(this);
 
-    // הוספת אנימציית טעינה
+    // Add loading animation
     const originalHtml = $btn.html();
     $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span>').prop('disabled', true);
 
@@ -644,7 +670,7 @@ $(document).on('click', '.toggle-block-btn', async function () {
     const userId = $(this).data('id');
     const $btn = $(this);
 
-    // הוספת אנימציית טעינה
+    // Add loading animation
     const originalHtml = $btn.html();
     $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span>').prop('disabled', true);
 
@@ -657,12 +683,16 @@ $(document).on('click', '.toggle-block-btn', async function () {
     }
 });
 
-// טעינה ראשונית כשמסך מוכן
+// ================================================
+// ================ INITIALIZATION ================
+// ================================================
+
+// Initial loading when page is ready
 $(document).ready(function () {
-    renderUserActions?.(); // אם יש לך פונקציה כזו
+    renderUserActions?.(); // If you have such a function
     loadAdminDashboardData();
 
-    // הוספת פונקציית חיפוש למשתמשים
+    // Add user search functionality
     $(document).on('input', '#userSearchInput', function() {
         const searchTerm = $(this).val().toLowerCase();
         const $table = $('#usersTable tbody');
@@ -682,11 +712,12 @@ $(document).ready(function () {
             }
         });
 
-        // עדכון מונה התוצאות
+        // Update results counter
         $('#userSearchResults').text(`${visibleCount} users found`);
     });
 });
 
+// Loads the most popular tags from the API
 function loadTopTags(topCount) {
     ajaxCall(
         "GET",
@@ -745,6 +776,11 @@ function loadTopTags(topCount) {
     );
 }
 
+// ================================================
+// ================ REPORTS MANAGEMENT ============
+// ================================================
+
+// Renders table of reported articles with management options
 function renderReportsTable(reports, articles) {
     html = "";
     if (reports.length === 0) {
@@ -893,8 +929,8 @@ function renderReportsTable(reports, articles) {
     return html;
 }  
 
-// פונקציה זו כרגע לא בשימוש - הטבלה נוצרת ב-renderAdminDashboard עם התמונות
-// נשמרה למקרה של צורך עתידי
+// This function is currently unused - table is created in renderAdminDashboard with images
+// Kept for future needs if required
 function loadAllReports() {
     getWithAuthJson("Reports")
         .then(reports => {
@@ -908,7 +944,7 @@ function loadAllReports() {
         });
 }
 
-// מחברים אירועים דרך delegated event על ה-container (משפר ביצועים ונותן טיפול לדינמיים)
+// Handles click events for deleting individual reports
 $(document).on("click", ".delete-report-btn", function () {
     const articleId = $(this).data("article-id");
     const reporterId = $(this).data("user-id");
@@ -918,6 +954,7 @@ $(document).on("click", ".delete-report-btn", function () {
     }
 });
 
+// Handles click events for deleting articles and all related reports
 $(document).on("click", ".delete-article-btn", function () {
     const articleId = $(this).data("article-id");
     const articleUrl = $(this).data("article-url");
@@ -927,13 +964,14 @@ $(document).on("click", ".delete-article-btn", function () {
     }
 });
 
+// Deletes a specific report by article ID and reporter ID
 function deleteReport(articleId, reporterId) {
     const url = serverUrl + `Admin/DeleteReport?articleId=${articleId}&userId=${reporterId}`;
 
     ajaxCall("DELETE", url, null,
         function (response) {
             showSuccessToast("Report deleted successfully", "Report Deleted");
-            loadAdminDashboardData(); // שונה מ-loadAllReports() כדי לטעון את הטבלה עם התמונות
+            loadAdminDashboardData(); // Changed from loadAllReports() to load table with images
         },
         function (xhr){
             showErrorToast("Failed to delete report: " + (xhr.responseText || xhr.statusText), "Delete Failed");
@@ -941,6 +979,7 @@ function deleteReport(articleId, reporterId) {
     );
 }
 
+// Deletes an article and all related reports
 function deleteArticle(articleId, articleUrl) {
     const url = serverUrl + `Admin/DeleteArticle/${articleId}`;
 
@@ -950,7 +989,7 @@ function deleteArticle(articleId, articleUrl) {
             showSuccessToast("Article and related reports deleted", "Article Deleted");
             deleteArticleFromNewsApiCacheByUrl(articleUrl);
           
-            loadAdminDashboardData(); // שונה מ-loadAllReports() כדי לטעון את הטבלה עם התמונות
+            loadAdminDashboardData(); // Changed from loadAllReports() to load table with images
         },
         function (xhr) {
             showErrorToast("Failed to delete article: " + (xhr.responseText || xhr.statusText), "Delete Failed");
@@ -958,6 +997,7 @@ function deleteArticle(articleId, articleUrl) {
     );
 }
 
+// Removes article from local NewsAPI cache by URL
 function deleteArticleFromNewsApiCacheByUrl(urlToDelete) {
     if (!urlToDelete) {
         console.warn("No article URL provided to delete.");

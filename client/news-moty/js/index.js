@@ -1,5 +1,8 @@
-﻿// Renders the articles list filtered by a specific category
-// Add NewsAPI category mapping
+﻿// ================================================
+// ================ CONFIGURATION =================
+// ================================================
+
+// Maps internal category names to NewsAPI category names
 const categoryMapping = {
     technology: "technology",
     health: "health",
@@ -9,10 +12,20 @@ const categoryMapping = {
     environment: "science", // NewsAPI does not have 'environment', use 'science' as closest
 };
 
+// ================================================
+// ================ GLOBAL STATE ==================
+// ================================================
+
+// Global state variables for articles and current category
 let fetchedArticles = [];
 let searchArticles = []; // Store search results articles
 let currentCategory = (currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all";
 
+// ================================================
+// ================ HOME PAGE RENDERING ===========
+// ================================================
+
+// Renders the main home page with hero section, category pills, search form, and article containers
 function renderHomeTab() {
     console.log('current user tags', currentUser ? currentUser.tags : 'No user logged in');
     // Render the hero section placeholder
@@ -64,13 +77,21 @@ function renderHomeTab() {
     renderArticlesWithHero((currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all");
 }
 
-// Event handlers
+// ================================================
+// ================ INITIALIZATION ================
+// ================================================
+
+// Initialize page when document is ready
 $(document).ready(function () {
     renderHomeTab();
     loadFiveTrendingTags("United States");
 });
 
-// Category filter
+// ================================================
+// ================ ARTICLE LOADING ===============
+// ================================================
+
+// Handle category pill clicks to filter articles
 $(document).on('click', '[data-category]', function () {
     const cat = $(this).data('category');
     // Clear search results when switching categories
@@ -80,6 +101,7 @@ $(document).on('click', '[data-category]', function () {
     fetchArticlesByCategory(cat);
 });
 
+// Fetches articles and renders with hero layout (checks cache first)
 function renderArticlesWithHero(category) {
     // Try cache first
     let articles = getCachedArticles();
@@ -94,6 +116,7 @@ function renderArticlesWithHero(category) {
     });
 }
 
+// Displays hero article (first) and regular articles (rest) in grid layout
 function renderHeroAndArticles(articles) {
     if (!articles || articles.length === 0) {
         $("#hero-article").html("");
@@ -106,6 +129,7 @@ function renderHeroAndArticles(articles) {
     renderExternalArticles(articles.slice(1));
 }
 
+// Renders the hero article with large layout and "Read Full Article" button
 function renderHeroArticle(article) {
     if (!article) {
         $("#hero-article").html("");
@@ -136,6 +160,7 @@ function renderHeroArticle(article) {
     `);
 }
 
+// Fetches all articles from different categories, caches for 24 hours
 async function fetchAllArticlesOncePerDay() {
     const cacheRaw = localStorage.getItem(NEWS_CACHE_KEY);
     if (cacheRaw) {
@@ -174,7 +199,7 @@ async function fetchAllArticlesOncePerDay() {
                     source: article.source
                 }));
             }).catch(e => {
-                console.error("Failed to fetch recommended articles", e);
+                console.log("No recommended articles!", e);
                 return [];
             });
         }
@@ -227,11 +252,13 @@ async function fetchAllArticlesOncePerDay() {
     return allArticles;
 }
 
+// Filters articles by category (returns all if category is "all")
 function filterArticlesByCategory(articles, category) {
     if (category === "all") return articles;
     return articles.filter(a => a.category === category);
 }
 
+// Renders article cards in a responsive grid with action buttons
 function renderExternalArticles(articles) {
     const $list = $("#articles-list");
     $list.empty();
@@ -280,6 +307,7 @@ function renderExternalArticles(articles) {
     });
 }
 
+// Shows error message in the articles list area
 function showError(message) {
     const $list = $("#articles-list");
     $list.html(`
@@ -292,6 +320,7 @@ function showError(message) {
     `);
 }
 
+// Finds article by ID in either main articles or search results
 function getArticleById(id) {
     // First try to find in regular articles
     let article = fetchedArticles.find(a => a.id === id);
@@ -302,7 +331,11 @@ function getArticleById(id) {
     return article;
 }
 
-// --- Trending Tags ---
+// ================================================
+// ================ TRENDING TAGS =================
+// ================================================
+
+// Loads top 5 trending hashtags from Twitter API for specified country
 function loadFiveTrendingTags(country) {
     ajaxCall(
         "GET",
@@ -333,6 +366,7 @@ function loadFiveTrendingTags(country) {
     );
 }
 
+// Shows modal with world map for country selection
 function showCountryMapModal() {
     // removing existing map
     if ($('#countryMapModal').length) {
@@ -376,11 +410,12 @@ function showCountryMapModal() {
     $('#countryMapModal').modal('show');
 }
 
+// Opens country map modal when map button is clicked
 $(document).on('click', '#btnChooseCountry', function () {
     showCountryMapModal();
 });
 
-
+// Handles postMessage events from country map iframe
 window.addEventListener('message', function (event) {
     const countryName = event.data?.countryName;
     if (countryName) {
@@ -389,46 +424,54 @@ window.addEventListener('message', function (event) {
     }
 });
 
-// Delegate click event for dynamic hashtag buttons
+// Clicks hashtag button to auto-fill search input and trigger search
 $(document).on('click', '.hashtag-button', function () {
     const tagText = $(this).text().replace(/^#/, ""); // remove '#' if exists
     $('#archiveQuery').val(tagText); // set the query input
     searchArchive(); // trigger search
 });
 
-// --- Save Article ---
+// ================================================
+// ================ ARTICLE ACTIONS ===============
+// ================================================
+
+// Success callback for saving articles
 function saveSCB(responseText) {
     showSuccessToast(responseText, "Article Saved");
     fetchArticlesByCategory(currentCategory);
 }
 
+// Error callback for saving articles
 function saveECB() {
     showErrorToast("Failed to save article", "Save Error");
 }
 
+// Handle save button clicks on articles
 $(document).on('click', '.save-article-btn', function () {
     const articleId = $(this).data('id');
     const article = getArticleById(articleId);
     saveArticle(article, saveSCB, saveECB);
 });
 
-
-// --- Share Article ---
+// Opens share modal and stores article ID for sharing
 $(document).on('click', '.share-article-btn', function () { //inserting the article id to the modal share button
     const articleId = $(this).data("id");
     $('#btnShareArticle').data("id", articleId);
     $('#shareModal').modal('show');
 });
 
+// Success callback for sharing articles
 function shareSCB(responseText) {
     showSuccessToast(responseText, "Article Shared");
     fetchArticlesByCategory(currentCategory);
 }
 
+// Error callback for sharing articles
 function shareECB(xhr) {
     showErrorToast(xhr.responseText || "Failed to share article.", "Share Error");
 }
 
+// Handle share button clicks in modal
 $(document).on('click', '#btnShareArticle', function () {
     const articleId = $(this).data("id");
     const comment = $("#shareComment").val()?.trim() || "";
@@ -436,44 +479,49 @@ $(document).on('click', '#btnShareArticle', function () {
     shareArticle(article, comment, shareSCB, shareECB);
 });
 
-// --- Report Article ---
+// Opens report modal and stores article ID for reporting
 $(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
     const articleId = $(this).data("id");
     $('#btnReportArticle').data("id", articleId);
     $('#reportModal').modal('show');
 });
 
+// Success callback for reporting articles
 function reportSCB(responseText) {
     showSuccessToast("Report submitted successfully.", "Report Submitted");
-    // המודל והשדות יתנקו ב-articleActions.js
 }
 
+// Error callback for reporting articles
 function reportECB(xhr) {
     showErrorToast(xhr.responseText || "Failed to submit report.", "Report Error");
-    // המודל והשדות יתנקו ב-articleActions.js
 }
 
+// Handle report button clicks in modal (prevents default form submission)
 $(document).on('click', '#btnReportArticle', function (e) {
-    e.preventDefault(); // מנע submit רגיל של הטופס
+    e.preventDefault(); // Prevent normal form submission
     const articleId = $(this).data("id");
     const article = getArticleById(articleId);
     reportArticle(article, reportSCB, reportECB);
 });
 
-// מנע submit רגיל של טופס הדיווח
+// Prevents default form submission for report form
 $(document).on('submit', '#reportForm', function (e) {
     e.preventDefault();
     $('#btnReportArticle').click();
 });
 
-// NewsApi search function
+// ================================================
+// ================ SEARCH FUNCTIONALITY ==========
+// ================================================
+
+// Searches NewsAPI for articles with optional date filtering
 async function searchArchive() {
     const query = $('#archiveQuery').val().trim();
     if (!query) {
         showWarningToast('Please enter a search term', 'Search Required');
         return;
     }
-    
+    $("#load-more-btn").hide();//hide button in search 
     const fromDate = $('#fromDate').val();
     const toDate = $('#toDate').val();
     
@@ -490,6 +538,7 @@ async function searchArchive() {
     }
 }
 
+// Calls the search API with query and date filters
 async function searchNewsAPI(query, fromDate = null, toDate = null) {
     const encodedQuery = encodeURIComponent(query);
     const fromSegment = fromDate ? `/${encodeURIComponent(fromDate)}` : "";
@@ -507,6 +556,7 @@ async function searchNewsAPI(query, fromDate = null, toDate = null) {
     }
 }
 
+// Displays search results in a grid layout with action buttons
 function displayArchiveResults(articles, query) {
     if (!articles || articles.length === 0) {
         $('#archiveResults').html('<div class="alert alert-info">No articles found.</div>');
@@ -526,7 +576,6 @@ function displayArchiveResults(articles, query) {
         const articleId = `search_${index}_${Date.now()}`;
         const isSaved = savedArticles.includes(articleId);
         const tag = { color: "primary", name: query }; // Changed to primary for better visibility
-        console.log(article.source);
         // Create article object for the action buttons
         const articleObj = {
             id: articleId,
@@ -591,6 +640,7 @@ function displayArchiveResults(articles, query) {
     $('#archiveResults').html(html);
 }
 
+// Clears search results and returns to main articles view
 function clearSearchResults() {
     $('#archiveResults').html('');
     $('#articles-list').show();
@@ -607,11 +657,14 @@ function clearSearchResults() {
     currentCategory = (currentUser && currentUser.tags && currentUser.tags.length !== 0) ? "recommended" : "all";
 }
 
+// ================================================
+// ================ FIREBASE SETUP ================
+// ================================================
+
 // Initialize Firebase and notifications when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Index page loaded, initializing notifications...');
     
-    // הפעל את המערכת החדשה להתראות
     if (typeof window.initNotificationsOnPageLoad === 'function') {
         console.log('🔔 Using new notification system...');
         window.initNotificationsOnPageLoad();
@@ -620,15 +673,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ניהול מצב כמה מאמרים מוצגים כרגע בקטגוריה
+// ================================================
+// ================ PAGINATION ====================
+// ================================================
+
+// Tracks how many articles are currently displayed per category
 let displayedCountByCategory = {};
 
+// Fetches and displays articles for a specific category with loading state
 function fetchArticlesByCategory(category) {
     const $list = $("#articles-list");
     $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
     currentCategory = category;
-    displayedCountByCategory[category] = 0; // אפס ספירה כשמשנים קטגוריה
-    // עדכון UI
+    displayedCountByCategory[category] = 0; // Reset count when changing category
+    // Update UI
     $('#category-pills .nav-link').removeClass('active');
     $(`#category-pills .nav-link[data-category="${category}"]`).addClass('active');
 
@@ -645,7 +703,7 @@ function fetchArticlesByCategory(category) {
     });
 }
 
-// פונקציה שמציגה עד 12 מאמרים נוספים
+// Displays up to 12 additional articles with pagination
 function renderArticlesPage(category, allArticles) {
     const PAGE_SIZE = 12;
     let filtered = filterArticlesByCategory(allArticles, category);
@@ -660,6 +718,7 @@ function renderArticlesPage(category, allArticles) {
     renderLoadMoreButton(category, filtered.length);
 }
 
+// Renders the "Load More" button for pagination (hidden for recommended)
 function renderLoadMoreButton(category) {
     const $container = $("#load-more-container");
     
@@ -667,10 +726,11 @@ function renderLoadMoreButton(category) {
         $container.html(`<button id="load-more-btn" class="btn btn-primary">Load more articles</button>`);
         $("#load-more-btn").off("click").on("click", () => loadMoreArticles(category));
     } else {
-        $container.html(''); // הסתרת הכפתור ב recommended
+        $container.html(''); // Hide button for recommended
     }
 }
 
+// Loads more articles for current category (checks cache first, then API)
 async function loadMoreArticles(category) {
     const articles = getCachedArticles() || [];
     const categoryArticles = articles.filter(a => a.category === category);
@@ -679,15 +739,15 @@ async function loadMoreArticles(category) {
     const nextBatch = categoryArticles.slice(currentlyDisplayed, currentlyDisplayed + 12);
 
     if (nextBatch.length > 0) {
-        // עדכן ספירה והצג מחדש
+        // Update count and re-render
         displayedCountByCategory[category] = currentlyDisplayed + nextBatch.length;
         renderHeroAndArticles(categoryArticles.slice(0, displayedCountByCategory[category]));
     } else {
-        // אם אין מספיק בלוקל, נסה למשוך מה־API
+        // If not enough in local, try fetching from API
         try {
             const newArticles = await fetchMoreArticlesFromAPI(category, currentlyDisplayed, 12);
             if (newArticles.length > 0) {
-                // עדכון הלוקל סטורג
+                // Update localStorage
                 const updatedArticles = [...articles, ...newArticles];
                 const cacheValue = {
                     date: new Date().toISOString(),
@@ -695,7 +755,7 @@ async function loadMoreArticles(category) {
                 };
                 localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(cacheValue));
 
-                // עדכן ספירה והצג
+                // Update count and display
                 displayedCountByCategory[category] = currentlyDisplayed + newArticles.length;
                 renderHeroAndArticles(updatedArticles.filter(a => a.category === category).slice(0, displayedCountByCategory[category]));
             } else {
@@ -707,11 +767,12 @@ async function loadMoreArticles(category) {
     }
 }
 
+// Fetches more articles from API with pagination support
 async function fetchMoreArticlesFromAPI(category, offset, limit) {
     const apiCategory = categoryMapping[category];
     const page = Math.ceil(offset / limit) + 1;
 
-    // בונים את ה-URL עם כל הפרמטרים בשורת השאילתה (query string)
+    // Build URL with all parameters in query string
     let url = `${serverUrl}Articles/top-headlines?pageSize=${limit}&language=en&country=us&page=${page}`;
 
     if (apiCategory) {

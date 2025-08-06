@@ -1,21 +1,40 @@
-﻿// Profile Page Logic - Simplified Version
+﻿// ================================================
+// ================ PROFILE PAGE ==================
+// ================================================
+
+// Profile Page Logic - Simplified Version
+
+// ================================================
+// ================ NOTIFICATION HELPERS ==========
+// ================================================
 
 // Modern Toast Notification functions - replace old modal alerts
+// Shows success notification with green styling
 function showSuccessAlert(message, title = 'Success') {
     return showSuccessToast(message, title);
 }
 
+// Shows error notification with red styling
 function showErrorAlert(message, title = 'Error') {
     return showErrorToast(message, title);
 }
 
+// Shows warning notification with yellow styling
 function showWarningAlert(message, title = 'Warning') {
     return showWarningToast(message, title);
 }
 
+// ================================================
+// ================ GLOBAL VARIABLES ==============
+// ================================================
+
 let userProfile = null;
 let followingUsers = [];
 let allEmails = [];
+
+// ================================================
+// ================ INITIALIZATION ================
+// ================================================
 
 $(document).ready(function () {
     renderUserActions();
@@ -39,6 +58,12 @@ $(document).ready(function () {
     loadEmails();
     
 });
+
+// ================================================
+// ================ ACCESS CONTROL ================
+// ================================================
+
+// Renders login required message for non-authenticated users
 function renderLoginRequired() {
     $('#profile').html(`
         <div class="access-required-container">
@@ -61,6 +86,11 @@ function renderLoginRequired() {
     `);
 }
 
+// ================================================
+// ================ PROFILE LOADING ===============
+// ================================================
+
+// Loads user profile data and initializes profile display
 function loadUserProfile() {
     // Check if server is available first
     if (!serverUrl) {
@@ -349,7 +379,7 @@ function renderProfile() {
                             </div>
                         </div>
                         <div class="profile-activity-content" id="recent-activities-container">
-                            <!-- תוכן הפעולות נטען דינמית -->
+                            <!-- Activity content loaded dynamically -->
                         </div>
                     </div>
                 </div>
@@ -392,14 +422,14 @@ function renderProfile() {
         </div>
     `);
 
-    // אחרי שהכנסנו את ה־HTML, עכשיו אפשר להאזין ל-select:
+    // After adding the HTML, now we can listen to the select element:
     const $select = $("#activityCountSelect");
 
-    // טען פעולות כברירת מחדל:
+    // Load default activities:
     const defaultCount = parseInt($select.val()) || 10;
     loadRecentActivities(currentUser.id, defaultCount);
 
-    // האזן לשינויי הסלקט:
+    // Listen to select changes:
     $select.on("change", function () {
         const selectedCount = parseInt($(this).val()) || 10;
         loadRecentActivities(currentUser.id, selectedCount);
@@ -408,13 +438,14 @@ function renderProfile() {
     // Bind events
     bindProfileEvents();
     
-    // טען הגדרות התראות
+    // Load notification settings
     loadNotificationSettings();
     
     bindProfileImageUploadEvents();
 
 }
 
+// Loads user activity data from server with specified count limit
 function loadRecentActivities(userId, count = 10) {
     ajaxCall(
         "GET",
@@ -431,6 +462,7 @@ function loadRecentActivities(userId, count = 10) {
     );
 }
 
+// Renders the activity list HTML with proper formatting and icons
 function renderRecentActivities(activities) {
     if (!activities || activities.length === 0) {
         return `
@@ -500,7 +532,7 @@ function renderRecentActivities(activities) {
     `).join('');
 }
 
-
+// Renders the list of users that the current user is following
 function renderFollowingUsers() {
     if (followingUsers.length === 0) {
         return `
@@ -554,6 +586,7 @@ function renderFollowingUsers() {
     `;
 }
 
+// Renders user's interest tags with color coding and delete functionality
 function renderInterestsButtons() {
     if (!currentUser || !currentUser.tags || currentUser.tags.length === 0) {
         return `
@@ -608,10 +641,10 @@ function bindProfileEvents() {
         const selectedStyle = $(this).val();
         localStorage.setItem('notificationStyle', selectedStyle);
         
-        // עדכן את הטקסט המסביר
+        // Update explanatory text
         updateStyleHint(selectedStyle);
         
-        // הצג הודעה על השינוי
+        // Show notification about the change
         $('.notification-status').removeClass('text-warning text-success text-muted text-danger')
             .addClass('text-success').text(`Notification style updated to: ${selectedStyle}`);
     });
@@ -643,7 +676,7 @@ function bindProfileEvents() {
             apiUrl,
             null,
             function success(response) {
-                // הצג הודעת הצלחה עם alert מותאם
+                // Show success message with custom alert
                 showSuccessAlert(`Interest "${newTagName}" added successfully!`, 'Interest Added');
                 
                 const newTag = {
@@ -665,7 +698,7 @@ function bindProfileEvents() {
     // Removing interest
     $(document).off('click', '.interest-tag').on('click', '.interest-tag', function () {
         const tagId = $(this).data('id');
-        const tagName = $(this).find('span').text().trim(); // קבלת השם מה-span ישירות
+        const tagName = $(this).find('span').text().trim(); // Get name from span directly
 
         if (!confirm(`Are you sure you want to remove interest "${tagName}" ?`)) return;
 
@@ -676,7 +709,7 @@ function bindProfileEvents() {
             url,
             null, // No body needed
             function success(response) {
-                // הצג alert יפה במקום alert רגיל
+                // Show nice alert instead of regular alert
                 showSuccessAlert(response || `Interest "${tagName}" removed successfully!`, 'Interest Removed');
                 
                 // Update local user object
@@ -703,6 +736,7 @@ function openEditProfileModal() {
     $('#editProfileModal').modal('show');
 }
 
+// Saves profile changes to server and updates local data
 function saveProfileChanges() {
     const name = $('#editProfileName').val().trim();
     
@@ -721,11 +755,14 @@ function saveProfileChanges() {
     ajaxCall(
         "PUT",
         serverUrl + `Users/UpdateProfile?userId=${currentUser.id}`,
-        JSON.stringify(name), // שולח רק "שם"
+        JSON.stringify(name), // Sends only "name"
         saveProfileSCB,
         saveProfileECB
     );
-}function saveProfileSCB(response) {
+}
+
+// Success callback for profile save operation
+function saveProfileSCB(response) {
     $('#saveProfileBtn').prop('disabled', false).text('Save Changes');
     $('#editProfileModal').modal('hide');
 
@@ -741,12 +778,14 @@ function saveProfileChanges() {
     showSuccessAlert('Profile updated successfully!', 'Profile Updated');
 }
 
+// Error callback for profile save operation
 function saveProfileECB(xhr) {
     $('#saveProfileBtn').prop('disabled', false).text('Save Changes');
     console.error("Error saving profile:", xhr);
     showErrorAlert(xhr.responseText || 'Failed to update profile. Please try again.', 'Update Failed');
 }
 
+// Opens password change modal with form validation
 function openChangePasswordModal() {
     // Create the modal HTML if it doesn't exist
     if ($('#changePasswordModal').length === 0) {
@@ -847,6 +886,7 @@ function togglePasswordVisibility(inputId, buttonId) {
     }
 }
 
+// Binds password form validation and submission events
 function bindSavePasswordEvent() {
     $('#savePasswordBtn').on('click', function() {
         const currentPassword = $('#currentPassword').val().trim();
@@ -891,16 +931,19 @@ function bindSavePasswordEvent() {
     });
 }
 
+// Displays password validation error message
 function showPasswordError(message) {
     $('#passwordError').removeClass('d-none').text(message);
 }
 
+// Success callback for password change operation
 function changePasswordSCB(response) {
     $('#savePasswordBtn').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Change Password');
     $('#changePasswordModal').modal('hide');
     showSuccessAlert('Password changed successfully!', 'Password Updated');
 }
 
+// Error callback for password change operation
 function changePasswordECB(xhr) {
     $('#savePasswordBtn').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Change Password');
     console.error("Error changing password:", xhr);
@@ -927,13 +970,13 @@ function unfollowUser(userEmail) {
         serverUrl + `Users/Unfollow?followerId=${currentUser.id}&followedEmail=${encodeURIComponent(userEmail)}`,
         "",
         function (response) {
-            // הסר המשתמש מהמערך המקומי
+            // Remove user from local array
             followingUsers = followingUsers.filter(user => user.email !== userEmail);
             
-            // עדכן את ה-cache
+            // Update cache
             localStorage.setItem('cachedFollowingUsers', JSON.stringify(followingUsers));
             
-            // רנדר מחדש את הפרופיל
+            // Re-render profile
             renderProfile();
             
             showSuccessAlert('User unfollowed successfully.', 'User Unfollowed');
@@ -945,6 +988,7 @@ function unfollowUser(userEmail) {
     );
 }
 
+// Renders error state when profile fails to load
 function renderProfileError() {
     $('#profile').html(`
         <div class="text-center py-5">
@@ -958,7 +1002,7 @@ function renderProfileError() {
     `);
 }
 
-// פונקציה ליצירת HTML של תמונת פרופיל עם ברירת מחדל
+// Creates profile image HTML with fallback default
 function getProfileImageHtml(profile) {
     const imageUrl = profile.imageUrl || 
         `https://res.cloudinary.com/dvupmddqz/image/upload/profile_pics/profile_pics/${profile.id}.jpg`;
@@ -981,7 +1025,7 @@ function getProfileImageHtml(profile) {
     `;
 }
 
-//Searching user's for following
+// Loads all user emails for follow suggestions
 function loadEmails() {
     ajaxCall(
         "GET",
@@ -1089,7 +1133,11 @@ $(document).on('click', '#follow-user-btn', function () {
     );
 });
 
-// פונקציה לעדכון הטקסט המסביר
+// ================================================
+// ================ NOTIFICATION SETTINGS ========
+// ================================================
+
+// Updates the explanation text for notification styles
 function updateStyleHint(style) {
     const hints = {
         'auto': '🤖 Auto: System notifications when page hidden, in-page when visible',
@@ -1100,7 +1148,7 @@ function updateStyleHint(style) {
     $('#currentStyleHint').text(hints[style] || hints['auto']);
 }
 
-// טעינת הגדרות התראות
+// Loads user notification preferences from storage
 function loadNotificationSettings() {
     if (!currentUser) return;
     
@@ -1110,12 +1158,16 @@ function loadNotificationSettings() {
     // בחר את הרדיו הנכון
     $(`input[name="notificationStyle"][value="${savedStyle}"]`).prop('checked', true);
     
-    // עדכן את ההסבר
+    // Update the explanation
     updateStyleHint(savedStyle);
     
 }
 
-//adding profile picture
+// ================================================
+// ================ PROFILE IMAGE UPLOAD ==========
+// ================================================
+
+// Binds profile image upload functionality
 function bindProfileImageUploadEvents() {
     // Open file dialog when button is clicked
     $(document).off('click', '#uploadProfileImageBtn').on('click', '#uploadProfileImageBtn', function () {
@@ -1158,11 +1210,11 @@ function bindProfileImageUploadEvents() {
             })
             .then(data => {
                 if (data && data.imageUrl) {
-                    // עדכן את המידע המקומי
+                    // Update local information
                     currentUser.imageUrl = data.imageUrl;
                     localStorage.setItem('user', JSON.stringify(currentUser));
                     
-                    // עדכן את התמונה בעמוד הנוכחי
+                    // Update image on current page
                     $('#profilePic').attr('src', data.imageUrl);
                 } else if (data) {
                     showErrorAlert('Image upload failed', 'Upload Failed');
@@ -1172,7 +1224,8 @@ function bindProfileImageUploadEvents() {
             .finally(() => $('#profilePic').css('opacity', 1));
     });
 }
-//Generate picture
+
+// Generates AI profile image based on user prompt
 $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfileImageBtn', function () {
     const prompt = $('#profileImagePrompt').val().trim();
     if (!prompt) {
@@ -1215,11 +1268,11 @@ $(document).off('click', '#generateProfileImageBtn').on('click', '#generateProfi
         })
         .then(data => {
             if (data && data.imageUrl) {
-                // עדכן את המידע המקומי
+                // Update local information
                 currentUser.imageUrl = data.imageUrl;
                 localStorage.setItem('user', JSON.stringify(currentUser));
                 
-                // עדכן את התמונה בעמוד הנוכחי
+                // Update image on current page
                 $('#profilePic').attr('src', data.imageUrl);
                 
                 showSuccessAlert('Profile image generated successfully!', 'Image Generated');

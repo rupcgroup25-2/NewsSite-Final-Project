@@ -1,5 +1,9 @@
-﻿    document.addEventListener("DOMContentLoaded", function () {
-    // יוצרים HTML עבור הפוטר
+﻿// ================================================
+// =================== FOOTER =====================
+// ================================================
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Create HTML for footer
     const footerHTML = `
     <footer class="bg-body-tertiary border-top py-4 mt-5">
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
@@ -13,8 +17,8 @@
     </footer>
     `;
 
-    // מוסיפים את הפוטר לסוף ה־body
-        document.body.insertAdjacentHTML("beforeend", footerHTML);
+    // Add footer to end of body
+    document.body.insertAdjacentHTML("beforeend", footerHTML);
 
         // Set footer year
             document.getElementById('footer-year').textContent = new Date().getFullYear();

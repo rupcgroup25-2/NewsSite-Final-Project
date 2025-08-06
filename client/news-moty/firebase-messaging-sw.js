@@ -23,27 +23,26 @@ const messaging = firebase.messaging();
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
     
-    // בדוק אם התראות מופעלות עבור המשתמש הנוכחי
+    // Check if notifications are enabled for current user
     try {
         const notificationStatus = localStorage.getItem('notificationStatus');
         if (notificationStatus === 'disabled') {
-            return Promise.resolve(); // אל תציג את ההתראה
+            return Promise.resolve(); // Don't show the notification
         }
     } catch (error) {
         console.log('⚠️ [SW] Could not check notification status from localStorage');
     }
     
-    // בדוק אם זה התראה שצריכה להיסנן (למנוע התראות על פעולות של המשתמש הנוכחי)
+    // Check if this is a notification that should be filtered (prevent notifications for current user's actions)
     if (payload.data && payload.data.excludeUserId) {
         
-        // נמנע מהצגת התראה כי זה למשתמש הנוכחי
+        // Prevent showing notification because it's for the current user
         return Promise.resolve();
     }
     
-    // בדוק הגדרות התראה מlocalStorage
+    // Check notification settings from localStorage
     const notificationStyle = localStorage.getItem('notificationStyle') || 'auto';
     
-    // אם זה inpage only, אל תציג התראת מערכת
     if (notificationStyle === 'inpage') {
         return Promise.resolve();
     }

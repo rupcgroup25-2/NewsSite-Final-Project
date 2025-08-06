@@ -1,3 +1,7 @@
+// ================================================
+// ================= DARK MODE ====================
+// ================================================
+
 // Dark Mode Manager - Professional Implementation with localStorage sync
 class DarkModeManager {
     constructor() {

@@ -1,8 +1,12 @@
-﻿//create register and login modals
+﻿// ================================================
+// ================ AUTHENTICATION ================
+// ================================================
+
+// Creates register and login modals
 function createAuthModals() {
-    // בדוק אם המודלים כבר קיימים
+    // Check if modals already exist
     if ($('#loginModal').length > 0 || $('#registerModal').length > 0) {
-        return; // המודלים כבר קיימים, אל תיצור שוב
+        return; // Modals already exist, don't create again
     }
     
 
@@ -118,7 +122,6 @@ $(document).ready(function () {
 });
 
 // Render user-related actions (Login/Register buttons or greeting and Logout button)
-
 function renderUserActions() {
     const $actions = $("#user-actions");
     $actions.empty();
@@ -137,6 +140,7 @@ function renderUserActions() {
     }
 }
 
+// Show message with specific type (success/danger)
 function showMessage(selector, message, type) {
     // type: "success" or "danger"
     $(selector)
@@ -145,11 +149,12 @@ function showMessage(selector, message, type) {
         .text(message);
 }
 
+// Hide message and clear content
 function hideMessage(selector) {
     $(selector).addClass('d-none').text('').removeClass('alert alert-success alert-danger');
 }
 
-//Update recommended in localStorage
+// Update recommended articles in localStorage
 async function updateRecommendedArticles() {
     const cacheKey = NEWS_CACHE_KEY;
     const cacheRaw = localStorage.getItem(cacheKey);
@@ -235,7 +240,7 @@ $(document).on('submit', '#loginForm', function (e) {
             localStorage.setItem('user', JSON.stringify(currentUser));
             updateRecommendedArticles();
 
-            // בדוק אם יש משתמש קודם ועבור להתראות החדשות - עם דחייה
+            // Check if there's a previous user and switch to news notifications - with delay
             setTimeout(() => {
                 if (typeof switchUserNotifications === 'function') {
                     switchUserNotifications(currentUser.id);
@@ -245,7 +250,7 @@ $(document).on('submit', '#loginForm', function (e) {
                     console.log('⏳ Notification functions not ready yet, will be called when available');
                 }
                 
-                // קרא להתחלת notifications אם זמין
+                // Call notification initialization if available
                 if (typeof window.onUserLogin === 'function') {
                     window.onUserLogin(currentUser);
                 }
@@ -321,6 +326,7 @@ $(document).on('submit', '#registerForm', function (e) {
     );
 });
 
+// Validate registration form fields
 function checkValidation() {
     const nameInput = $("#registerName");
     const emailInput = $("#registerEmail");
@@ -367,15 +373,19 @@ function checkValidation() {
     return valid;
 }
 
-// Logout
+// ===============================================
+//                   LOGOUT
+// ===============================================
+
+// Logout user and clean up session
 $(document).on('click', '#logout-btn', function () {
     
-    // בטל הרשמה להתראות
+    // Unsubscribe from notifications
     if (typeof unsubscribeUserFromNotifications === 'function') {
         unsubscribeUserFromNotifications();
     }
     
-    // קרא לפונקציית logout הגלובלית אם זמינה
+    // Call global logout function if available
     if (typeof window.onUserLogout === 'function') {
         window.onUserLogout();
     }

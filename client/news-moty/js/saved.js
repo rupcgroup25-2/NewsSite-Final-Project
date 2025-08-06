@@ -1,4 +1,9 @@
-﻿function renderSavedTab(searchTerm = "") {
+﻿// ================================================
+// ================ SAVED ARTICLES ================
+// ================================================
+
+// Renders saved articles tab with search functionality
+function renderSavedTab(searchTerm = "") {
     const $tab = $('#saved');
 
     if (!currentUser) {
@@ -29,10 +34,10 @@
         return;
     }
 
-    // אם תיבת החיפוש כבר קיימת, עדכן רק את התוכן
+    // If search box already exists, update only the content
     let $articlesContainer = $('#articles-container');
     if ($articlesContainer.length === 0) {
-        // יצירת המבנה הראשוני רק פעם אחת
+        // Create initial structure only once
         let html = `
             <div class="saved-container">
                 <div class="saved-search-container">
@@ -45,7 +50,7 @@
         $articlesContainer = $('#articles-container');
     }
 
-    // עדכון רק תוכן הכרטיסיות
+    // Update only card content
     const highlight = (text) => {
         if (!searchTerm) return text;
         const regex = new RegExp(`(${searchTerm})`, 'gi');
@@ -90,7 +95,11 @@
     $articlesContainer.html(articlesHtml);
 }
 
+// ================================================
+// ================ ARTICLE MANAGEMENT ============
+// ================================================
 
+// Handles removal of saved articles
 $(document).on('click', '.unsave-btn', function () {
     const articleId = $(this).data('id');
     if (!currentUser) {
@@ -110,10 +119,11 @@ $(document).on('click', '.unsave-btn', function () {
     );
 });
 
-// search bar
+// ================================================
+// ================ SEARCH FUNCTIONALITY ==========
+// ================================================
 
-
-// Debounced search handler
+// Debounced search handler for saved articles
 if (typeof debounceTimer === 'undefined') {
     var debounceTimer;
 }
@@ -153,10 +163,12 @@ function loadSavedArticles(userId, searchTerm = "") {
         }
     );
 }
+
+// Renders error messages for saved articles section
 function renderError(message) {
     const $tab = $('#saved');
     
-    // אם תיבת החיפוש כבר קיימת, עדכן רק את התוכן
+    // If search box already exists, update only the content
     let $articlesContainer = $('#articles-container');
     if ($articlesContainer.length === 0) {
         const currentSearchTerm = "";

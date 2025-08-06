@@ -1,7 +1,15 @@
-﻿let tokenExpiredHandled = false;
+﻿// ================================================
+// ================= AJAX CALLS ===================
+// ================================================
+
+let tokenExpiredHandled = false;
+
+// Get authentication token from localStorage
 function getAuthToken() {
     return JSON.parse(localStorage.getItem("user")).token;
 }
+
+// Generic AJAX call function with authentication and error handling
 function ajaxCall(method, api, data, successCB, errorCB) {
     let token;
     try {
@@ -18,18 +26,18 @@ function ajaxCall(method, api, data, successCB, errorCB) {
         contentType: "application/json",
         success: successCB,
         error: function (xhr, status, error) {
-            // טיפול ב-401 Unauthorized
+            // Handle 401 Unauthorized
             if (xhr.status === 401 && !tokenExpiredHandled) {
                 tokenExpiredHandled = true;
                 showWarningToast('Your session has expired. Please log in again.', 'Session Expired');
                 localStorage.removeItem('user');
                 localStorage.removeItem('cachedFollowingUsers');
-                window.location.reload(); // רענון הדף כדי להראות login
+                window.location.reload(); // Refresh page to show login
                 setTimeout(() => window.location.reload(), 100);
                 return;
             }
 
-            // קריאה לפונקציית השגיאה המקורית
+            // Call original error callback function
             if (errorCB) {
                 errorCB(xhr, status, error);
             }

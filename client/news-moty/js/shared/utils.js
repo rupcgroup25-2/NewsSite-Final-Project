@@ -1,4 +1,9 @@
-﻿function formatDate(date) {
+﻿// ================================================
+// ================== UTILITIES ===================
+// ================================================
+
+// Format date to user-friendly string
+function formatDate(date) {
     return new Date(date).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
@@ -6,6 +11,7 @@
     });
 }
 
+// Get appropriate greeting based on time of day
 function getGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -13,6 +19,7 @@ function getGreeting() {
     return "Good evening";
 }
 
+// Check if date is today
 function isToday(dateString) {
     const today = new Date();
     const date = new Date(dateString);

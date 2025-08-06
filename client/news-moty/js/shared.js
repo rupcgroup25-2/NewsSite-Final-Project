@@ -1,4 +1,9 @@
-﻿function renderSharedTab() {
+﻿// ================================================
+// ================ SHARED ARTICLES ===============
+// ================================================
+
+// Renders shared articles tab with community content
+function renderSharedTab() {
     const $tab = $('#shared');
 
     if (!currentUser) {
@@ -90,6 +95,12 @@
     html += '</div>';
     $tab.html(html);
 }
+
+// ================================================
+// ================ ARTICLE UTILITIES =============
+// ================================================
+
+// Finds article by ID from shared articles collection
 function getArticleById(id) {
     // First try to find in shared articles (since we're in shared tab)
     let article = sharedArticles.find(a => a.id == id);
@@ -106,6 +117,7 @@ function getArticleById(id) {
 
     return article;
 }
+// Loads shared articles from server for specified user
 function loadSharedArticles(userId) {
     ajaxCall("GET", serverUrl + `Articles/shared/${userId}`, null,
 
@@ -118,6 +130,12 @@ function loadSharedArticles(userId) {
         }
     );
 }
+
+// ================================================
+// ================ ARTICLE REPORTING =============
+// ================================================
+
+// Handles article reporting functionality
 $(document).on('click', '.report-article-btn', function () { //inserting the article id to the modal report button
     const articleId = $(this).data("id");
     // Store the article ID globally so the submit handler can access it
@@ -126,6 +144,7 @@ $(document).on('click', '.report-article-btn', function () { //inserting the art
     $('#reportModal').modal('show');
 });
 
+// Success callback for article reporting
 function reportSCB(responseText) {
     showSuccessToast("Report submitted successfully.", "Report Submitted");
     $('#reportModal').modal('hide');
@@ -133,6 +152,7 @@ function reportSCB(responseText) {
     $("#reportReason").val("");
 }
 
+// Error callback for article reporting
 function reportECB(xhr) {
     showErrorToast(xhr.responseText || "Failed to submit report.", "Report Error");
 }
@@ -181,7 +201,7 @@ $(document).on('click', '.unshare-btn', function () {
 $(document).ready(function () {
     renderUserActions();
     if (currentUser) {
-        loadSharedArticles(currentUser.id); // 🛠️ זה מה שהיה חסר!
+        loadSharedArticles(currentUser.id); // 🛠️ This is what was missing!
     } else {
         renderSharedTab();
     }

@@ -1,6 +1,10 @@
-﻿    document.addEventListener("DOMContentLoaded", function () {
-    // יוצרים HTML עבור הניווט
-        const navbarHTML = `
+﻿// ================================================
+// ================== NAVBAR ===================
+// ================================================
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Create HTML for navigation
+    const navbarHTML = `
 <nav class="navbar navbar-expand-lg sticky-top navbar-modern shadow-lg py-2" id="main-navbar">
     <div class="container-fluid px-4">
         <a class="navbar-brand modern-brand d-flex align-items-center" href="index.html">
@@ -48,11 +52,9 @@
     </div>
 </nav>
 `;
-
-    // מוסיפים את ה־Navbar ל־body (אפשר גם ל־div ייעודי)
     document.body.insertAdjacentHTML("afterbegin", navbarHTML);
 
-    // סימון הלינק הפעיל לפי הדף הנוכחי
+    // Mark active link based on current page
     const currentPage = window.location.pathname.split("/").pop();
     document.querySelectorAll("#main-navbar .nav-link").forEach(link => {
         if (link.getAttribute("href") === currentPage) {
@@ -60,7 +62,7 @@
         }
     });
     
-    // המתן לauth.js להיטען ואז רנדר user actions
+    // Wait for auth.js to load then render user actions
     setTimeout(() => {
         if (typeof renderUserActions === 'function') {
             renderUserActions();

@@ -1,4 +1,9 @@
-﻿function createUserActionsModals() {
+﻿// ================================================
+// ============== ARTICLE ACTIONS =================
+// ================================================
+
+// Create modals for article sharing and reporting
+function createUserActionsModals() {
     const modalsHtml = `
     <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -113,9 +118,6 @@ function saveArticle(article, saveSCB, saveECB) {
         showWarningToast("Please login to save articles.", "Authentication Required");
         return;
     }
-
-    // מניחה שיש פונקציה שמחזירה את כל הקטגוריות של הכתבה במערך (מספרים)
-    //let articleCategories = getCategoriesFromLocalStorage(article.id); // מחזיר List<int>
     let articleCategories = Array.isArray(article.tags) ? article.tags : 
                            (article.category ? [article.category] : 
                            (article.tags?.[0] ? [article.tags[0]] : ["General"]));
@@ -131,7 +133,7 @@ function saveArticle(article, saveSCB, saveECB) {
         author: article.author || "",
         sharedById: 0,
         sharedByName: "string",
-        tags: articleCategories || []  // שולחים את רשימת התגיות כ־IDs
+        tags: articleCategories || []  
     };
 
     if (!articleToSend) {
@@ -144,7 +146,6 @@ function saveArticle(article, saveSCB, saveECB) {
         serverUrl + `Articles/SaveArticle?userId=${currentUser.id}`,
         JSON.stringify(articleToSend),
         function (articleId) {
-            // לא צריך לקרוא ל־AssignTagToArticle נפרד כי זה כבר קורה בשרת
             savedArticles.push(article.id);
             saveSCB(articleId);
         },
@@ -165,7 +166,7 @@ function getCategoriesFromLocalStorage(articleId) {
     const foundArticle = storedArticles.find(article => article.id === articleId);
 
     if (foundArticle && typeof foundArticle.category === "string") {
-        return [foundArticle.category]; // מחזיר מערך עם קטגוריה אחת
+        return [foundArticle.category]; 
     } else {
         console.warn("Article not found or category missing in localStorage");
         return [];
@@ -177,7 +178,6 @@ function getCategoriesFromLocalStorage(articleId) {
 //handle UI on report submit
 $(document).on('submit', '#reportForm', function (e) {
     e.preventDefault();
-    // לא נסגור את המודל כאן - רק במקרה של הצלחה או שגיאה
 });
 
 // Reporting the clicked article
@@ -200,7 +200,6 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
         return;
     }
 
-    // הכוון את הכפתור כדי למנוע לחיצות מרובות
     $('#btnReportArticle').prop('disabled', true).text('Sending...');
 
     const reportToSend = {
@@ -238,22 +237,18 @@ function reportArticle(article, successCB, errorCB, isFromShared = false) {
         serverUrl + "Reports",
         JSON.stringify(data),
         function(response) {
-            // הצלחה - קרא ל-callback והבטח שהמודל ייסגר
             if (successCB) successCB(response);
             setTimeout(() => {
                 $('#reportModal').modal('hide');
-                // נקה את השדות והחזר את הכפתור למצב רגיל
                 $("#reportComment").val("");
                 $("#reportReason").val("");
                 $('#btnReportArticle').prop('disabled', false).text('Report');
             }, 100);
         },
         function(xhr) {
-            // שגיאה - קרא ל-callback והבטח שהמודל ייסגר
             if (errorCB) errorCB(xhr);
             setTimeout(() => {
                 $('#reportModal').modal('hide');
-                // גם במקרה של שגיאה נקה את השדות והחזר את הכפתור למצב רגיל
                 $("#reportComment").val("");
                 $("#reportReason").val("");
                 $('#btnReportArticle').prop('disabled', false).text('Report');

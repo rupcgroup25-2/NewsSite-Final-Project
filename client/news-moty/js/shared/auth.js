@@ -16,7 +16,7 @@ function createAuthModals() {
                         <div class="auth-icon-container">
                             <i class="bi bi-person-check-fill"></i>
                         </div>
-                        <h5 class="modal-title fw-bold mb-0" id="loginModalLabel">Welcome Back</h5>
+                        <h5 class="modal-title fw-bold mb-0" id="loginModalLabel">Welcome</h5>
                     </div>
                     <button type="button" class="btn-close modern-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -254,7 +254,7 @@ $(document).on('submit', '#loginForm', function (e) {
             hideMessage('#loginError');
             $('#loginModal').modal('hide');
 
-            showMessage('#loginSuccess', 'Login successful! Welcome back.', 'success');
+            showMessage('#loginSuccess', 'Login successful! Welcome.', 'success');
             setTimeout(() => {
                 hideMessage('#loginSuccess');
                 renderUserActions();

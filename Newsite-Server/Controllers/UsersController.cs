@@ -196,15 +196,33 @@ namespace Newsite_Server.Controllers
 
         // Updates user's password
         [HttpPut("ChangePassword")]
-        public IActionResult UpdatePassword(int userId, [FromBody] string newPass)
+        public IActionResult ChangePassword(int userId, [FromBody] ChangePasswordRequest request)
         {
-            User user = new User();
-            int result = user.ChangePassword(userId, newPass);
+            if (request == null || string.IsNullOrEmpty(request.CurrentPassword) || string.IsNullOrEmpty(request.NewPassword))
+                return BadRequest("Missing password data.");
 
-            if (result == 1)
-                return BadRequest("Failed to update username.");
+            try
+            {
+                User user = new User();
+                int result = user.ChangePassword(userId, request.CurrentPassword, request.NewPassword);
 
-            return Ok(new { message = "Profile updated successfully." });
+                if (result > 0)
+                {
+                    return Ok(new { message = "Password changed successfully." });
+                }
+                else if (result == -1)
+                {
+                    return BadRequest("Current password is incorrect.");
+                }
+                else
+                {
+                    return BadRequest("Failed to change password or invalid new password format.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         // Gets all user activities with specified count limit

@@ -156,15 +156,24 @@ namespace Newsite_Server.BL
         }
 
         // Changes user password after validation and hashing
-        public int ChangePassword(int userId, string newPass)
+        public int ChangePassword(int userId, string currentPass,string newPass)
         {
-            if (newPasswordValidation(newPass))
-            {
-                newPass = HashPassword(newPass);
-                int result = dbs.UpdateUserPassword(userId, newPass);
-                return result;
-            }
-            return 0;
+            if (!newPasswordValidation(newPass))
+                return 0;
+
+            // קבל את המשתמש הנוכחי מהמסד כדי לבדוק את הסיסמה
+            User currentUser = dbs.SelectUserById(userId);
+            if (currentUser == null)
+                return 0; // משתמש לא נמצא
+
+            // בדוק את הסיסמה הנוכחית עם BCrypt
+            if (!Verify(currentPass, currentUser.Password))
+                return -1; // סיסמה נוכחית שגויה
+
+            // אם הסיסמה נכונה, עדכן לסיסמה החדשה (מוצפנת)
+            string hashedNewPassword = HashPassword(newPass);
+            int result = dbs.UpdateUserPassword(userId, hashedNewPassword);
+            return result > 0 ? 1 : 0;
         }
 
         // Gets recent user activities with specified limit for activity feed display

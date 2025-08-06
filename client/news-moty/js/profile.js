@@ -751,7 +751,7 @@ function openChangePasswordModal() {
     // Create the modal HTML if it doesn't exist
     if ($('#changePasswordModal').length === 0) {
         const modalHTML = `
-            <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+          <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -762,6 +762,15 @@ function openChangePasswordModal() {
                         </div>
                         <div class="modal-body">
                             <form id="changePasswordForm">
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="currentPassword" required>
+                                        <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">New Password</label>
                                     <div class="input-group">
@@ -811,6 +820,10 @@ function openChangePasswordModal() {
 
 function bindPasswordToggleEvents() {
     // Toggle password visibility
+    $('#toggleCurrentPassword').on('click', function () {
+        togglePasswordVisibility('currentPassword', 'toggleCurrentPassword');
+    });
+
     $('#toggleNewPassword').on('click', function() {
         togglePasswordVisibility('newPassword', 'toggleNewPassword');
     });
@@ -836,6 +849,7 @@ function togglePasswordVisibility(inputId, buttonId) {
 
 function bindSavePasswordEvent() {
     $('#savePasswordBtn').on('click', function() {
+        const currentPassword = $('#currentPassword').val().trim();
         const newPassword = $('#newPassword').val().trim();
         const confirmPassword = $('#confirmPassword').val().trim();
         
@@ -843,7 +857,7 @@ function bindSavePasswordEvent() {
         $('#passwordError').addClass('d-none');
         
         // Validation
-        if (!newPassword || !confirmPassword) {
+        if (!currentPassword || !newPassword || !confirmPassword) {
             showPasswordError('All fields are required.');
             return;
         }
@@ -870,7 +884,7 @@ function bindSavePasswordEvent() {
         ajaxCall(
             "PUT",
             serverUrl + `Users/ChangePassword?userId=${currentUser.id}`,
-            JSON.stringify(newPassword),
+            JSON.stringify({ currentPassword, newPassword }),
             changePasswordSCB,
             changePasswordECB
         );

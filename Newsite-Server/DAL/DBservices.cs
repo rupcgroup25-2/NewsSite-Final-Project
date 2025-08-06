@@ -419,14 +419,21 @@ namespace Newsite_Server.DAL
 
             try
             {
-                int rowsAffected = cmd.ExecuteNonQuery();
-                return rowsAffected;
+                cmd.ExecuteNonQuery();
+                // אם לא הייתה חריגה, נחשב הצלחה
+                return 1;
+            }
+            catch
+            {
+                // אם הייתה חריגה, נחשב כישלון
+                return 0;
             }
             finally
             {
                 con.Close();
             }
         }
+    
 
 
         //--------------------------------------------------------------------------------------------------

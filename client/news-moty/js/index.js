@@ -685,7 +685,7 @@ function fetchArticlesByCategory(category) {
     const $list = $("#articles-list");
     $list.html('<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
     currentCategory = category;
-    if (category === "all") {
+    if (category === "all" || category === "recommended") {
          $("#load-more-btn").hide();//hide button in search 
         displayedCountByCategory[category] = getCachedArticles()?.length || 0;
     } else {
@@ -714,7 +714,7 @@ function renderArticlesPage(category, allArticles) {
     let filtered = filterArticlesByCategory(allArticles, category);
 
      let end;
-    if (category === "all") {
+    if (category === "all" || category === "recommended") {
         end = filtered.length; // Show all articles for 'all'
 
     } else {

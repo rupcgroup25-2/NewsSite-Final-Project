@@ -659,7 +659,7 @@ $(document).ready(async function () {
     function loadComments(articleId) {
         if (isNaN(articleId))
             return;
-        const url = serverUrl + `comments/article/${articleId}`;
+        const url = serverUrl + `GetAllCommentsForarticle/article/${articleId}`;
         ajaxCall("GET", url, null,
             function (response) {
                 const comments = response;

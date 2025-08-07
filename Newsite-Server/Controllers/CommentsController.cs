@@ -89,7 +89,7 @@ namespace Newsite_Server.Controllers
         }
         
         // Gets all comments for a specific article
-        [HttpGet("article/{articleId}")]
+        [HttpGet("GetAllCommentsForarticle/{articleId}")]
         [AllowAnonymous]
         public IActionResult GetCommentsByArticle(int articleId)
         {

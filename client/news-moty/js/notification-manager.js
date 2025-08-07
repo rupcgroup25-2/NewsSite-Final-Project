@@ -110,7 +110,13 @@ class NotificationManager {
             }
 
             // --- Manual Service Worker registration from your path ---
-            const swPath = '/cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js';
+            let swPath;
+            if (location.hostname === "localhost") {
+                swPath = "./firebase-messaging-sw.js";
+            } else {
+                swPath = "/cgroup2/test2/tar5/client/news-moty/firebase-messaging-sw.js";
+            }
+
             if ('serviceWorker' in navigator) {
                 await navigator.serviceWorker.register(swPath);
             }

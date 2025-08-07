@@ -809,7 +809,7 @@ $(document).ready(async function () {
     //delete all comments of article by admin
     function isAdmin() {
         const user = JSON.parse(localStorage.getItem("user"));
-        return user && user.email === "admin@newshub.com";
+        return user && user.email === "admin";
     }
 
     $(document).on('click', '#delete-all-comments-btn', function () {

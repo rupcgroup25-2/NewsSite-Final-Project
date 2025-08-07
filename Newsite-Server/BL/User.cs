@@ -216,7 +216,7 @@ namespace Newsite_Server.BL
         // Function to check if user is admin by email
         public bool IsAdmin()
         {
-            return this.Email == "admin@newshub.com";
+            return this.Email == "admin";
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Newsite_Server.Controllers
             NewUser.TrackDailyLogin(NewUser.Id);
             
             // Determine user role for JWT token
-            string role = NewUser.Email == "admin@newshub.com" ? "Admin" : "User";
+            string role = NewUser.Email == "admin" ? "Admin" : "User";
             string token = _tokenService.GenerateToken(NewUser.Email, role);
 
             // Return successful login response with token and user data

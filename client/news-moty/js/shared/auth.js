@@ -31,7 +31,7 @@ function createAuthModals() {
                             <label for="loginEmail" class="form-label modern-label">
                                 <i class="bi bi-envelope me-2"></i>Email Address
                             </label>
-                            <input type="email" class="form-control modern-input" id="loginEmail" 
+                            <input type="text" class="form-control modern-input" id="loginEmail" 
                                    placeholder="Enter your email" required>
                         </div>
                         <div class="mb-4">

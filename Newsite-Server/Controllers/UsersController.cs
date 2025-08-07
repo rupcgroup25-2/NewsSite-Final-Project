@@ -25,9 +25,6 @@ namespace Newsite_Server.Controllers
         private readonly CloudinaryService _cloudinaryService;
         private readonly HuggingFaceService _huggingFaceService;
 
-        // LEGACY: API key now managed in service layer
-        // private readonly string _huggingFaceApiKey;
-
         public UsersController(IConfiguration config, HuggingFaceService huggingFaceService)
         {
             _tokenService = new TokenService();
@@ -36,8 +33,6 @@ namespace Newsite_Server.Controllers
             _huggingFaceService = huggingFaceService;
         }
 
-        // Authenticates user login, validates account status, tracks login, and returns JWT token with user details
-        // Complex flow: credential validation -> account status check -> login tracking -> role assignment -> token generation
         [HttpPost("Login")]
         [AllowAnonymous]
         public IActionResult Login([FromBody] User user)
@@ -114,24 +109,9 @@ namespace Newsite_Server.Controllers
                 return BadRequest("Server error.");
         }
 
-        // Complex follow user functionality with validation, notification system, and security checks
-        // Flow: JWT validation -> database update -> self-follow check -> notification sending -> error handling
         [HttpPost("Follow")]
         public async Task<IActionResult> FollowUser(int followerId, string followedEmail)
-        {
-            //// Debug: Extract and log JWT claims for security verification
-            //var userClaims = User.Claims.ToList();
-            //var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            //var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-
-            //foreach (var claim in userClaims)
-            //{
-            //    //Console.WriteLine($"   - {claim.Type}: {claim.Value}");
-            //}
-
-            //// Verify admin role for debugging purposes
-            //bool isAdmin = User.IsInRole("Admin");
-            
+        {   
             User user = new User();
 
             // Attempt to create follow relationship in database
@@ -242,29 +222,6 @@ namespace Newsite_Server.Controllers
                 return BadRequest("No activities found or server error.");
         }
 
-        //// Saves FCM token for push notifications
-        //[HttpPost("SaveFCMTokenAlt")]
-        //public IActionResult SaveFCMTokenAlt(int userId, string fcmToken)
-        //{
-        //    try
-        //    {
-        //        int result = notifications.SaveFCMToken(userId, fcmToken);
-
-        //        if (result > 0)
-        //        {
-        //            return Ok("FCM token saved successfully");
-        //        }
-        //        else
-        //        {
-        //            return StatusCode(500, "Failed to save FCM token");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Error: {ex.Message}");
-        //    }
-        //}
-
         // Uploads profile image to Cloudinary service
         [HttpPost("UploadProfileImage")]
         public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageRequest request)
@@ -280,8 +237,6 @@ namespace Newsite_Server.Controllers
             return Ok(new { ImageUrl = imageUrl });
         }
 
-        // AI-powered profile image generation now handled by HuggingFaceService
-        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
         [HttpPost("GenerateProfileImage")]
         public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
         {
@@ -290,10 +245,7 @@ namespace Newsite_Server.Controllers
                 if (string.IsNullOrWhiteSpace(req.Prompt))
                     return BadRequest("Prompt is required.");
 
-                // Use HuggingFaceService instead of direct HTTP client calls
                 string imageUrl = await _huggingFaceService.GenerateProfileImageAsync(req.Prompt, req.UserId);
-
-                // Optional: Update profile image URL in user database here
 
                 return Ok(new { imageUrl = imageUrl });
             }
@@ -314,64 +266,5 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        /* LEGACY CODE - Replaced with HuggingFaceService
-        [HttpPost("GenerateProfileImage")]
-        public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
-        {
-            if (string.IsNullOrWhiteSpace(req.Prompt))
-                return BadRequest("Prompt is required.");
-
-            // Secure API key retrieval from configuration
-            string huggingFaceApiKey;
-            try
-            {
-                huggingFaceApiKey = _huggingFaceApiKey;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Failed to read HuggingFace API key: " + ex.Message);
-            }
-
-            // Configure HTTP client for HuggingFace Stable Diffusion API call
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", huggingFaceApiKey);
-
-            var payload = new { inputs = req.Prompt };
-            var json = System.Text.Json.JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await httpClient.PostAsync(
-                "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-                content
-            );
-
-            if (!response.IsSuccessStatusCode)
-            {
-                string error = await response.Content.ReadAsStringAsync();
-                return StatusCode((int)response.StatusCode, error);
-            }
-
-            // Get the image as byte[]
-            var imageBytes = await response.Content.ReadAsByteArrayAsync();
-
-            // Upload to Cloudinary
-            using var ms = new MemoryStream(imageBytes);
-            var uploadParams = new ImageUploadParams
-            {
-                File = new FileDescription("generated.png", ms),
-                Folder = "profile_pics",
-                PublicId = $"profile_pics/{req.UserId}"
-            };
-            var uploadResult = await _cloudinaryService.UploadRawStreamAsync(uploadParams);
-
-            if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
-                return StatusCode(500, "Failed to upload generated image to Cloudinary.");
-
-            // Optional: Update profile image URL in user database here
-
-            return Ok(new { imageUrl = uploadResult.SecureUrl.ToString() });
-        }
-        */
     }
 }

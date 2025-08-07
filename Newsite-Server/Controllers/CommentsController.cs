@@ -20,8 +20,6 @@ namespace Newsite_Server.Controllers
         }
 
         // Adds a new comment to an article and sends notifications
-        // Complex workflow: validation → article insertion → comment creation → notification dispatch
-        // Process: input validation → article existence check → comment insertion → user name lookup → notification to all other commenters
         [HttpPost("Addcomment")]
         public async Task<IActionResult> AddComment([FromBody] CommentWithArticleDto dto)
         {

@@ -415,14 +415,6 @@ $(document).on('click', '#btnChooseCountry', function () {
     showCountryMapModal();
 });
 
-// Handles postMessage events from country map iframe
-window.addEventListener('message', function (event) {
-    const countryName = event.data?.countryName;
-    if (countryName) {
-        $('#countryMapModal').modal('hide');
-        loadFiveTrendingTags(countryName);
-    }
-});
 
 // Clicks hashtag button to auto-fill search input and trigger search
 $(document).on('click', '.hashtag-button', function () {

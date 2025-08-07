@@ -242,28 +242,28 @@ namespace Newsite_Server.Controllers
                 return BadRequest("No activities found or server error.");
         }
 
-        // Saves FCM token for push notifications
-        [HttpPost("SaveFCMTokenAlt")]
-        public IActionResult SaveFCMTokenAlt(int userId, string fcmToken)
-        {
-            try
-            {
-                int result = notifications.SaveFCMToken(userId, fcmToken);
+        //// Saves FCM token for push notifications
+        //[HttpPost("SaveFCMTokenAlt")]
+        //public IActionResult SaveFCMTokenAlt(int userId, string fcmToken)
+        //{
+        //    try
+        //    {
+        //        int result = notifications.SaveFCMToken(userId, fcmToken);
 
-                if (result > 0)
-                {
-                    return Ok("FCM token saved successfully");
-                }
-                else
-                {
-                    return StatusCode(500, "Failed to save FCM token");
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error: {ex.Message}");
-            }
-        }
+        //        if (result > 0)
+        //        {
+        //            return Ok("FCM token saved successfully");
+        //        }
+        //        else
+        //        {
+        //            return StatusCode(500, "Failed to save FCM token");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Error: {ex.Message}");
+        //    }
+        //}
 
         // Uploads profile image to Cloudinary service
         [HttpPost("UploadProfileImage")]

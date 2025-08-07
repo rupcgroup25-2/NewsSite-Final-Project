@@ -21,7 +21,7 @@ function renderAdminDashboard({
     const $tab = $('#admin');
 
     // Check admin permissions
-    if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
+    if (!currentUser || currentUser.email.toLowerCase() !== 'admin') {
         $tab.html(`
             <div class="container-fluid d-flex justify-content-center align-items-center min-height-60vh">
                 <div class="card shadow-lg border-0 admin-auth-card">
@@ -544,7 +544,7 @@ function parseCount(text) {
 // Loads all data for the admin dashboard
 async function loadAdminDashboardData() {
 
-    if (!currentUser || currentUser.email.toLowerCase() !== 'admin@newshub.com') {
+    if (!currentUser || currentUser.email.toLowerCase() !== 'admin') {
         $('#admin').html(`
             <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 60vh;">
                 <div class="card shadow-lg border-0" style="max-width: 400px; border-radius: 20px;">

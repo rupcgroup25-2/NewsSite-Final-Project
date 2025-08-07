@@ -13,12 +13,6 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class TagsController : ControllerBase
     {
-        // LEGACY: Moved HTTP client functionality to service layer for better separation of concerns
-        // private static Dictionary<string, string>? _twitterLocationMap = null;
-        // private static DateTime _lastLocationLoadTime;
-        // private static readonly object _locationMapLock = new();
-        // private readonly string _twitter;
-
         private readonly TwitterService _twitterService;
 
         public TagsController(TwitterService twitterService)
@@ -36,7 +30,6 @@ namespace Newsite_Server.Controllers
         }
 
         // Twitter trends now handled by TwitterService
-        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
         [HttpGet("twitterTrends/{location}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetTwitterTrends(string location)
@@ -46,7 +39,6 @@ namespace Newsite_Server.Controllers
                 if (string.IsNullOrWhiteSpace(location))
                     return BadRequest("Location is required.");
 
-                // Use TwitterService instead of direct HTTP client calls
                 var result = await _twitterService.GetTwitterTrendsAsync(location);
                 
                 return Ok(result);
@@ -68,76 +60,7 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        /* LEGACY CODE - Replaced with TwitterService
-        [HttpGet("twitterTrends/{location}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetTwitterTrends(string location)
-        {
-            if (string.IsNullOrWhiteSpace(location))
-                return BadRequest("Location is required.");
-
-            // Thread-safe location map loading with 12-hour cache refresh for performance optimization
-            lock (_locationMapLock)
-            {
-                // Check if cache is empty or expired (12-hour refresh cycle)
-                if (_twitterLocationMap == null || DateTime.Now - _lastLocationLoadTime > TimeSpan.FromHours(12))
-                {
-                    try
-                    {
-                        // Load location-to-ID mapping from local JSON file
-                        var jsonText = System.IO.File.ReadAllText("twitter-api-locations.json");
-                        _twitterLocationMap = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonText);
-                        _lastLocationLoadTime = DateTime.Now;
-                    }
-                    catch (Exception ex)
-                    {
-                        return StatusCode(500, "Failed to load Twitter locations file: " + ex.Message);
-                    }
-                }
-            }
-
-            if (!_twitterLocationMap.TryGetValue(location, out var locationId))
-                return BadRequest($"Unknown location: {location}");
-
-            string apiKey;
-            try
-            {
-                apiKey = _twitter;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Failed to read Twitter API key: " + ex.Message);
-            }
-
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri($"https://twitter-trends-by-location.p.rapidapi.com/location/{locationId}"),
-                Headers =
-        {
-            { "x-rapidapi-key", apiKey },
-            { "x-rapidapi-host", "twitter-trends-by-location.p.rapidapi.com" },
-        },
-            };
-
-            using var client = new HttpClient();
-            try
-            {
-                var response = await client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-
-                var body = await response.Content.ReadAsStringAsync();
-                return Ok(JsonDocument.Parse(body)); // or just return Ok(body) if you prefer raw string
-            }
-            catch (HttpRequestException ex)
-            {
-                return StatusCode(503, "Failed to fetch Twitter trends: " + ex.Message);
-            }
-        }
-        */
-
-
+        
         // Creates a new tag in the database
         [HttpPost]
         public IActionResult CreateTag([FromBody] Tag tag)

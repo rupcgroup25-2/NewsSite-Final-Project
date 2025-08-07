@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <li class="nav-item"><a class="nav-link modern-nav-link" href="profile.html"><i class="bi bi-person-fill"></i><span>Profile</span></a></li>
                 <li class="nav-item"><a class="nav-link modern-nav-link" href="about.html"><i class="bi bi-info-circle-fill"></i><span>About</span></a></li>
 
-                ${currentUser && currentUser.email.toLowerCase() === 'admin@newshub.com'
+                ${currentUser && currentUser.email.toLowerCase() === 'admin'
                 ? '<li class="nav-item"><a class="nav-link modern-nav-link admin-link" href="admin.html"><i class="bi bi-gear-fill"></i><span>Admin</span></a></li>'
                 : ''
             }

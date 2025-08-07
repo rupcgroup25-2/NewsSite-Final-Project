@@ -16,18 +16,9 @@ namespace Newsite_Server.Controllers
 
     public class ArticlesController : ControllerBase
     {
-        // LEGACY: Moved HTTP client functionality to service layer for better separation of concerns
-        // const int MIN_SUMMARY_LENGTH = 100;
-        // const int MAX_SUMMARY_LENGTH = 200;
-        // const int MAX_TEXT_LENGTH = 3000;
-
         private readonly Notifications notifications;
         private readonly NewsApiService _newsApiService;
         private readonly HuggingFaceService _huggingFaceService;
-
-        // LEGACY: API keys now managed in service layer
-        // private readonly string _newsApiKey;
-        // private readonly string _huggingFaceApiKey;
 
         public ArticlesController(NewsApiService newsApiService, HuggingFaceService huggingFaceService)
         {
@@ -172,8 +163,6 @@ namespace Newsite_Server.Controllers
         }
 
         // Shares an article with a comment and sends notifications to followers
-        // Complex workflow: article sharing → user validation → follower notification → error handling
-        // Process: database sharing operation → user name lookup → notification dispatch to all followers
         [HttpPost("ShareArticle")]
         public async Task<IActionResult> ShareArticle(int userId, [FromBody] Article article)
         {
@@ -262,7 +251,6 @@ namespace Newsite_Server.Controllers
         }
 
         // AI-powered text summarization now handled by HuggingFaceService
-        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
         [HttpPost("summarize")]
         [AllowAnonymous]
         public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
@@ -277,7 +265,6 @@ namespace Newsite_Server.Controllers
 
                 string text = textElement.GetString();
                 
-                // Use HuggingFaceService instead of direct HTTP client calls
                 string summary = await _huggingFaceService.SummarizeTextAsync(text);
                 
                 return Ok(new { summary = summary });
@@ -300,68 +287,6 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        /* LEGACY CODE - Replaced with HuggingFaceService
-        [HttpPost("summarize")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
-         {
-            // Extract and validate text input from JSON request body
-            if (!requestBody.TryGetProperty("text", out JsonElement textElement) || string.IsNullOrWhiteSpace(textElement.GetString()))
-            {
-                return BadRequest("Text is required for summarization.");
-            }
-
-            string text = textElement.GetString();
-
-            // Apply text length limit to prevent API overload (max 3000 characters)
-            if (text.Length > MAX_TEXT_LENGTH)
-            {
-                text = text.Substring(0, MAX_TEXT_LENGTH);
-            }
-
-            string huggingFaceApiToken = _huggingFaceApiKey;
-
-            // Configure HTTP client with Bearer token authentication for HuggingFace API
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", huggingFaceApiToken);
-
-            var payload = new
-            {
-                inputs = text,
-                parameters = new { min_length = MIN_SUMMARY_LENGTH, max_length = MAX_SUMMARY_LENGTH},
-                options = new { wait_for_model = true }
-            };
-
-            var json = JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await httpClient.PostAsync("https://api-inference.huggingface.co/models/facebook/bart-large-cnn", content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                string error = await response.Content.ReadAsStringAsync();
-                return StatusCode((int)response.StatusCode, error);
-            }
-
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            using var doc = JsonDocument.Parse(responseString);
-            var root = doc.RootElement;
-
-            if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() == 0 || !root[0].TryGetProperty("summary_text", out JsonElement summaryElement))
-            {
-                return BadRequest("No summary returned from HuggingFace API.");
-            }
-
-            var firstSummary = summaryElement.GetString();
-
-            return Ok(new { summary = firstSummary });
-        }
-        */
-
-
-        // Recommended articles now handled by NewsApiService
-        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
         [HttpPost("recommendedArticles/pageSize/{pageSize}/language/{language}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetRecommendedArticles(int pageSize, string language, [FromBody] List<Tag> tags)
@@ -396,71 +321,7 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        /* LEGACY CODE - Replaced with NewsApiService
-        [HttpPost("recommendedArticles/pageSize/{pageSize}/language/{language}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetRecommendedArticles(int pageSize, string language, [FromBody] List<Tag> tags)
-        {
-            if (tags == null || !tags.Any())
-                return BadRequest("At least one tag is required.");
-
-            string newsApiKey;
-            try
-            {
-                newsApiKey = _newsApiKey;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
-            }
-
-            // Create the query string with "OR"
-            string query = string.Join(" OR ", tags.Select(t => t.Name));
-
-            var baseUrl = "https://newsapi.org/v2/everything";
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
-
-            var urlBuilder = new StringBuilder($"{baseUrl}?apiKey={newsApiKey}&q={Uri.EscapeDataString(query)}");
-            urlBuilder.Append($"&language={Uri.EscapeDataString(language)}");
-            urlBuilder.Append($"&sortBy=publishedAt&pageSize={pageSize}");
-
-            var response = await httpClient.GetAsync(urlBuilder.ToString());
-            if (!response.IsSuccessStatusCode)
-                return StatusCode((int)response.StatusCode, "Failed to fetch articles.");
-
-            var jsonString = await response.Content.ReadAsStringAsync();
-            var json = JsonDocument.Parse(jsonString);
-            var rawArticles = json.RootElement.GetProperty("articles");
-
-            var articles = rawArticles.EnumerateArray()
-                .Where(a =>
-                    a.TryGetProperty("title", out _) &&
-                    (a.TryGetProperty("description", out _) || a.TryGetProperty("content", out _)) &&
-                    a.TryGetProperty("urlToImage", out _))
-                .Select((a, index) => new
-                {
-                    id = $"recommended_{index}",
-                    title = a.GetProperty("title").GetString(),
-                    content = a.TryGetProperty("content", out var content) ? content.GetString() : null,
-                    description = a.TryGetProperty("description", out var desc) ? desc.GetString() : null,
-                    publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
-                    urlToImage = a.GetProperty("urlToImage").GetString(),
-                    url = a.GetProperty("url").GetString(),
-                    source = a.GetProperty("source").GetProperty("name").GetString(),
-                }).ToList();
-
-            Article temp = new Article(); // Increase API call count
-            temp.increaseNewsApiCounter();
-
-            return Ok(articles);
-        }
-        */
-
-
-        // Article search now handled by NewsApiService
-        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        
         [HttpGet("searchArticles/{query}/{from?}/{to?}")]
         [AllowAnonymous]
         public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
@@ -493,68 +354,6 @@ namespace Newsite_Server.Controllers
             }
         }
 
-        /* LEGACY CODE - Replaced with NewsApiService
-        [HttpGet("searchArticles/{query}/{from?}/{to?}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return BadRequest("Query is required.");
-
-            string newsApiKey;
-            try
-            {
-                newsApiKey = _newsApiKey;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Failed to read NewsAPI key: " + ex.Message);
-            }
-
-            var baseUrl = "https://newsapi.org/v2/everything";
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
-
-            var urlBuilder = new StringBuilder($"{baseUrl}?apiKey={newsApiKey}&q={Uri.EscapeDataString(query)}&language=en&sortBy=relevancy&pageSize=20");
-
-            if (!string.IsNullOrEmpty(from))
-                urlBuilder.Append($"&from={Uri.EscapeDataString(from)}");
-            if (!string.IsNullOrEmpty(to))
-                urlBuilder.Append($"&to={Uri.EscapeDataString(to)}");
-
-            var response = await httpClient.GetAsync(urlBuilder.ToString());
-            if (!response.IsSuccessStatusCode)
-                return StatusCode((int)response.StatusCode, "Failed to fetch articles.");
-
-            var jsonString = await response.Content.ReadAsStringAsync();
-            var json = JsonDocument.Parse(jsonString);
-            var rawArticles = json.RootElement.GetProperty("articles");
-            var articles = rawArticles.EnumerateArray()
-                .Where(a =>
-                    a.TryGetProperty("title", out _) &&
-                    (a.TryGetProperty("description", out _) || a.TryGetProperty("content", out _)) &&
-                    a.TryGetProperty("urlToImage", out _))
-                .Select((a, index) => new
-                {
-                    id = $"search_{query}_{index}",
-                    title = a.GetProperty("title").GetString(),
-                    content = a.TryGetProperty("content", out var content) ? content.GetString() : null,
-                    description = a.TryGetProperty("description", out var desc) ? desc.GetString() : null,
-                    publishedAt = a.TryGetProperty("publishedAt", out var date) ? date.GetString() : null,
-                    urlToImage = a.GetProperty("urlToImage").GetString(),
-                    url = a.GetProperty("url").GetString(),
-                    source = a.GetProperty("source").GetProperty("name").GetString(),
-                }).ToList();
-
-            Article temp = new Article();//in order to increase the api calls counter of NewsAPI
-            temp.increaseNewsApiCounter();
-
-            return Ok(articles);
-        }
-        */
-
-        // Top headlines now handled by NewsApiService
-        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
         [HttpGet("top-headlines")]
         [AllowAnonymous]
         public async Task<IActionResult> GetTopHeadlines(
@@ -569,7 +368,6 @@ namespace Newsite_Server.Controllers
                 if (string.IsNullOrWhiteSpace(category))
                     return BadRequest("Category is required.");
 
-                // Use NewsApiService instead of direct HTTP client calls
                 string content = await _newsApiService.GetTopHeadlinesAsync(pageSize, category, language, country, page);
                 
                 return Content(content, "application/json");
@@ -587,43 +385,5 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        /* LEGACY CODE - Replaced with NewsApiService
-        [HttpGet("top-headlines")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetTopHeadlines(
-            [FromQuery] int pageSize,
-            [FromQuery] string? language,    // Optional
-            [FromQuery] string? country,     // Optional
-            [FromQuery] string category,     // Required
-            [FromQuery] int page = 0)        // Optional with default value
-        {
-            if (string.IsNullOrWhiteSpace(category))
-                return BadRequest("Category is required.");
-
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("NewsHubServer/1.0");
-
-            var apiKey = _newsApiKey; 
-
-            // בונים URL דינמי בהתאם לפרמטרים שקיבלנו
-            var url = $"https://newsapi.org/v2/top-headlines?pageSize={pageSize}&page={page}&apiKey={apiKey}&category={category}";
-
-            if (!string.IsNullOrWhiteSpace(language))
-                url += $"&language={language}";
-
-            if (!string.IsNullOrWhiteSpace(country))
-                url += $"&country={country}";
-
-            var response = await httpClient.GetAsync(url);
-            var content = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-                return Content(content, "application/json");
-
-            return StatusCode((int)response.StatusCode, content);
-        }
-        */
-
     }
 }

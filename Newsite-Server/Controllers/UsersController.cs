@@ -60,7 +60,7 @@ namespace Newsite_Server.Controllers
             NewUser.TrackDailyLogin(NewUser.Id);
             
             // Determine user role for JWT token
-            string role = NewUser.Email == "admin@newshub.com" ? "Admin" : "User";
+            string role = NewUser.Email == "admin" ? "Admin" : "User";
             string token = _tokenService.GenerateToken(NewUser.Email, role);
 
             // Return successful login response with token and user data
@@ -119,19 +119,7 @@ namespace Newsite_Server.Controllers
         [HttpPost("Follow")]
         public async Task<IActionResult> FollowUser(int followerId, string followedEmail)
         {
-            //// Debug: Extract and log JWT claims for security verification
-            //var userClaims = User.Claims.ToList();
-            //var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            //var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-
-            //foreach (var claim in userClaims)
-            //{
-            //    //Console.WriteLine($"   - {claim.Type}: {claim.Value}");
-            //}
-
-            //// Verify admin role for debugging purposes
-            //bool isAdmin = User.IsInRole("Admin");
-            
+         
             User user = new User();
 
             // Attempt to create follow relationship in database
@@ -292,64 +280,6 @@ namespace Newsite_Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        /* LEGACY CODE - Replaced with HuggingFaceService
-        [HttpPost("GenerateProfileImage")]
-        public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
-        {
-            if (string.IsNullOrWhiteSpace(req.Prompt))
-                return BadRequest("Prompt is required.");
-
-            // Secure API key retrieval from configuration
-            string huggingFaceApiKey;
-            try
-            {
-                huggingFaceApiKey = _huggingFaceApiKey;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Failed to read HuggingFace API key: " + ex.Message);
-            }
-
-            // Configure HTTP client for HuggingFace Stable Diffusion API call
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", huggingFaceApiKey);
-
-            var payload = new { inputs = req.Prompt };
-            var json = System.Text.Json.JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await httpClient.PostAsync(
-                "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-                content
-            );
-
-            if (!response.IsSuccessStatusCode)
-            {
-                string error = await response.Content.ReadAsStringAsync();
-                return StatusCode((int)response.StatusCode, error);
-            }
-
-            // Get the image as byte[]
-            var imageBytes = await response.Content.ReadAsByteArrayAsync();
-
-            // Upload to Cloudinary
-            using var ms = new MemoryStream(imageBytes);
-            var uploadParams = new ImageUploadParams
-            {
-                File = new FileDescription("generated.png", ms),
-                Folder = "profile_pics",
-                PublicId = $"profile_pics/{req.UserId}"
-            };
-            var uploadResult = await _cloudinaryService.UploadRawStreamAsync(uploadParams);
-
-            if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
-                return StatusCode(500, "Failed to upload generated image to Cloudinary.");
-
-            // Optional: Update profile image URL in user database here
-
-            return Ok(new { imageUrl = uploadResult.SecureUrl.ToString() });
-        }
-        */
+       
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
+using Newsite_Server.Services;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
@@ -15,21 +16,24 @@ namespace Newsite_Server.Controllers
 
     public class ArticlesController : ControllerBase
     {
-
-        const int MIN_SUMMARY_LENGTH = 100;
-        const int MAX_SUMMARY_LENGTH = 200;
-        const int MAX_TEXT_LENGTH = 3000;
+        // LEGACY: Moved HTTP client functionality to service layer for better separation of concerns
+        // const int MIN_SUMMARY_LENGTH = 100;
+        // const int MAX_SUMMARY_LENGTH = 200;
+        // const int MAX_TEXT_LENGTH = 3000;
 
         private readonly Notifications notifications;
-        private readonly string _newsApiKey;
-        private readonly string _huggingFaceApiKey;
+        private readonly NewsApiService _newsApiService;
+        private readonly HuggingFaceService _huggingFaceService;
 
+        // LEGACY: API keys now managed in service layer
+        // private readonly string _newsApiKey;
+        // private readonly string _huggingFaceApiKey;
 
-        public ArticlesController(IConfiguration config)
+        public ArticlesController(NewsApiService newsApiService, HuggingFaceService huggingFaceService)
         {
             notifications = new Notifications();
-            _newsApiKey = config["ApiKeys:NewsApi"];
-            _huggingFaceApiKey = config["ApiKeys:HuggingFace"];
+            _newsApiService = newsApiService;
+            _huggingFaceService = huggingFaceService;
         }
 
         // Retrieves all articles from the database for admin users
@@ -257,8 +261,46 @@ namespace Newsite_Server.Controllers
             return Ok(new { content = content });
         }
 
-        // Complex AI-powered text summarization using HuggingFace transformer models
-        // Multi-step process: input validation -> text truncation -> API authentication -> AI processing -> response parsing -> length validation
+        // AI-powered text summarization now handled by HuggingFaceService
+        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        [HttpPost("summarize")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
+        {
+            try
+            {
+                // Extract and validate text input from JSON request body
+                if (!requestBody.TryGetProperty("text", out JsonElement textElement) || string.IsNullOrWhiteSpace(textElement.GetString()))
+                {
+                    return BadRequest("Text is required for summarization.");
+                }
+
+                string text = textElement.GetString();
+                
+                // Use HuggingFaceService instead of direct HTTP client calls
+                string summary = await _huggingFaceService.SummarizeTextAsync(text);
+                
+                return Ok(new { summary = summary });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /* LEGACY CODE - Replaced with HuggingFaceService
         [HttpPost("summarize")]
         [AllowAnonymous]
         public async Task<IActionResult> Summarize([FromBody] JsonElement requestBody)
@@ -315,11 +357,47 @@ namespace Newsite_Server.Controllers
 
             return Ok(new { summary = firstSummary });
         }
+        */
 
 
-        // Gets recommended articles based on user's tags from NewsAPI
-        // Complex personalization workflow: tag validation → query building → API call → data filtering → content transformation
-        // Process: tag list validation → OR query construction → NewsAPI integration → article filtering → usage tracking
+        // Recommended articles now handled by NewsApiService
+        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        [HttpPost("recommendedArticles/pageSize/{pageSize}/language/{language}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRecommendedArticles(int pageSize, string language, [FromBody] List<Tag> tags)
+        {
+            try
+            {
+                if (tags == null || !tags.Any())
+                    return BadRequest("At least one tag is required.");
+
+                // Extract tag names for service call
+                var tagNames = tags.Select(t => t.Name).ToList();
+                
+                // Use NewsApiService instead of direct HTTP client calls
+                var articles = await _newsApiService.GetRecommendedArticlesAsync(tagNames, pageSize, language);
+
+                // Maintain API call tracking
+                Article temp = new Article();
+                temp.increaseNewsApiCounter();
+
+                return Ok(articles);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /* LEGACY CODE - Replaced with NewsApiService
         [HttpPost("recommendedArticles/pageSize/{pageSize}/language/{language}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetRecommendedArticles(int pageSize, string language, [FromBody] List<Tag> tags)
@@ -378,9 +456,44 @@ namespace Newsite_Server.Controllers
 
             return Ok(articles);
         }
+        */
 
 
-        // Searches articles by query with optional date range from NewsAPI
+        // Article search now handled by NewsApiService
+        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        [HttpGet("searchArticles/{query}/{from?}/{to?}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(query))
+                    return BadRequest("Query is required.");
+
+                // Use NewsApiService instead of direct HTTP client calls
+                var articles = await _newsApiService.SearchArticlesAsync(query, from, to);
+
+                // Maintain API call tracking
+                Article temp = new Article();
+                temp.increaseNewsApiCounter();
+
+                return Ok(articles);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /* LEGACY CODE - Replaced with NewsApiService
         [HttpGet("searchArticles/{query}/{from?}/{to?}")]
         [AllowAnonymous]
         public async Task<IActionResult> SearchArticles(string query, string? from = null, string? to = null)
@@ -438,7 +551,44 @@ namespace Newsite_Server.Controllers
 
             return Ok(articles);
         }
+        */
 
+        // Top headlines now handled by NewsApiService
+        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        [HttpGet("top-headlines")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTopHeadlines(
+            [FromQuery] int pageSize,
+            [FromQuery] string? language,    // Optional
+            [FromQuery] string? country,     // Optional
+            [FromQuery] string category,     // Required
+            [FromQuery] int page = 0)        // Optional with default value
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(category))
+                    return BadRequest("Category is required.");
+
+                // Use NewsApiService instead of direct HTTP client calls
+                string content = await _newsApiService.GetTopHeadlinesAsync(pageSize, category, language, country, page);
+                
+                return Content(content, "application/json");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /* LEGACY CODE - Replaced with NewsApiService
         [HttpGet("top-headlines")]
         [AllowAnonymous]
         public async Task<IActionResult> GetTopHeadlines(
@@ -473,6 +623,7 @@ namespace Newsite_Server.Controllers
 
             return StatusCode((int)response.StatusCode, content);
         }
+        */
 
     }
 }

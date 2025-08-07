@@ -23,15 +23,17 @@ namespace Newsite_Server.Controllers
         private TokenService _tokenService;
         private readonly Notifications notifications;
         private readonly CloudinaryService _cloudinaryService;
-        private readonly string _huggingFaceApiKey;
+        private readonly HuggingFaceService _huggingFaceService;
 
+        // LEGACY: API key now managed in service layer
+        // private readonly string _huggingFaceApiKey;
 
-        public UsersController(IConfiguration config)
+        public UsersController(IConfiguration config, HuggingFaceService huggingFaceService)
         {
             _tokenService = new TokenService();
             notifications = new Notifications();
             _cloudinaryService = new CloudinaryService(config);
-            _huggingFaceApiKey = config["ApiKeys:HuggingFace"];
+            _huggingFaceService = huggingFaceService;
         }
 
         // Authenticates user login, validates account status, tracks login, and returns JWT token with user details
@@ -278,8 +280,42 @@ namespace Newsite_Server.Controllers
             return Ok(new { ImageUrl = imageUrl });
         }
 
-        // Complex AI-powered profile image generation using HuggingFace Stable Diffusion API
-        // Multi-step process: prompt validation -> API authentication -> AI image generation -> cloud storage -> URL return
+        // AI-powered profile image generation now handled by HuggingFaceService
+        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        [HttpPost("GenerateProfileImage")]
+        public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(req.Prompt))
+                    return BadRequest("Prompt is required.");
+
+                // Use HuggingFaceService instead of direct HTTP client calls
+                string imageUrl = await _huggingFaceService.GenerateProfileImageAsync(req.Prompt, req.UserId);
+
+                // Optional: Update profile image URL in user database here
+
+                return Ok(new { imageUrl = imageUrl });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /* LEGACY CODE - Replaced with HuggingFaceService
         [HttpPost("GenerateProfileImage")]
         public async Task<IActionResult> GenerateProfileImage([FromBody] GenerateProfileImageRequest req)
         {
@@ -336,5 +372,6 @@ namespace Newsite_Server.Controllers
 
             return Ok(new { imageUrl = uploadResult.SecureUrl.ToString() });
         }
+        */
     }
 }

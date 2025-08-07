@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newsite_Server.BL;
+using Newsite_Server.Services;
 using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,15 +13,17 @@ namespace Newsite_Server.Controllers
     [ApiController]
     public class TagsController : ControllerBase
     {
-        private static Dictionary<string, string>? _twitterLocationMap = null;
-        private static DateTime _lastLocationLoadTime;
-        private static readonly object _locationMapLock = new();
-        private readonly string _twitter;
+        // LEGACY: Moved HTTP client functionality to service layer for better separation of concerns
+        // private static Dictionary<string, string>? _twitterLocationMap = null;
+        // private static DateTime _lastLocationLoadTime;
+        // private static readonly object _locationMapLock = new();
+        // private readonly string _twitter;
 
-        public TagsController(IConfiguration config)
+        private readonly TwitterService _twitterService;
+
+        public TagsController(TwitterService twitterService)
         {
-            _twitter = config["ApiKeys:Twitter"];
-
+            _twitterService = twitterService;
         }
 
 
@@ -32,8 +35,41 @@ namespace Newsite_Server.Controllers
             return tag.GetAllTags();
         }
 
-        // Complex Twitter trends fetching with location mapping, caching, and external API integration
-        // Multi-step process: location validation -> file caching -> location ID lookup -> API call -> response parsing
+        // Twitter trends now handled by TwitterService
+        // REFACTORED: Moved HTTP client logic to service layer for better separation of concerns
+        [HttpGet("twitterTrends/{location}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTwitterTrends(string location)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(location))
+                    return BadRequest("Location is required.");
+
+                // Use TwitterService instead of direct HTTP client calls
+                var result = await _twitterService.GetTwitterTrendsAsync(location);
+                
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (FileNotFoundException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /* LEGACY CODE - Replaced with TwitterService
         [HttpGet("twitterTrends/{location}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetTwitterTrends(string location)
@@ -99,6 +135,7 @@ namespace Newsite_Server.Controllers
                 return StatusCode(503, "Failed to fetch Twitter trends: " + ex.Message);
             }
         }
+        */
 
 
         // Creates a new tag in the database

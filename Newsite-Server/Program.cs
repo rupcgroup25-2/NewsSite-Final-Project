@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newsite_Server.Services;
 using System.Security.Claims;
 using System.Text;
 
@@ -10,8 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 var key = "MotyNivYuvalSuperSecretKey123";
 
-// Add HttpClient for Firebase
+// Add HttpClient for Firebase and API services
 builder.Services.AddHttpClient();
+
+// Register HTTP client services for external API integration
+// Each service gets its own HttpClient instance for proper separation of concerns
+builder.Services.AddHttpClient<NewsApiService>();
+builder.Services.AddHttpClient<TwitterService>();
+builder.Services.AddHttpClient<HuggingFaceService>();
+
+// Register CloudinaryService
+builder.Services.AddSingleton<CloudinaryService>();
 
 // Add services to the container with global [Authorize] filter
 builder.Services.AddControllers(config =>

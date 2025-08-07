@@ -147,7 +147,7 @@ function renderHeroArticle(article) {
                     <h2 class="card-title display-5 fw-bold mb-3 hero-title">${article.title}</h2>
                     <p class="card-text lead mb-4 hero-preview">${article.preview}</p>
                     <div>
-                        <a href="${article.url}" target="_blank" class="btn btn-lg px-4 hero-btn">
+                        <a href="article.html?id=${article.id}" target="_blank" class="btn btn-lg px-4 hero-btn">
                             <i class="bi bi-box-arrow-up-right me-2"></i>Read Full Article
                         </a>
                     </div>

@@ -251,11 +251,6 @@ async function initChat(articleData, userName) {
         console.error("Error initializing chat:", error);
         chatMessages.innerHTML = '<div class="alert alert-danger">Error initializing chat</div>';
     }
-}
-
-// ================================================
-// ============== ARTICLE LOADING =================
-// ================================================
 
 // Generates unified article ID for chat room identification
 function generateUnifiedArticleId(article) {
@@ -282,7 +277,12 @@ function generateUnifiedArticleId(article) {
     }
 
     return null;
-}
+    }
+
+// ================================================
+// ============== ARTICLE LOADING =================
+// ================================================
+
 
 function loadSingleArticle(userId, articleId) {
     return new Promise((resolve, reject) => {

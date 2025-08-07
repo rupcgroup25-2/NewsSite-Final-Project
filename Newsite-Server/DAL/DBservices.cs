@@ -287,6 +287,9 @@ namespace Newsite_Server.DAL
 
         }
 
+        //--------------------------------------------------------------------------------------------------
+        // This method selects all Users emails from the UsersTable 
+        //--------------------------------------------------------------------------------------------------
         public List<string> SelectAllUsersEmail()
         {
             SqlConnection con;
@@ -404,6 +407,7 @@ namespace Newsite_Server.DAL
                 con.Close();
             }
         }
+
         //--------------------------------------------------------------------------------------------------
         // This method updates user Password
         //--------------------------------------------------------------------------------------------------
@@ -434,8 +438,6 @@ namespace Newsite_Server.DAL
             }
         }
     
-
-
         //--------------------------------------------------------------------------------------------------
         // This method Login a User 
         //--------------------------------------------------------------------------------------------------
@@ -1301,7 +1303,6 @@ namespace Newsite_Server.DAL
                 con.Close();
             }
         }
-
 
         //--------------------------------------------------------------------------------------------------
         // This method to get all articles 
@@ -3224,97 +3225,97 @@ namespace Newsite_Server.DAL
         //--------------------------------------------------------------------------------------------------
         // Get FCM Token Statistics
         //--------------------------------------------------------------------------------------------------
-        public int GetTotalFCMTokensCount()
-        {
-            SqlConnection con = null;
-            SqlCommand cmd;
+        //public int GetTotalFCMTokensCount()
+        //{
+        //    SqlConnection con = null;
+        //    SqlCommand cmd;
 
-            try
-            {
-                con = connect("myProjDB");
-                string query = "SELECT COUNT(*) FROM FCMTokensFinal";
-                cmd = new SqlCommand(query, con);
-                return (int)cmd.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                //Console.WriteLine("Exception getting total FCM tokens count: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null) con.Close();
-            }
-        }
+        //    try
+        //    {
+        //        con = connect("myProjDB");
+        //        string query = "SELECT COUNT(*) FROM FCMTokensFinal";
+        //        cmd = new SqlCommand(query, con);
+        //        return (int)cmd.ExecuteScalar();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //Console.WriteLine("Exception getting total FCM tokens count: " + ex.Message);
+        //        return 0;
+        //    }
+        //    finally
+        //    {
+        //        if (con != null) con.Close();
+        //    }
+        //}
 
-        public int GetActiveFCMTokensCount()
-        {
-            SqlConnection con = null;
-            SqlCommand cmd;
+        //public int GetActiveFCMTokensCount()
+        //{
+        //    SqlConnection con = null;
+        //    SqlCommand cmd;
 
-            try
-            {
-                con = connect("myProjDB");
-                string query = "SELECT COUNT(*) FROM FCMTokensFinal WHERE IsActive = 1";
-                cmd = new SqlCommand(query, con);
-                return (int)cmd.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                //Console.WriteLine("Exception getting active FCM tokens count: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null) con.Close();
-            }
-        }
+        //    try
+        //    {
+        //        con = connect("myProjDB");
+        //        string query = "SELECT COUNT(*) FROM FCMTokensFinal WHERE IsActive = 1";
+        //        cmd = new SqlCommand(query, con);
+        //        return (int)cmd.ExecuteScalar();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //Console.WriteLine("Exception getting active FCM tokens count: " + ex.Message);
+        //        return 0;
+        //    }
+        //    finally
+        //    {
+        //        if (con != null) con.Close();
+        //    }
+        //}
 
-        public int GetEnabledFCMTokensCount()
-        {
-            SqlConnection con = null;
-            SqlCommand cmd;
+        //public int GetEnabledFCMTokensCount()
+        //{
+        //    SqlConnection con = null;
+        //    SqlCommand cmd;
 
-            try
-            {
-                con = connect("myProjDB");
-                string query = "SELECT COUNT(*) FROM FCMTokensFinal WHERE IsActive = 1 AND NotificationsEnabled = 1";
-                cmd = new SqlCommand(query, con);
-                return (int)cmd.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                //Console.WriteLine("Exception getting enabled FCM tokens count: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null) con.Close();
-            }
-        }
+        //    try
+        //    {
+        //        con = connect("myProjDB");
+        //        string query = "SELECT COUNT(*) FROM FCMTokensFinal WHERE IsActive = 1 AND NotificationsEnabled = 1";
+        //        cmd = new SqlCommand(query, con);
+        //        return (int)cmd.ExecuteScalar();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //Console.WriteLine("Exception getting enabled FCM tokens count: " + ex.Message);
+        //        return 0;
+        //    }
+        //    finally
+        //    {
+        //        if (con != null) con.Close();
+        //    }
+        //}
 
-        public int GetUsersWithTokensCount()
-        {
-            SqlConnection con = null;
-            SqlCommand cmd;
+        //public int GetUsersWithTokensCount()
+        //{
+        //    SqlConnection con = null;
+        //    SqlCommand cmd;
 
-            try
-            {
-                con = connect("myProjDB");
-                string query = "SELECT COUNT(DISTINCT UserId) FROM FCMTokensFinal WHERE IsActive = 1";
-                cmd = new SqlCommand(query, con);
-                return (int)cmd.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                //Console.WriteLine("Exception getting users with tokens count: " + ex.Message);
-                return 0;
-            }
-            finally
-            {
-                if (con != null) con.Close();
-            }
-        }
+        //    try
+        //    {
+        //        con = connect("myProjDB");
+        //        string query = "SELECT COUNT(DISTINCT UserId) FROM FCMTokensFinal WHERE IsActive = 1";
+        //        cmd = new SqlCommand(query, con);
+        //        return (int)cmd.ExecuteScalar();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //Console.WriteLine("Exception getting users with tokens count: " + ex.Message);
+        //        return 0;
+        //    }
+        //    finally
+        //    {
+        //        if (con != null) con.Close();
+        //    }
+        //}
 
     }
 }

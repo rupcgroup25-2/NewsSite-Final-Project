@@ -117,20 +117,21 @@ namespace Newsite_Server.Controllers
         [HttpPost("Follow")]
         public async Task<IActionResult> FollowUser(int followerId, string followedEmail)
         {
-            // Debug: Extract and log JWT claims for security verification
-            var userClaims = User.Claims.ToList();
-            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            //// Debug: Extract and log JWT claims for security verification
+            //var userClaims = User.Claims.ToList();
+            //var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            //var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            foreach (var claim in userClaims)
-            {
-                //Console.WriteLine($"   - {claim.Type}: {claim.Value}");
-            }
+            //foreach (var claim in userClaims)
+            //{
+            //    //Console.WriteLine($"   - {claim.Type}: {claim.Value}");
+            //}
 
-            // Verify admin role for debugging purposes
-            bool isAdmin = User.IsInRole("Admin");
+            //// Verify admin role for debugging purposes
+            //bool isAdmin = User.IsInRole("Admin");
             
             User user = new User();
+
             // Attempt to create follow relationship in database
             int result = user.FollowUser(followerId, followedEmail);
 

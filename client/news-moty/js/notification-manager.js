@@ -487,7 +487,7 @@ class NotificationManager {
 
     playSound() {
         try {
-            const audio = new Audio('/sounds/notification.mp3');
+            const audio = new Audio('/client/news-moty/sounds/notify.mp3');
             audio.volume = 0.3;
             audio.play().catch(() => { });
         } catch (error) {
@@ -558,7 +558,7 @@ window.onUserLogout = function () {
 // Function to clean up FCM token when user logs out
 window.clearFCMTokenOnLogout = function () {
     if (currentFCMToken && subscribedUserId) {
-        // שלח בקשה לשרת להסיר את הטוקן הזה מהמשתמש הישן
+        // Send request to server to remove this token from the old user
         if (typeof ajaxCall !== 'undefined' && typeof serverUrl !== 'undefined') {
             ajaxCall(
                 "DELETE",
@@ -574,40 +574,40 @@ window.clearFCMTokenOnLogout = function () {
         }
     }
 
-    // נקה משתנים מקומיים
+    // Clear local variables
     subscribedUserId = null;
-    // אל תנקה את currentFCMToken כי זה עדיין רלוונטי למכשיר
+    // Don't clear currentFCMToken as it's still relevant for the device
 };
 
-// פונקציה משופרת להחלפת משתמש שמנקה טוקן ישן
+// Enhanced function for switching user that cleans old token
 window.switchUserNotifications = function (newUserId) {
-    // נקה טוקן מהמשתמש הקודם
+    // Clear token from previous user
     if (subscribedUserId && subscribedUserId !== newUserId) {
         clearFCMTokenOnLogout();
     }
 
-    // הרשם למשתמש החדש
+    // Subscribe new user
     if (newUserId && notificationManager) {
         notificationManager.subscribeUser(newUserId);
     }
 };
 
-// פונקציה לביטול הרשמה למשתמש
+// Function to unsubscribe user from notifications
 window.unsubscribeUserFromNotifications = function () {
-    // נקה את הטוקן מהשרת לפני התנתקות
+    // Clear token from server before logout
     clearFCMTokenOnLogout();
 
-    // נקה משתנים גלובליים
+    // Clear global variables
     subscribedUserId = null;
     notificationsInitialized = false;
 
-    // עדכן UI
+    // Update UI
     if (notificationManager && notificationManager.hideButton) {
         notificationManager.hideButton();
     }
 };
 
-// פונקציה להחלפת סגנון התראות בקלות
+// Function for easy notification style switching
 
 window.subscribeUserToNotifications = function (userId) {
     if (notificationManager && notificationManager.subscribeUser) {

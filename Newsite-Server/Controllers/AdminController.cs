@@ -113,7 +113,6 @@ namespace Newsite_Server.Controllers
             }
         }
 
-
         [HttpPut("{id}/block")]
         public IActionResult ToggleBlockSharing(int id)
         {

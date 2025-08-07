@@ -3104,7 +3104,6 @@ namespace Newsite_Server.DAL
 
             try
             {
-                //Console.WriteLine("🔍 Debug: Calling sp_GetAllUsersWithNotificationsFinal");
                 SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (reader.Read())
                 {
@@ -3112,7 +3111,6 @@ namespace Newsite_Server.DAL
                     userIds.Add(userId);
                     //Console.WriteLine($"   Found user ID: {userId}");
                 }
-                //Console.WriteLine($"🔍 Debug: Total users returned by SP: {userIds.Count}");
                 return userIds;
             }
             catch (Exception ex)

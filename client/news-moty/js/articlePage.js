@@ -473,7 +473,30 @@ $(document).ready(async function () {
         window.article = await loadSingleArticle(currentUser.id, id);
     }
     if (!window.article) {
-        return $('#articleContainer').html('<div class="alert alert-warning">Article not found.</div>');
+        return $('#articleContainer').html(`
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                <div class="card text-center shadow-sm p-4" style="max-width: 500px; width: 100%;">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-file-earmark-x text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="card-title mb-3">Article Not Found</h4>
+                        <p class="card-text text-muted mb-4">
+                            Sorry, we couldn't find the article you're looking for. 
+                            It may have been removed or the link is incorrect.
+                        </p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button class="btn btn-primary" onclick="window.history.back()">
+                                <i class="bi bi-arrow-left me-1"></i>Go Back
+                            </button>
+                            <a href="index.html" class="btn btn-outline-primary">
+                                <i class="bi bi-house me-1"></i>Home Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
     }
 
     let extractedContent;
@@ -758,9 +781,8 @@ $(document).ready(async function () {
     });
 
 
-    $(document).ready(function () {
-        loadComments(window.article.id);
-    });
+    loadComments(window.article.id);
+
 
     //delete comment
     $(document).on('click', '.delete-comment-btn', function () {

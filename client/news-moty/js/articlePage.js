@@ -657,7 +657,8 @@ $(document).ready(async function () {
 `;
     //load comments from server
     function loadComments(articleId) {
-
+        if (isNaN(articleId))
+            return;
         const url = serverUrl + `comments/article/${articleId}`;
         ajaxCall("GET", url, null,
             function (response) {
@@ -766,11 +767,12 @@ $(document).ready(async function () {
             function (response) {
                 $(e.target).find('#commentInput').val('');
                 
-                // Refresh comments and wait for completion
-                loadComments(window.article.id);
-                
                 // Show success message only after comments are loaded
                 setTimeout(() => {
+                    // Refresh comments and wait for completion
+                    loadComments(window.article.id);
+                    if (isNaN(window.article.id));
+                        window.location.reload();
                     showSuccessToast(response, "Comment Added");
                 }, 500);
             },
